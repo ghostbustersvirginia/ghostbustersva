@@ -14,10 +14,13 @@ src/
 ├── layouts/        → BaseLayout.astro wraps every page (<head>, header, footer).
 ├── components/     → Shared components used across pages.
 │   └── ui/         → Design-system primitives (Button, Panel, StatusPill, etc.).
-├── content/        → Markdown content collections (events, gallery).
-├── lib/            → Shared TypeScript utilities (event logic, image helpers, etc.).
+├── content/        → Markdown/JSON content collections.
+│   ├── events/     → Event listings (Markdown).
+│   ├── gallery/    → Gallery entries (Markdown).
+│   ├── settings/   → Site-wide settings (JSON, CMS singleton).
+│   └── page-copy/  → CMS-editable page text for About, Join, Contact, Donate.
+├── lib/            → Shared TypeScript utilities (events, images, page-copy, settings, etc.).
 ├── styles/         → Global CSS. theme.css holds all design tokens.
-├── config.ts       → Site-wide settings: nav links, footer logos, metadata.
 └── content.config.ts → Zod schemas that validate content frontmatter.
 images/             → Source images (processed by Astro's image pipeline at build).
 public/             → Static files served as-is (robots.txt).
@@ -33,7 +36,20 @@ Every page imports `BaseLayout` which provides the `<head>`, skip-link, header, 
 
 ### Content Collections
 
-Content (events, gallery) lives in `src/content/` as Markdown files. Schemas are defined in `src/content.config.ts` using Zod. If you add a new field or collection, update the schema first.
+Content lives in `src/content/` and is validated by Zod schemas in `src/content.config.ts`:
+
+| Collection | Format   | Purpose                                      |
+| ---------- | -------- | -------------------------------------------- |
+| `events`   | Markdown | Event listings with dates, locations, status |
+| `gallery`  | Markdown | Photo gallery entries                        |
+| `settings` | JSON     | Site-wide settings (CMS singleton)           |
+| `pageCopy` | JSON     | CMS-editable page text (About, Join, etc.)   |
+
+Each page that uses `pageCopy` loads it via `getPageCopy()` from `src/lib/page-copy.ts` with inline fallbacks, so the site works even if CMS data hasn't been seeded.
+
+### CMS (Keystatic)
+
+Editors manage content at `/admin` (redirects to `/keystatic`). Keystatic is configured in `keystatic.config.ts` and stores content as flat files committed to Git. See the [CMS Editor Guide](../cms-guide.md) for the editor workflow and [CMS Admin Setup](cms-admin-setup.md) for the technical auth runbook.
 
 ---
 
@@ -218,21 +234,24 @@ Before committing, verify:
 
 ## Tech Stack Summary
 
-| Layer         | Tool                                 | Notes                             |
-| ------------- | ------------------------------------ | --------------------------------- |
-| Framework     | Astro (static output)                | No SSR, no server                 |
-| Language      | TypeScript (strict)                  | No `any` without a comment        |
-| Styling       | CSS custom properties                | All tokens in `theme.css`         |
-| Content       | Markdown + Astro Content Collections | Zod-validated schemas             |
-| Interactivity | React (minimal)                      | Only where client state is needed |
-| Testing       | Vitest                               | Unit tests in `tests/`            |
-| Linting       | ESLint + Prettier                    | Run `npm run check`               |
-| Hosting       | Vercel (static deploy)               | Auto-deploy on push to `main`     |
+| Layer         | Tool                                | Notes                                  |
+| ------------- | ----------------------------------- | -------------------------------------- |
+| Framework     | Astro (static output)               | `@astrojs/node` adapter for CMS routes |
+| CMS           | Keystatic                           | Git-backed, browser admin at `/admin`  |
+| Language      | TypeScript (strict)                 | No `any` without a comment             |
+| Styling       | CSS custom properties               | All tokens in `theme.css`              |
+| Content       | Markdown + JSON Content Collections | Zod-validated schemas                  |
+| Interactivity | React (minimal)                     | Only where client state is needed      |
+| Testing       | Vitest                              | Unit tests in `tests/`                 |
+| Linting       | ESLint + Prettier                   | Run `npm run check`                    |
+| Hosting       | Vercel (static deploy)              | Auto-deploy on push to `main`          |
 
 ---
 
 ## Further Reading
 
+- [CMS Editor Guide](../cms-guide.md) — content editing via the browser
+- [CMS Admin Setup](cms-admin-setup.md) — hosted auth configuration
 - [README](../README.md) — project overview and setup
 - [AI Usage Guide](ai-usage.md) — how AI tools are used here
 - [Deployment Guide](deployment.md) — deploy process and rebuild schedule

@@ -2,6 +2,8 @@
 
 This site is statically built. Event status (`upcoming` vs `past`) is calculated during each build, so if builds don't run regularly, event sections can look outdated.
 
+For CMS admin login and authentication setup, see `docs/tech/cms-admin-setup.md`.
+
 ---
 
 ## How Often to Rebuild

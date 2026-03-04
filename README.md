@@ -20,11 +20,11 @@ Built with [Astro](https://astro.build), TypeScript, and markdown-based content.
 This is a **static website** — think of it like a brochure that gets regenerated whenever we make changes, rather than a live app with a database behind it.
 
 - **Pages** (Home, About, Events, Media, Join, Contact, Donate) are built from template files and deployed as plain HTML.
-- **Content** (events, gallery photos) is written in simple Markdown files — no CMS login required, but you do need to edit files in the repo.
+- **Content** is managed through a browser CMS login at `/admin`.
 - When a developer pushes changes to the `main` branch, the site automatically rebuilds and deploys within minutes.
 - The site rebuilds on a daily schedule so time-sensitive content (like event status) stays current.
 
-There is no admin dashboard or database. All content lives in this repository as files.
+Content still lives in this repository as files (git-based CMS workflow).
 
 ---
 
@@ -42,17 +42,17 @@ There is no admin dashboard or database. All content lives in this repository as
 
 ## How Updates Happen
 
-| What                                      | How                                                                 |
-| ----------------------------------------- | ------------------------------------------------------------------- |
-| Add/edit an event                         | Edit or create a Markdown file in `src/content/events/`             |
-| Add gallery photos                        | Add an image to `images/`, create a `.md` in `src/content/gallery/` |
-| Change page text or layout                | Edit the `.astro` file in `src/pages/`                              |
-| Change site-wide settings (nav, metadata) | Edit `src/config.ts`                                                |
-| Deploy                                    | Push to `main` — deploy is automatic via Vercel                     |
+| What                       | How                                             |
+| -------------------------- | ----------------------------------------------- |
+| Add/edit an event          | Use the CMS at `/admin`                         |
+| Add gallery photos         | Use the CMS at `/admin`                         |
+| Change site-wide settings  | Use the CMS at `/admin` → Site Settings         |
+| Change page text or layout | Edit the `.astro` file in `src/pages/`          |
+| Deploy                     | Push to `main` — deploy is automatic via Vercel |
 
 > **If the project moves forward:** We would adopt a feature-branch → pull-request → code-review workflow to keep changes clean and reviewable. For now during the demo phase, changes are committed directly to keep things simple.
 
-> **Future path:** A headless CMS or admin UI could be added later so non-developers can edit content directly. For now, a developer handles all changes.
+> **CMS available:** Editors should use `/admin`. Maintainers can also access `/keystatic` directly.
 
 ---
 
@@ -66,10 +66,10 @@ There is no admin dashboard or database. All content lives in this repository as
 
 ## Team Quick Start
 
-1. Share content updates (event details, copy changes, photo additions) with the project lead.
-2. The project lead updates the files and deploys the latest demo.
-3. Review the live demo and send feedback.
-4. Repeat until ready to request official approval.
+1. Sign in at `/admin`.
+2. Update events, media, or settings.
+3. Save changes and wait for deploy.
+4. Check the live site.
 
 For day-to-day team use, this is all you need.
 
@@ -79,6 +79,44 @@ For day-to-day team use, this is all you need.
 
 - [Contributing Guide](docs/tech/contributing.md)
 - [Deployment Guide](docs/tech/deployment.md)
+- [CMS Admin Setup](docs/tech/cms-admin-setup.md)
+- [.env.example](.env.example) — required CMS auth variable template
 - [AI Usage Guide](docs/tech/ai-usage.md)
 - [PRD Workflow](docs/prds/README.md)
+- [CMS Guide](docs/cms-guide.md) — editor quickstart
 - [AGENT.md](AGENT.md) — AI project guide
+
+---
+
+## CMS Usage
+
+The site includes **Keystatic CMS** — a browser-based content editor that lets you create and edit events, gallery entries, and site settings without touching code.
+
+### How to Access
+
+1. Open `/admin` on the deployed site.
+2. Sign in with your approved admin account.
+3. Use sections for **Events**, **Media / Gallery**, and **Site Settings**.
+
+### What You Can Edit
+
+| Section         | What it controls                                                |
+| --------------- | --------------------------------------------------------------- |
+| Events          | Event listings — title, date, location, summary, images, status |
+| Media / Gallery | Photo gallery entries — image, title, alt text, date            |
+| Site Settings   | Site name, description, donate URL, store URL, social links     |
+
+### Where Content is Stored
+
+All content is stored as files in this repository:
+
+| Content         | Location                         | Format   |
+| --------------- | -------------------------------- | -------- |
+| Events          | `src/content/events/`            | Markdown |
+| Gallery entries | `src/content/gallery/`           | Markdown |
+| Site settings   | `src/content/settings/site.json` | JSON     |
+| Images          | `public/images/`                 | JPG/PNG  |
+
+Changes made through the CMS are saved to these files through the Git-backed CMS workflow.
+
+> **Note:** If admin auth is not configured yet, maintainers can temporarily use local mode at `/keystatic` with `npm run dev`. See [docs/tech/cms-admin-setup.md](docs/tech/cms-admin-setup.md).

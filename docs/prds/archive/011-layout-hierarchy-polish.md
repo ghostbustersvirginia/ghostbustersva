@@ -72,19 +72,19 @@ Add a spacing scale to `/src/styles/theme.css` under a new **"Spacing tokens"** 
 /* -------------------------------------------------- */
 /* Spacing tokens                                      */
 /* -------------------------------------------------- */
---space-xs: 0.25rem;   /*  4px */
---space-sm: 0.5rem;    /*  8px */
---space-md: 0.75rem;   /* 12px */
---space-lg: 1rem;      /* 16px */
---space-xl: 1.5rem;    /* 24px */
---space-2xl: 2rem;     /* 32px */
---space-3xl: 3rem;     /* 48px */
---space-4xl: 4rem;     /* 64px */
---space-5xl: 6rem;     /* 96px */
+--space-xs: 0.25rem; /*  4px */
+--space-sm: 0.5rem; /*  8px */
+--space-md: 0.75rem; /* 12px */
+--space-lg: 1rem; /* 16px */
+--space-xl: 1.5rem; /* 24px */
+--space-2xl: 2rem; /* 32px */
+--space-3xl: 3rem; /* 48px */
+--space-4xl: 4rem; /* 64px */
+--space-5xl: 6rem; /* 96px */
 
 /* Content max-widths */
---content-width-narrow: 40rem;   /* ~640px — single-column text */
---content-width-mid: 54rem;      /* ~864px — readable prose */
+--content-width-narrow: 40rem; /* ~640px — single-column text */
+--content-width-mid: 54rem; /* ~864px — readable prose */
 --content-width-wide: var(--max-width); /* 72rem — full layout */
 ```
 
@@ -104,6 +104,7 @@ Standardise breakpoints. Document them in `theme.css` as comments and use consis
 ```
 
 **Rules:**
+
 - Stacked → 2-column transitions happen at `--bp-lg` (768px)
 - 2-column → 3-column transitions happen at `--bp-xl` (1024px)
 - Grid `auto-fill` / `auto-fit` breakpoints within cards should use `minmax()` with consistent minimum widths, not explicit column-count media queries where possible
@@ -113,21 +114,22 @@ Standardise breakpoints. Document them in `theme.css` as comments and use consis
 
 Move the following duplicated styles into `theme.css` (or a new `global-utilities.css` imported alongside it) so they are defined **once** and available to all pages:
 
-| Class | Current Locations | Notes |
-|---|---|---|
-| `.page` | about, join, contact, donate, events, media, code-of-conduct | Page container with flex column layout |
-| `.page-title` | about, join, contact, donate, events, media, code-of-conduct | Page heading style (Orbitron, green, glow) |
-| `.intro` / `.page-intro` | about, join, contact, donate, events, media, code-of-conduct | Unify as `.page-intro` with consistent size |
-| `.section-heading` + `::after` | index, events, media | Section heading with green underline |
-| `.section-subtitle` | index | Shared subtitle style below section headings |
-| `.divider` | about, contact | Content-level divider |
-| `.glow` + `@keyframes glow-breathe` | about, index | Glowing bold text |
-| `.sr-only` | theme.css, Header, Footer, Button | Keep only in `theme.css` |
-| `.empty-state` | events, media | Empty placeholder message |
-| `.lightbox` + associated elements | index, media | Extract to shared styles or component |
-| `.section-cta` | index (3 instances) | CTA row below sections |
+| Class                               | Current Locations                                            | Notes                                        |
+| ----------------------------------- | ------------------------------------------------------------ | -------------------------------------------- |
+| `.page`                             | about, join, contact, donate, events, media, code-of-conduct | Page container with flex column layout       |
+| `.page-title`                       | about, join, contact, donate, events, media, code-of-conduct | Page heading style (Orbitron, green, glow)   |
+| `.intro` / `.page-intro`            | about, join, contact, donate, events, media, code-of-conduct | Unify as `.page-intro` with consistent size  |
+| `.section-heading` + `::after`      | index, events, media                                         | Section heading with green underline         |
+| `.section-subtitle`                 | index                                                        | Shared subtitle style below section headings |
+| `.divider`                          | about, contact                                               | Content-level divider                        |
+| `.glow` + `@keyframes glow-breathe` | about, index                                                 | Glowing bold text                            |
+| `.sr-only`                          | theme.css, Header, Footer, Button                            | Keep only in `theme.css`                     |
+| `.empty-state`                      | events, media                                                | Empty placeholder message                    |
+| `.lightbox` + associated elements   | index, media                                                 | Extract to shared styles or component        |
+| `.section-cta`                      | index (3 instances)                                          | CTA row below sections                       |
 
 **Implementation:**
+
 - Define all shared classes in `theme.css` under clearly labelled sections
 - Remove the local duplicate `<style>` definitions from each page
 - Where page-specific overrides are needed, use the local `<style>` block to extend — not redefine — the shared class
@@ -151,6 +153,7 @@ Every non-homepage page must follow this structural pattern:
 ```
 
 **Rules for `.page`:**
+
 ```css
 .page {
   padding-block: var(--space-4xl) var(--space-5xl);
@@ -183,7 +186,9 @@ Define `.section-heading` globally with its `::after` underline decoration. All 
   text-align: left;
 }
 
-.section-heading::after { /* green gradient underline */ }
+.section-heading::after {
+  /* green gradient underline */
+}
 ```
 
 Where a page needs center-aligned headings (homepage), apply `text-align: center` via a local class or modifier, not a redefinition.
@@ -207,7 +212,9 @@ Define `.page-title` globally once. The current definition is:
 }
 
 @media (max-width: 640px) {
-  .page-title { font-size: var(--text-2xl); }
+  .page-title {
+    font-size: var(--text-2xl);
+  }
 }
 ```
 
@@ -236,6 +243,7 @@ Media page currently uses `--text-lg` — normalise to `--text-base` for consist
 Define two global divider classes:
 
 **`.divider` — Content-level separator (green, centered, subtle)**
+
 ```css
 .divider {
   border: none;
@@ -243,7 +251,8 @@ Define two global divider classes:
   margin: var(--space-xl) auto;
   max-width: 12rem;
   background: linear-gradient(
-    90deg, transparent,
+    90deg,
+    transparent,
     var(--color-border) 30%,
     var(--color-glow-atmospheric-strong) 50%,
     var(--color-border) 70%,
@@ -254,6 +263,7 @@ Define two global divider classes:
 ```
 
 **`.divider--full` — Full-width section separator (green)**
+
 ```css
 .divider--full {
   max-width: 100%;
@@ -278,16 +288,23 @@ Extract `.glow` and `@keyframes glow-breathe` to `theme.css`:
 }
 
 @keyframes glow-breathe {
-  0%, 100% {
-    text-shadow: 0 0 4px var(--color-glow-green), 0 0 10px var(--color-glow-green);
+  0%,
+  100% {
+    text-shadow:
+      0 0 4px var(--color-glow-green),
+      0 0 10px var(--color-glow-green);
   }
   50% {
-    text-shadow: 0 0 8px var(--color-glow-green), 0 0 20px var(--color-glow-green);
+    text-shadow:
+      0 0 8px var(--color-glow-green),
+      0 0 20px var(--color-glow-green);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .glow { animation: none; }
+  .glow {
+    animation: none;
+  }
 }
 ```
 
@@ -326,14 +343,14 @@ Replace `.join-quote` in both files with `.quote-block`.
 
 Currently two divergent implementations exist:
 
-| Element | Homepage (index.astro) | Events Page (events.astro) |
-|---|---|---|
-| Container class | `.event-card` | `.event-item` |
-| Link class | `.event-card__link` | `.event-link` |
-| Image class | `.event-img` | `.event-link__image` |
-| Info wrapper | `.event-info` | `.event-link__body` |
-| Horizontal breakpoint | `600px` | `640px` |
-| Padding | `1.25rem` (via `.event-info`) | `1.25rem` (via `.event-link`) |
+| Element               | Homepage (index.astro)        | Events Page (events.astro)    |
+| --------------------- | ----------------------------- | ----------------------------- |
+| Container class       | `.event-card`                 | `.event-item`                 |
+| Link class            | `.event-card__link`           | `.event-link`                 |
+| Image class           | `.event-img`                  | `.event-link__image`          |
+| Info wrapper          | `.event-info`                 | `.event-link__body`           |
+| Horizontal breakpoint | `600px`                       | `640px`                       |
+| Padding               | `1.25rem` (via `.event-info`) | `1.25rem` (via `.event-link`) |
 
 **Resolution:** Unify both to a single shared event card pattern. Define the shared styles globally and use them in both locations.
 
@@ -350,6 +367,7 @@ The swag grid and `.swag-item` styles are duplicated between `index.astro` and `
 ### 15. Extract Lightbox to Shared Component
 
 Create `/src/components/ui/Lightbox.astro` that encapsulates:
+
 - The dialog overlay markup
 - Close button
 - Prev/next navigation arrows
@@ -360,6 +378,7 @@ Create `/src/components/ui/Lightbox.astro` that encapsulates:
 - Keyboard handling (Escape, arrow keys)
 
 Both `index.astro` and `media.astro` will use this component instead of inline lightbox markup. The component accepts configuration props:
+
 - `id: string` — unique ID for multiple lightboxes
 - `showNav?: boolean` — whether to show prev/next arrows (default: true)
 - `showVideo?: boolean` — whether to support video playback (default: false)
@@ -369,6 +388,7 @@ Both `index.astro` and `media.astro` will use this component instead of inline l
 `HeroSection.css` redefines `.btn` and `.btn--primary` with slightly different sizing (`padding: 0.75rem 1.75rem`, `font-size: var(--text-base)`) compared to `Button.astro` (`padding: 0.625rem 1.5rem`, `font-size: var(--text-sm)`).
 
 **Resolution:**
+
 - Add a `.btn--lg` size modifier to `Button.astro` for use in hero contexts
 - Remove the `.btn` redefinition from `HeroSection.css`
 - Keep `.btn--ghost` in `HeroSection.css` as a hero-specific variant (it's only used there)
@@ -379,6 +399,7 @@ Both `index.astro` and `media.astro` will use this component instead of inline l
 The Code of Conduct page defines `.conduct-item` cards that replicate Panel behaviour without using the component. The `h2` headings inside use `--color-accent-hover` (red) which violates PRD 010's hierarchy rules (section headings should be green atmospheric, not red).
 
 **Resolution:**
+
 - Replace each `.conduct-item` with `<Panel heading="…" headingLevel={2}>`
 - Remove the local `.conduct-item` styles
 - The Panel heading is already styled with `--color-text-muted` and uppercase treatment; this is appropriate for the Code of Conduct section titles
@@ -404,26 +425,29 @@ This block is duplicated in `about.astro`, `join.astro`, `contact.astro`, and `d
 
 #### Grid Column Rules
 
-| Context | Mobile (<768px) | Tablet (768–1024px) | Desktop (>1024px) |
-|---|---|---|---|
-| Event cards (image + info) | Stacked | Side-by-side | Side-by-side |
-| News cards (image + info) | Stacked | Side-by-side | Side-by-side |
-| Gallery grid | 1 column | 2 columns | 3 columns |
-| Video grid | 1 column | 2 columns | 3 columns |
-| Swag grid | 2 columns | 3 columns | 5 columns |
-| Social links grid | 1 column | 2 columns | auto-fit |
-| Region columns (contact) | 1 column | 3 columns | 3 columns |
-| Gear columns (join) | 1 column | 2 columns | 2 columns |
-| Mission columns (index) | 1 column | 2 columns | 2 columns |
-| Join layout (image + quote) | Stacked | Side-by-side | Side-by-side |
+| Context                     | Mobile (<768px) | Tablet (768–1024px) | Desktop (>1024px) |
+| --------------------------- | --------------- | ------------------- | ----------------- |
+| Event cards (image + info)  | Stacked         | Side-by-side        | Side-by-side      |
+| News cards (image + info)   | Stacked         | Side-by-side        | Side-by-side      |
+| Gallery grid                | 1 column        | 2 columns           | 3 columns         |
+| Video grid                  | 1 column        | 2 columns           | 3 columns         |
+| Swag grid                   | 2 columns       | 3 columns           | 5 columns         |
+| Social links grid           | 1 column        | 2 columns           | auto-fit          |
+| Region columns (contact)    | 1 column        | 3 columns           | 3 columns         |
+| Gear columns (join)         | 1 column        | 2 columns           | 2 columns         |
+| Mission columns (index)     | 1 column        | 2 columns           | 2 columns         |
+| Join layout (image + quote) | Stacked         | Side-by-side        | Side-by-side      |
 
 #### Rules:
+
 - All card-to-horizontal transitions use `--bp-lg` (768px) consistently — remove the `600px` breakpoint
 - Gallery and video grids add a middle `2-column` state at `--bp-lg` before jumping to 3 columns at `--bp-xl` — currently they jump from 1 to 3 at `768px` with no tablet intermediate
 - Swag grid: keep `2 → 3 → 5` progression but align breakpoints to the token scale (`--bp-sm: 480px`, `--bp-lg: 768px`)
 
 #### Mobile Hero:
+
 The current mobile hero treatment (PRD 009) is well-designed. Preserve:
+
 - Content anchored to bottom over darkened overlay
 - Chips hidden
 - CTAs stacked vertically, full-width
@@ -432,6 +456,7 @@ The current mobile hero treatment (PRD 009) is well-designed. Preserve:
 ### 20. Standardise Content Readability
 
 **Rules:**
+
 - Body text blocks (paragraphs, list items) must not exceed `--content-width-mid` (54rem / ~70ch) in line length. Apply `max-width` to prose containers, not individual elements.
 - `.page-intro` / `.section-subtitle` already constrain width — ensure all instances use the same `max-width: var(--content-width-mid)`.
 - Panel body content naturally constrains via Panel width and padding — no additional max-width needed inside panels.
@@ -492,6 +517,7 @@ Page
 ```
 
 For the homepage:
+
 ```
 Page
   └── HeroSection (full-bleed via own container)
@@ -503,29 +529,29 @@ Page
 
 ### Spacing Rules
 
-| Context | Token |
-|---|---|
-| Between page title and intro | `--space-lg` (inherited from `.page` gap) |
+| Context                                        | Token                                     |
+| ---------------------------------------------- | ----------------------------------------- |
+| Between page title and intro                   | `--space-lg` (inherited from `.page` gap) |
 | Between panels / major sections on inner pages | `--space-xl` (inherited from `.page` gap) |
-| Between homepage sections | `--space-3xl` (section padding-block) |
-| Inside Panel body | `--space-xl` (Panel padding) |
-| Between items in a list | `--space-md` to `--space-lg` |
-| Between CTA and preceding content | `--space-xl` |
-| Page top padding | `--space-4xl` |
-| Page bottom padding | `--space-5xl` |
+| Between homepage sections                      | `--space-3xl` (section padding-block)     |
+| Inside Panel body                              | `--space-xl` (Panel padding)              |
+| Between items in a list                        | `--space-md` to `--space-lg`              |
+| Between CTA and preceding content              | `--space-xl`                              |
+| Page top padding                               | `--space-4xl`                             |
+| Page bottom padding                            | `--space-5xl`                             |
 
 ### Typography Hierarchy
 
-| Element | Font | Size | Weight | Colour |
-|---|---|---|---|---|
-| Page title (`h1`) | Orbitron | `--text-4xl` (mobile: `--text-2xl`) | Bold | `--color-heading-section` + green glow |
-| Section heading (`h2`) | Orbitron | `--text-xl` | Bold | `--color-heading-section` + green glow |
-| Sub-section heading (`h3`) | Orbitron | `--text-lg` | Semibold | `--color-heading-section` |
-| Panel heading | Orbitron | `--text-sm` | Semibold | `--color-text-muted` (uppercase) |
-| Body text | Inter | `--text-base` | Normal | `--color-text-muted` |
-| Supporting text / notes | Inter | `--text-sm` | Normal | `--color-text-muted` (italic where appropriate) |
-| Labels / pills | Share Tech Mono | `--text-xs` | Normal | Per status |
-| Dates / technical readouts | Share Tech Mono or Inter | `--text-sm` | Normal | `--color-text` |
+| Element                    | Font                     | Size                                | Weight   | Colour                                          |
+| -------------------------- | ------------------------ | ----------------------------------- | -------- | ----------------------------------------------- |
+| Page title (`h1`)          | Orbitron                 | `--text-4xl` (mobile: `--text-2xl`) | Bold     | `--color-heading-section` + green glow          |
+| Section heading (`h2`)     | Orbitron                 | `--text-xl`                         | Bold     | `--color-heading-section` + green glow          |
+| Sub-section heading (`h3`) | Orbitron                 | `--text-lg`                         | Semibold | `--color-heading-section`                       |
+| Panel heading              | Orbitron                 | `--text-sm`                         | Semibold | `--color-text-muted` (uppercase)                |
+| Body text                  | Inter                    | `--text-base`                       | Normal   | `--color-text-muted`                            |
+| Supporting text / notes    | Inter                    | `--text-sm`                         | Normal   | `--color-text-muted` (italic where appropriate) |
+| Labels / pills             | Share Tech Mono          | `--text-xs`                         | Normal   | Per status                                      |
+| Dates / technical readouts | Share Tech Mono or Inter | `--text-sm`                         | Normal   | `--color-text`                                  |
 
 ### Component Patterns
 
@@ -546,12 +572,12 @@ This applies to: Panel, event cards, gallery cards, video cards, news cards, swa
 
 ### Divider Usage
 
-| Type | Gradient | Use |
-|---|---|---|
-| **Structural** (header/footer) | Red (`--color-divider-structural`) | Always-visible site chrome |
-| **Section** (`.section-heading::after`) | Green (`--color-divider-section`) | Below section headings |
-| **Content** (`.divider`) | Green/border blend, centered, narrow | Between paragraphs within a Panel |
-| **Full-width content** (`.divider--full`) | Green/border blend, full width | Between major content blocks |
+| Type                                      | Gradient                             | Use                               |
+| ----------------------------------------- | ------------------------------------ | --------------------------------- |
+| **Structural** (header/footer)            | Red (`--color-divider-structural`)   | Always-visible site chrome        |
+| **Section** (`.section-heading::after`)   | Green (`--color-divider-section`)    | Below section headings            |
+| **Content** (`.divider`)                  | Green/border blend, centered, narrow | Between paragraphs within a Panel |
+| **Full-width content** (`.divider--full`) | Green/border blend, full width       | Between major content blocks      |
 
 ## Implementation Plan
 
@@ -638,12 +664,14 @@ Execute in this order. Each phase can be one or more commits.
 ## Acceptance Criteria
 
 ### Global Utilities
+
 - [ ] `.page`, `.page-title`, `.page-intro`, `.section-heading`, `.section-subtitle`, `.section-cta`, `.divider`, `.glow`, `.quote-block`, `.empty-state`, `.callout`, `.sr-only` are each defined **once** in `theme.css`
 - [ ] No page file redefines any of the above classes (local overrides extend, not redefine)
 - [ ] Spacing tokens (`--space-xs` through `--space-5xl`) exist in `theme.css`
 - [ ] Content width tokens exist in `theme.css`
 
 ### Component Consistency
+
 - [ ] Event cards use the same class names and structure on the homepage and events page
 - [ ] Swag grid uses the same styles on the homepage and donate page
 - [ ] Toggle/show-more buttons use a single shared `.toggle-btn` class
@@ -652,27 +680,32 @@ Execute in this order. Each phase can be one or more commits.
 - [ ] `Button.astro` has a `.btn--lg` modifier; hero buttons do not redefine `.btn` base styles
 
 ### Layout & Spacing
+
 - [ ] All `padding`, `gap`, and `margin` values reference `--space-*` tokens
 - [ ] All breakpoints align to the documented scale (480, 640, 768, 1024, 1280)
 - [ ] No `600px` breakpoint remains in the codebase
 - [ ] Body text line length does not exceed ~75ch on wide screens
 
 ### Lightbox
+
 - [ ] A shared `Lightbox.astro` component exists and is used by both Home and Media pages
 - [ ] Lightbox traps focus when open
 - [ ] Lightbox supports keyboard navigation (Escape, Arrow keys)
 
 ### Responsive
+
 - [ ] Gallery and video grids have a 2-column tablet state
 - [ ] Event and news cards transition to horizontal at `768px` consistently
 - [ ] No horizontal overflow at any viewport width 320px–1440px
 
 ### Accessibility
+
 - [ ] `.glow-breathe` stops under both `prefers-reduced-motion` and `data-reduce-motion`
 - [ ] All toggle buttons have `:focus-visible` styles
 - [ ] Lightbox close button meets 44×44px minimum touch target
 
 ### Build
+
 - [ ] Zero build errors
 - [ ] Zero visual regressions (pages look the same or better, never worse)
 - [ ] Existing motion toggle and reduced-motion support still work

@@ -13,10 +13,10 @@ AI is a productivity tool, not the decision-maker. The workflow is:
 
 ### Tool Roles
 
-| Tool                    | Role                                                                                                                                                                                    |
-| ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **GitHub Copilot**      | In-editor AI for code completion, refactoring, and inline suggestions. Follows `copilot-instructions.md` for repo-specific rules.                                                       |
-| **Traycer / AI agents** | Autonomous agents for larger tasks (implement a full PRD, refactor across files, write tests). Follows `AGENT.md` for project context and `copilot-instructions.md` for code standards. |
+| Tool                | Role                                                                                                                                                                                     |
+| ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **GitHub Copilot**  | In-editor AI for code completion, refactoring, inline suggestions, and multi-file agent tasks. Follows `copilot-instructions.md` for repo-specific rules.                                |
+| **Other AI agents** | Autonomous agents for larger tasks (implement a full PRD, refactor across files, write tests). Should follow `AGENT.md` for project context and `copilot-instructions.md` for standards. |
 
 Both tools read the same instruction files, so they produce consistent output.
 
