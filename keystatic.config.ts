@@ -10,8 +10,8 @@
  */
 import { config, fields, collection, singleton } from "@keystatic/core";
 
-const keystaticGithubRepo = process.env.KEYSTATIC_GITHUB_REPO;
-const keystaticBranchPrefix = process.env.KEYSTATIC_BRANCH_PREFIX;
+const keystaticGithubRepo = import.meta.env.PUBLIC_KEYSTATIC_GITHUB_REPO;
+const keystaticBranchPrefix = import.meta.env.PUBLIC_KEYSTATIC_BRANCH_PREFIX;
 
 const parseGithubRepo = (value: string) => {
   const [owner, name] = value.split("/");

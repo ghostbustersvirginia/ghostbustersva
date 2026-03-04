@@ -8,8 +8,8 @@ import vercel from "@astrojs/vercel";
 
 // https://astro.build/config
 export default defineConfig({
-  // Static output — all pages are pre-rendered at build time.
-  // Keystatic's admin route (/keystatic) uses on-demand server rendering via the integration.
+  // Pages are pre-rendered (static) by default.
+  // Keystatic opts its API/admin routes into server rendering via the integration.
   output: "static",
   site: "https://ghostbustersva.com",
   adapter: vercel(),

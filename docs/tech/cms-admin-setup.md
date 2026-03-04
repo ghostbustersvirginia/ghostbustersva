@@ -12,7 +12,7 @@ Notes for handing the site off to the Ghostbusters team and spinning down the de
    - **Callback URL:** `https://ghostbustersva.com/api/keystatic/github/oauth/callback`
    - Copy **Client ID** and generate **Client Secret**.
 5. **Vercel env vars** — in the new Vercel project, Settings → Environment Variables, add for Production:
-   - `KEYSTATIC_GITHUB_REPO` = `new-owner/ghostbustersva`
+   - `PUBLIC_KEYSTATIC_GITHUB_REPO` = `new-owner/ghostbustersva`
    - `KEYSTATIC_GITHUB_CLIENT_ID` = from step 4
    - `KEYSTATIC_GITHUB_CLIENT_SECRET` = from step 4
    - `KEYSTATIC_SECRET` = run `openssl rand -hex 32`
@@ -32,7 +32,7 @@ Once the team's Vercel project is live and verified:
 
 ## Architecture Reference
 
-- Keystatic uses `github` mode when `KEYSTATIC_GITHUB_REPO` is set, `local` mode otherwise.
+- Keystatic uses `github` mode when `PUBLIC_KEYSTATIC_GITHUB_REPO` is set, `local` mode otherwise.
 - `/admin` redirects to `/keystatic`.
 - Editors save → Keystatic commits to GitHub → Vercel auto-deploys (~1-2 min).
 - Editor access = GitHub repo write access. No separate CMS accounts.
@@ -41,7 +41,7 @@ Once the team's Vercel project is live and verified:
 
 | Symptom                       | Fix                                                                                      |
 | ----------------------------- | ---------------------------------------------------------------------------------------- |
-| `/keystatic` shows local mode | `KEYSTATIC_GITHUB_REPO` env var missing — check Vercel env vars, redeploy                |
+| `/keystatic` shows local mode | `PUBLIC_KEYSTATIC_GITHUB_REPO` env var missing — check Vercel env vars, redeploy         |
 | OAuth redirect error          | Callback URL must exactly match `https://domain.com/api/keystatic/github/oauth/callback` |
 | Permission denied on save     | Editor needs write access to the GitHub repo                                             |
 | Site not updating after save  | Check Vercel Deployments tab — auto-deploy on push must be enabled                       |
