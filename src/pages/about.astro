@@ -7,15 +7,35 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 import Panel from "../components/ui/Panel.astro";
 import Button from "../components/ui/Button.astro";
 import { getResponsiveImageAttrs } from "../lib/images";
+import { getPageCopy } from "../lib/page-copy";
 
+const copy = (await getPageCopy("about")) as {
+  pageTitle?: string;
+  pageIntro?: string;
+  missionItems?: string[];
+  protonPetsImage?: string;
+  protonPetsImageAlt?: string;
+  protonPetsText?: string;
+  protonPetsLinkLabel?: string;
+  protonPetsLinkUrl?: string;
+} | null;
+
+const protonPetsImageSrc = copy?.protonPetsImage || "/images/news/proton-pets.jpeg";
 const protonPetsImage = await getResponsiveImageAttrs({
-  src: "/images/news/proton-pets.jpeg",
+  src: protonPetsImageSrc,
   widths: [640, 960, 1200],
   sizes: "(max-width: 768px) 100vw, 900px",
   width: 1200,
   height: 675,
   quality: 75,
 });
+
+const missionItems = copy?.missionItems ?? [
+  "Celebrate and promote the Ghostbusters franchise across the Commonwealth of Virginia",
+  "Support charitable causes and give back to our local communities",
+  "Provide a welcoming space for fans of all ages and backgrounds",
+  "Unite Virginia's regional Ghostbusters groups under one banner",
+];
 ---
 
 <BaseLayout
@@ -27,8 +47,10 @@ const protonPetsImage = await getResponsiveImageAttrs({
   ogImage="/images/gbv-gallery-10.jpg"
 >
   <section class="container page" aria-labelledby="about-title">
-    <h1 id="about-title" class="page-title">About Ghostbusters Virginia</h1>
-    <p class="page-intro">Who we are, where we came from, and why we do what we do.</p>
+    <h1 id="about-title" class="page-title">{copy?.pageTitle || "About Ghostbusters Virginia"}</h1>
+    <p class="page-intro">
+      {copy?.pageIntro || "Who we are, where we came from, and why we do what we do."}
+    </p>
 
     <Panel heading="Who We Are">
       <p>
@@ -67,12 +89,7 @@ const protonPetsImage = await getResponsiveImageAttrs({
 
     <Panel heading="Our Mission">
       <ul class="mission-list glow-list" role="list">
-        <li>
-          Celebrate and promote the Ghostbusters franchise across the Commonwealth of Virginia
-        </li>
-        <li>Support charitable causes and give back to our local communities</li>
-        <li>Provide a welcoming space for fans of all ages and backgrounds</li>
-        <li>Unite Virginia's regional Ghostbusters groups under one banner</li>
+        {missionItems.map((item) => <li>{item}</li>)}
       </ul>
     </Panel>
 
@@ -82,7 +99,8 @@ const protonPetsImage = await getResponsiveImageAttrs({
         src={protonPetsImage.src}
         srcset={protonPetsImage.srcset}
         sizes={protonPetsImage.sizes}
-        alt="Proton Pets — Ghostbusters Virginia community fundraiser for local pet shelters"
+        alt={copy?.protonPetsImageAlt ||
+          "Proton Pets — Ghostbusters Virginia community fundraiser for local pet shelters"}
         class="initiative-image"
         loading="lazy"
         decoding="async"
@@ -90,40 +108,18 @@ const protonPetsImage = await getResponsiveImageAttrs({
         height={protonPetsImage.height}
       />
       <p>
-        Every April, Ghostbusters Virginia calls on franchises across the globe to join
-        <strong class="glow">Proton Pets</strong> — a month-long, community-driven fundraiser supporting
-        local pet shelters and pet pantries. It's a chance for Ghostbusters everywhere to come together
-        and make a real difference for our furry friends.
-      </p>
-      <hr class="divider" />
-      <p>
-        We're proud to see fellow franchises like the
-        <strong class="glow">Louisiana Ghost Busters</strong> joining the effort and supporting pets in
-        their communities. Proton Pets is an open call to action for Ghostbusters groups around the world
-        to help local pets in need.
-      </p>
-      <hr class="divider" />
-      <p>
-        Remember… dogs and cats living together equals
-        <strong class="glow">MASS CARING!</strong> Learn more and find out how to get involved.
+        {
+          copy?.protonPetsText ||
+            "Every April, Ghostbusters Virginia calls on franchises across the globe to join Proton Pets — a month-long, community-driven fundraiser supporting local pet shelters and pet pantries."
+        }
       </p>
       <div class="initiative-cta">
-        <Button variant="secondary" href="https://whoyagonnacall.org/proton-pets" external>
-          Learn About Proton Pets
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="14"
-            height="14"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            aria-hidden="true"
-            ><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline
-              points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg
-          >
+        <Button
+          variant="secondary"
+          href={copy?.protonPetsLinkUrl || "https://whoyagonnacall.org/proton-pets"}
+          external
+        >
+          {copy?.protonPetsLinkLabel || "Learn About Proton Pets"}
         </Button>
       </div>
     </Panel>

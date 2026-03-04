@@ -8,6 +8,22 @@ import Panel from "../components/ui/Panel.astro";
 import Button from "../components/ui/Button.astro";
 import { swagItems } from "../lib/swag";
 import { getResponsiveImageAttrs } from "../lib/images";
+import { getSiteSettings } from "../lib/settings";
+import { getPageCopy } from "../lib/page-copy";
+
+const settings = await getSiteSettings();
+const storeUrl = settings.storeUrl || "https://www.teepublic.com/user/ghostbustersva";
+
+const copy = (await getPageCopy("donate")) as {
+  pageTitle?: string;
+  pageIntro?: string;
+  supportPanelText?: string;
+  protonPetsText?: string;
+  protonPetsLinkLabel?: string;
+  protonPetsLinkUrl?: string;
+  swagPanelText?: string;
+  swagNote?: string;
+} | null;
 
 const swagImageAttrs = await Promise.all(
   swagItems.map((item) =>
@@ -32,15 +48,21 @@ const swagImageAttrs = await Promise.all(
   ogImage="/images/gbv-community-photo.jpg"
 >
   <section class="container page" aria-labelledby="donate-title">
-    <h1 id="donate-title" class="page-title">Support Ghostbusters Virginia</h1>
+    <h1 id="donate-title" class="page-title">
+      {copy?.pageTitle || "Support Ghostbusters Virginia"}
+    </h1>
 
     <p class="page-intro">
-      Your donations help us maintain our equipment, attend community events, and support the
-      charitable causes we care about. Every contribution — big or small — makes a difference.
+      {
+        copy?.pageIntro ||
+          "Your donations help us maintain our equipment, attend community events, and support the charitable causes we care about. Every contribution \u2014 big or small \u2014 makes a difference."
+      }
     </p>
 
     <Panel heading="Support Us">
-      <p>Donation integration coming soon. Thank you for your patience!</p>
+      <p>
+        {copy?.supportPanelText || "Donation integration coming soon. Thank you for your patience!"}
+      </p>
       <div class="cta-row">
         <Button variant="primary" disabled>Donate Now (Coming Soon)</Button>
       </div>
@@ -48,21 +70,28 @@ const swagImageAttrs = await Promise.all(
 
     <Panel heading="Proton Pets">
       <p>
-        Every April, GBVA leads <strong>Proton Pets</strong> — a month-long fundraiser calling on Ghostbusters
-        franchises around the world to support local pet shelters and pet pantries. Dogs and cats living
-        together equals <strong>MASS CARING!</strong>
+        {
+          copy?.protonPetsText ||
+            "Every April, GBVA leads Proton Pets \u2014 a month-long fundraiser calling on Ghostbusters franchises around the world to support local pet shelters and pet pantries. Dogs and cats living together equals MASS CARING!"
+        }
       </p>
       <div class="cta-row">
-        <Button variant="secondary" href="https://whoyagonnacall.org/proton-pets" external>
-          Learn About Proton Pets
+        <Button
+          variant="secondary"
+          href={copy?.protonPetsLinkUrl || "https://whoyagonnacall.org/proton-pets"}
+          external
+        >
+          {copy?.protonPetsLinkLabel || "Learn About Proton Pets"}
         </Button>
       </div>
     </Panel>
 
     <Panel heading="GBVA Swag">
       <p>
-        Show your support by grabbing some merch! Every purchase helps fund our community events and
-        charitable efforts. Click any design to buy.
+        {
+          copy?.swagPanelText ||
+            "Show your support by grabbing some merch! Every purchase helps fund our community events and charitable efforts. Click any design to buy."
+        }
       </p>
       <div class="swag-grid">
         {
@@ -85,13 +114,13 @@ const swagImageAttrs = await Promise.all(
         }
       </div>
       <p class="swag-note">
-        You can also browse the full collection on our TeePublic store for t-shirts, hoodies,
-        stickers, magnets, pins, and more.
+        {
+          copy?.swagNote ||
+            "You can also browse the full collection on our TeePublic store for t-shirts, hoodies, stickers, magnets, pins, and more."
+        }
       </p>
       <div class="cta-row">
-        <Button variant="secondary" href="https://www.teepublic.com/user/ghostbustersva" external>
-          Visit Our Store
-        </Button>
+        <Button variant="secondary" href={storeUrl} external> Visit Our Store </Button>
       </div>
     </Panel>
   </section>

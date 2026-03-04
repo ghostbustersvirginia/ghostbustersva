@@ -5,6 +5,38 @@
  */
 import BaseLayout from "../layouts/BaseLayout.astro";
 import Panel from "../components/ui/Panel.astro";
+import { getPageCopy } from "../lib/page-copy";
+
+const copy = (await getPageCopy("join")) as {
+  pageTitle?: string;
+  pageIntro?: string;
+  quoteLineOne?: string;
+  quoteLineTwo?: string;
+  whatWeLookForText?: string;
+  requiredGearItems?: string[];
+  beltGizmoItems?: string[];
+  applyText?: string;
+  applyLinkLabel?: string;
+  applyLinkUrl?: string;
+  noteText?: string;
+} | null;
+
+const requiredGear = copy?.requiredGearItems ?? [
+  "A flight suit",
+  "Black boots",
+  "White web belt",
+  "Elbow pads",
+  "At least one belt gizmo",
+];
+const beltGizmos = copy?.beltGizmoItems ?? [
+  "MT500 Motorola Walkie Talkie",
+  "Belt Gizmo (circuit board + daughter board)",
+  "Leather belt fobs with clips",
+  "LifeGard 2",
+  "PKE Meter",
+];
+const applyLinkUrl = copy?.applyLinkUrl || "https://www.facebook.com/GhostbustersVA";
+const applyLinkLabel = copy?.applyLinkLabel || "Facebook page";
 ---
 
 <BaseLayout
@@ -16,48 +48,47 @@ import Panel from "../components/ui/Panel.astro";
   ogImage="/images/gbv-gallery-05.jpg"
 >
   <section class="container page" aria-labelledby="join-title">
-    <h1 id="join-title" class="page-title">Join Ghostbusters Virginia</h1>
+    <h1 id="join-title" class="page-title">{copy?.pageTitle || "Join Ghostbusters Virginia"}</h1>
     <p class="page-intro">
-      Think you have what it takes? Here's how to suit up and join our franchise.
+      {
+        copy?.pageIntro ||
+          "Think you have what it takes? Here's how to suit up and join our franchise."
+      }
     </p>
 
     <blockquote class="quote-block">
       <p>
-        "Do you believe in UFOs, astral projections, mental telepathy, ESP, clairvoyance, spirit
-        photography, telekinetic movement, full trance mediums, the Loch Ness monster and the theory
-        of Atlantis?"
+        "{
+          copy?.quoteLineOne ||
+            "Do you believe in UFOs, astral projections, mental telepathy, ESP, clairvoyance, spirit photography, telekinetic movement, full trance mediums, the Loch Ness monster and the theory of Atlantis?"
+        }"
       </p>
       <p>
-        Ready to get out there and start busting some ghosts? Excellent news rookie, we have
-        openings!
+        {
+          copy?.quoteLineTwo ||
+            "Ready to get out there and start busting some ghosts? Excellent news rookie, we have openings!"
+        }
       </p>
     </blockquote>
 
     <Panel heading="What We Look For">
       <p>
-        To apply for membership in Ghostbusters, Virginia we simply ask that you review our
-        <a href="/code-of-conduct">Code of Conduct</a>, and have at least one Ghostbusters canon
-        costume. To meet these requirements, a canon costume needs to include the following:
+        {
+          copy?.whatWeLookForText ||
+            "To apply for membership in Ghostbusters, Virginia we simply ask that you review our Code of Conduct, and have at least one Ghostbusters canon costume. To meet these requirements, a canon costume needs to include the following:"
+        }
       </p>
       <div class="gear-columns">
         <div class="gear-col">
           <h4 class="gear-col-title">Required Gear</h4>
           <ul class="glow-list" role="list">
-            <li>A flight suit</li>
-            <li>Black boots</li>
-            <li>White web belt</li>
-            <li>Elbow pads</li>
-            <li>At least one belt gizmo</li>
+            {requiredGear.map((item) => <li>{item}</li>)}
           </ul>
         </div>
         <div class="gear-col">
           <h4 class="gear-col-title">Belt Gizmo Examples</h4>
           <ul class="glow-list" role="list">
-            <li>MT500 Motorola Walkie Talkie</li>
-            <li>Belt Gizmo (circuit board + daughter board)</li>
-            <li>Leather belt fobs with clips</li>
-            <li>LifeGard 2</li>
-            <li>PKE Meter</li>
+            {beltGizmos.map((item) => <li>{item}</li>)}
           </ul>
         </div>
       </div>
@@ -65,19 +96,31 @@ import Panel from "../components/ui/Panel.astro";
 
     <Panel heading="How to Apply">
       <p>
-        Got all your gear and ready to show us you ain't afraid of no ghosts? Message our
-        <a href="https://www.facebook.com/GhostbustersVA" target="_blank" rel="noopener noreferrer">
-          Facebook page<span class="sr-only"> (opens in new tab)</span>
-        </a>
-        and let us know; you will be provided a link to the membership survey and once complete, you will
-        be notified of results following Membership Liaison Officer verification.
+        {
+          copy?.applyText ||
+            "Got all your gear and ready to show us you ain't afraid of no ghosts? Message our"
+        }
+        {
+          !copy?.applyText && (
+            <a href={applyLinkUrl} target="_blank" rel="noopener noreferrer">
+              {applyLinkLabel}
+              <span class="sr-only"> (opens in new tab)</span>
+            </a>
+          )
+        }
+        {
+          !copy?.applyText &&
+            " and let us know; you will be provided a link to the membership survey and once complete, you will be notified of results following Membership Liaison Officer verification."
+        }
       </p>
 
       <div class="callout">
         <p>
-          <strong>Please Note:</strong> We ask all applicants be able to pass a high-level background
-          check to verify no felonies are on their record; this includes a verification with no results
-          found on the national sex offender registry.
+          <strong>Please Note:</strong>
+          {
+            copy?.noteText ||
+              "We ask all applicants be able to pass a high-level background check to verify no felonies are on their record; this includes a verification with no results found on the national sex offender registry."
+          }
         </p>
       </div>
     </Panel>

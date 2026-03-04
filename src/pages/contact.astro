@@ -5,6 +5,42 @@
  */
 import BaseLayout from "../layouts/BaseLayout.astro";
 import Panel from "../components/ui/Panel.astro";
+import { getSiteSettings } from "../lib/settings";
+import { getPageCopy } from "../lib/page-copy";
+
+const settings = await getSiteSettings();
+const contactEmail = settings.contactEmail || "info@ghostbustersva.com";
+
+// Resolve social URLs from CMS settings, with hardcoded fallbacks
+const findSocial = (platform: string) =>
+  settings.socialLinks.find((s) => s.platform.toLowerCase() === platform.toLowerCase())?.url;
+const facebookUrl = findSocial("facebook") || "https://www.facebook.com/Ghostbusters.Virginia.757";
+const instagramUrl = findSocial("instagram") || "https://www.instagram.com/ghostbustersva/";
+const tiktokUrl = findSocial("tiktok") || "https://www.tiktok.com/@ghostbustersvirginia";
+const youtubeUrl = findSocial("youtube") || "https://www.youtube.com/@Ghostbusters_Virginia";
+
+const copy = (await getPageCopy("contact")) as {
+  pageTitle?: string;
+  pageIntro?: string;
+  bookUsText?: string;
+  serviceAreasText?: string;
+  regions?: { title: string; areas: string[] }[];
+  ctaCallout?: string;
+  ctaAside?: string;
+  footnoteText?: string;
+} | null;
+
+const regions = copy?.regions ?? [
+  {
+    title: "Northern Virginia",
+    areas: ["NOVA / DC Metro", "Fairfax & Loudoun", "Arlington & Alexandria"],
+  },
+  { title: "Central Virginia", areas: ["Richmond (804)", "Fredericksburg", "Charlottesville"] },
+  {
+    title: "Hampton Roads",
+    areas: ["Virginia Beach (757)", "Norfolk & Chesapeake", "Newport News & Hampton"],
+  },
+];
 ---
 
 <BaseLayout
@@ -16,15 +52,17 @@ import Panel from "../components/ui/Panel.astro";
   ogImage="/images/ghostbusters-car.jpg"
 >
   <section class="container page" aria-labelledby="contact-title">
-    <h1 id="contact-title" class="page-title">Contact Us</h1>
+    <h1 id="contact-title" class="page-title">{copy?.pageTitle || "Contact Us"}</h1>
     <p class="page-intro">
-      Have a question, want to book us for an event, or just want to say hi? Reach out via the info
-      below or connect with us on social media.
+      {
+        copy?.pageIntro ||
+          "Have a question, want to book us for an event, or just want to say hi? Reach out via the info below or connect with us on social media."
+      }
     </p>
 
     <Panel heading="Contact Info">
       <div class="social-grid">
-        <a href="mailto:info@ghostbustersva.com" class="social-link">
+        <a href={`mailto:${contactEmail}`} class="social-link">
           <span class="social-icon" aria-hidden="true">
             <svg
               viewBox="0 0 24 24"
@@ -39,14 +77,9 @@ import Panel from "../components/ui/Panel.astro";
             </svg>
           </span>
           <span class="social-label">Email</span>
-          <span class="social-handle">info@ghostbustersva.com</span>
+          <span class="social-handle">{contactEmail}</span>
         </a>
-        <a
-          href="https://www.facebook.com/Ghostbusters.Virginia.757"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="social-link"
-        >
+        <a href={facebookUrl} target="_blank" rel="noopener noreferrer" class="social-link">
           <span class="social-icon" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="currentColor">
               <path
@@ -57,12 +90,7 @@ import Panel from "../components/ui/Panel.astro";
           <span class="social-label">Facebook</span>
           <span class="social-handle">Ghostbusters Virginia</span>
         </a>
-        <a
-          href="https://www.instagram.com/ghostbustersva/"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="social-link"
-        >
+        <a href={instagramUrl} target="_blank" rel="noopener noreferrer" class="social-link">
           <span class="social-icon" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="currentColor">
               <path
@@ -73,12 +101,7 @@ import Panel from "../components/ui/Panel.astro";
           <span class="social-label">Instagram</span>
           <span class="social-handle">@ghostbustersva</span>
         </a>
-        <a
-          href="https://www.tiktok.com/@ghostbustersvirginia"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="social-link"
-        >
+        <a href={tiktokUrl} target="_blank" rel="noopener noreferrer" class="social-link">
           <span class="social-icon" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="currentColor">
               <path
@@ -89,12 +112,7 @@ import Panel from "../components/ui/Panel.astro";
           <span class="social-label">TikTok</span>
           <span class="social-handle">@ghostbustersvirginia</span>
         </a>
-        <a
-          href="https://www.youtube.com/@Ghostbusters_Virginia"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="social-link"
-        >
+        <a href={youtubeUrl} target="_blank" rel="noopener noreferrer" class="social-link">
           <span class="social-icon" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="currentColor">
               <path
@@ -110,52 +128,45 @@ import Panel from "../components/ui/Panel.astro";
 
     <Panel heading="Book Us for Your Event">
       <p class="book-us-text">
-        Do you have a company function, parade, event opening, charity event, or just looking to
-        bring the supernatural fun to a party? Don't wait another minute and contact your Paranormal
-        Professionals — <strong>Ghostbusters, Virginia</strong>.
+        {
+          copy?.bookUsText ||
+            "Do you have a company function, parade, event opening, charity event, or just looking to bring the supernatural fun to a party? Don't wait another minute and contact your Paranormal Professionals — Ghostbusters, Virginia."
+        }
       </p>
       <p class="book-us-text">
-        Our friendly professional team is the only 501(c)(3) non-profit Ghostbusters charity group
-        serving you in:
+        {
+          copy?.serviceAreasText ||
+            "Our friendly professional team is the only 501(c)(3) non-profit Ghostbusters charity group serving you in:"
+        }
       </p>
       <hr class="divider divider--full" />
       <div class="region-grid">
-        <div class="region-col">
-          <h4 class="region-title">Northern Virginia</h4>
-          <ul class="glow-list" role="list">
-            <li>NOVA / DC Metro</li>
-            <li>Fairfax &amp; Loudoun</li>
-            <li>Arlington &amp; Alexandria</li>
-          </ul>
-        </div>
-        <div class="region-col">
-          <h4 class="region-title">Central Virginia</h4>
-          <ul class="glow-list" role="list">
-            <li>Richmond (804)</li>
-            <li>Fredericksburg</li>
-            <li>Charlottesville</li>
-          </ul>
-        </div>
-        <div class="region-col">
-          <h4 class="region-title">Hampton Roads</h4>
-          <ul class="glow-list" role="list">
-            <li>Virginia Beach (757)</li>
-            <li>Norfolk &amp; Chesapeake</li>
-            <li>Newport News &amp; Hampton</li>
-          </ul>
-        </div>
+        {
+          regions.map((region) => (
+            <div class="region-col">
+              <h4 class="region-title">{region.title}</h4>
+              <ul class="glow-list" role="list">
+                {region.areas.map((area) => (
+                  <li>{area}</li>
+                ))}
+              </ul>
+            </div>
+          ))
+        }
       </div>
     </Panel>
 
     <div class="standalone-cta">
-      <strong class="cta-callout">You know who to call!</strong>
-      <span class="cta-aside">(or, in this case, email!)</span>
+      <strong class="cta-callout">{copy?.ctaCallout || "You know who to call!"}</strong>
+      <span class="cta-aside">{copy?.ctaAside || "(or, in this case, email!)"}</span>
     </div>
 
     <Panel>
       <p class="footnote-text">
-        * A full contact form is coming soon. For now, please email us directly or reach out on
-        social media.
+        * {
+          copy?.footnoteText ||
+            "A full contact form is coming soon. For now, please email us directly or reach out on social media."
+        }
       </p>
     </Panel>
   </section>

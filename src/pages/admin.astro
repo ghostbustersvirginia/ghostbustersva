@@ -1,0 +1,25 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+---
+
+<BaseLayout
+  title="Admin"
+  description="Ghostbusters Virginia content admin."
+  canonical="/admin"
+  ogTitle="Ghostbusters Virginia Admin"
+  ogDescription="Sign in to edit site content."
+>
+  <section class="container page" aria-labelledby="admin-title">
+    <h1 id="admin-title" class="page-title">Admin</h1>
+    <p class="page-intro">Redirecting to the content editor…</p>
+    <p>
+      If you are not redirected automatically, <a href="/keystatic">open the content editor</a>.
+    </p>
+  </section>
+</BaseLayout>
+
+<script>
+  if (typeof window !== "undefined") {
+    window.location.replace("/keystatic");
+  }
+</script>

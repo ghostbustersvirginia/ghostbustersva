@@ -3,9 +3,12 @@
  * Site footer with franchise logos, nav links, and copyright.
  */
 import { siteConfig } from "../config";
+import { getSiteSettings } from "../lib/settings";
 import MotionToggle from "./ui/MotionToggle.astro";
 
 const [leftLogo, rightLogo] = siteConfig.footerLogos;
+const settings = await getSiteSettings();
+const footerCopyright = settings.footerText || siteConfig.copyright;
 ---
 
 <footer class="site-footer">
@@ -66,8 +69,8 @@ const [leftLogo, rightLogo] = siteConfig.footerLogos;
           <a href="/code-of-conduct">Code of Conduct</a>
         </nav>
 
-        {/* Copyright */}
-        <p class="copyright">{siteConfig.copyright}</p>
+        {/* Copyright — uses CMS footer text if set, falls back to siteConfig */}
+        <p class="copyright">{footerCopyright}</p>
 
         {/* Motion toggle — PRD 009 */}
         <div class="footer-motion-toggle">

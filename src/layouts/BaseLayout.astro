@@ -7,6 +7,7 @@ import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
 import GhostParticles from "../components/GhostParticles";
 import { siteConfig } from "../config";
+import { getSiteSettings } from "../lib/settings";
 import type { ResponsiveImageAttrs } from "../lib/images";
 import "../styles/theme.css";
 
@@ -26,9 +27,13 @@ interface Props {
   heroImagePreload?: ResponsiveImageAttrs;
 }
 
+const settings = await getSiteSettings();
+const siteName = settings.siteName || siteConfig.title;
+const siteDescription = settings.siteDescription || siteConfig.description;
+
 const {
   title,
-  description = siteConfig.description,
+  description = siteDescription,
   canonical,
   ogTitle,
   ogDescription,
@@ -38,7 +43,7 @@ const {
   showGhostParticles = false,
   heroImagePreload,
 } = Astro.props;
-const pageTitle = title ? `${title} | ${siteConfig.title}` : siteConfig.title;
+const pageTitle = title ? `${title} | ${siteName}` : siteName;
 const resolvedCanonical = new URL(
   canonical ?? Astro.url.pathname,
   Astro.site ?? "https://ghostbustersva.com",
@@ -60,7 +65,7 @@ const resolvedOgImage = new URL(ogImage, Astro.site ?? "https://ghostbustersva.c
     <link rel="icon" type="image/png" href="/images/logo.png" />
 
     <meta property="og:type" content="website" />
-    <meta property="og:site_name" content={siteConfig.title} />
+    <meta property="og:site_name" content={siteName} />
     <meta property="og:url" content={resolvedCanonical} />
     <meta property="og:title" content={resolvedOgTitle} />
     <meta property="og:description" content={resolvedOgDescription} />
