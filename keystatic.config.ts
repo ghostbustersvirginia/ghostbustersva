@@ -181,7 +181,8 @@ export default config({
         ),
         protonPetsImage: fields.text({
           label: "Proton Pets Image Path",
-          description: "Image path relative to / (e.g. /images/news/proton-pets.jpeg).",
+          description:
+            "Image path relative to / (e.g. /images/news/ghostbusters-virginia-proton-pets-rescue.jpeg).",
         }),
         protonPetsImageAlt: fields.text({
           label: "Proton Pets Image Alt Text",

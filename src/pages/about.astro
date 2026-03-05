@@ -20,7 +20,8 @@ const copy = (await getPageCopy("about")) as {
   protonPetsLinkUrl?: string;
 } | null;
 
-const protonPetsImageSrc = copy?.protonPetsImage || "/images/news/proton-pets.jpeg";
+const protonPetsImageSrc =
+  copy?.protonPetsImage || "/images/news/ghostbusters-virginia-proton-pets-rescue.jpeg";
 const protonPetsImage = await getResponsiveImageAttrs({
   src: protonPetsImageSrc,
   widths: [640, 960, 1200],
@@ -44,7 +45,7 @@ const missionItems = copy?.missionItems ?? [
   canonical="/about"
   ogTitle="About Ghostbusters Virginia"
   ogDescription="Discover who we are, how we serve the community, and why Ghostbusters Virginia exists."
-  ogImage="/images/gbv-gallery-10.jpg"
+  ogImage="/images/ghostbusters-virginia-pke-meter-closeup.jpg"
 >
   <section class="container page" aria-labelledby="about-title">
     <h1 id="about-title" class="page-title">{copy?.pageTitle || "About Ghostbusters Virginia"}</h1>
