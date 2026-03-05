@@ -95,8 +95,9 @@ The site includes **Keystatic CMS** — a browser-based content editor that lets
 ### How to Access
 
 1. Open `/admin` on the deployed site.
-2. Sign in with your approved admin account.
-3. Use sections for **Events**, **Media / Gallery**, and **Site Settings**.
+2. Click **Sign in with GitHub**.
+3. You need **write access** to the `ghostbustersva` repo — ask the project lead if you don't have it.
+4. Use sections for **Events**, **Media / Gallery**, **Page Copy**, and **Site Settings**.
 
 ### What You Can Edit
 
@@ -104,6 +105,7 @@ The site includes **Keystatic CMS** — a browser-based content editor that lets
 | --------------- | --------------------------------------------------------------- |
 | Events          | Event listings — title, date, location, summary, images, status |
 | Media / Gallery | Photo gallery entries — image, title, alt text, date            |
+| Page Copy       | Editable text on About, Join, Contact, and Donate pages         |
 | Site Settings   | Site name, description, donate URL, store URL, social links     |
 
 ### Where Content is Stored
@@ -114,9 +116,11 @@ All content is stored as files in this repository:
 | --------------- | -------------------------------- | -------- |
 | Events          | `src/content/events/`            | Markdown |
 | Gallery entries | `src/content/gallery/`           | Markdown |
+| Page copy       | `src/content/page-copy/`         | JSON     |
 | Site settings   | `src/content/settings/site.json` | JSON     |
 | Images          | `public/images/`                 | JPG/PNG  |
 
 Changes made through the CMS are saved to these files through the Git-backed CMS workflow.
 
 > **Note:** If admin auth is not configured yet, maintainers can temporarily use local mode at `/keystatic` with `npm run dev`. See [docs/tech/cms-admin-setup.md](docs/tech/cms-admin-setup.md).
+> **Auth note:** The CMS uses a **GitHub App** for authentication (not an OAuth App). See [CMS Admin Setup](docs/tech/cms-admin-setup.md) for details.

@@ -7,10 +7,17 @@ Notes for handing the site off to the Ghostbusters team and spinning down the de
 1. **Vercel account** — walk the designated owner through creating a Vercel account (free hobby tier works). Connect it to their GitHub.
 2. **GitHub repo transfer** — transfer `ghostbustersva` repo ownership to whoever the team picks as owner (Settings → Transfer ownership). They accept the transfer.
 3. **Vercel project import** — new owner imports the repo as a Vercel project. Vercel auto-detects Astro. Confirm the production domain (`ghostbustersva.com`) is assigned.
-4. **GitHub OAuth App** — on the new owner's GitHub: Settings → Developer settings → OAuth Apps → New OAuth App:
+4. **GitHub App** — on the new owner's GitHub: Settings → Developer settings → GitHub Apps → New GitHub App:
+   - **App name:** `Ghostbusters VA CMS` (or similar — must be globally unique)
    - **Homepage URL:** `https://ghostbustersva.com`
    - **Callback URL:** `https://ghostbustersva.com/api/keystatic/github/oauth/callback`
-   - Copy **Client ID** and generate **Client Secret**.
+   - **Webhook:** uncheck "Active" (not needed)
+   - **Permissions → Repository:**
+     - Contents: **Read & write**
+     - Metadata: **Read-only**
+   - **Where can this app be installed?** Only on this account
+   - After creating, copy the **Client ID** (starts with `Iv…`) and generate a **Client Secret**.
+   - **Install the app** on the `ghostbustersva` repo (Settings → Install App → select the repo).
 5. **Vercel env vars** — in the new Vercel project, Settings → Environment Variables, add for Production:
    - `PUBLIC_KEYSTATIC_GITHUB_REPO` = `new-owner/ghostbustersva`
    - `KEYSTATIC_GITHUB_CLIENT_ID` = from step 4
@@ -31,7 +38,7 @@ Once the team's Vercel project is live and verified:
 
 1. Delete your Vercel project (Project Settings → Advanced → Delete Project).
 2. Remove env vars from your local `.env` (or delete the file).
-3. Revoke/delete the old GitHub OAuth App (github.com/settings/developers).
+3. Delete the old GitHub App (github.com/settings/apps).
 4. Remove yourself as collaborator on the transferred repo if no longer needed.
 5. Confirm the production domain resolves to their Vercel project, not yours.
 
@@ -39,14 +46,16 @@ Once the team's Vercel project is live and verified:
 
 - Keystatic uses `github` mode when `PUBLIC_KEYSTATIC_GITHUB_REPO` is set, `local` mode otherwise.
 - `/admin` redirects to `/keystatic`.
+- Auth uses a **GitHub App** (not an OAuth App). GitHub Apps provide expiring tokens with refresh support, which Keystatic requires.
 - Editors save → Keystatic commits to GitHub → Vercel auto-deploys (~1-2 min).
 - Editor access = GitHub repo write access. No separate CMS accounts.
 
 ## Troubleshooting
 
-| Symptom                       | Fix                                                                                      |
-| ----------------------------- | ---------------------------------------------------------------------------------------- |
-| `/keystatic` shows local mode | `PUBLIC_KEYSTATIC_GITHUB_REPO` env var missing — check Vercel env vars, redeploy         |
-| OAuth redirect error          | Callback URL must exactly match `https://domain.com/api/keystatic/github/oauth/callback` |
-| Permission denied on save     | Editor needs write access to the GitHub repo                                             |
-| Site not updating after save  | Check Vercel Deployments tab — auto-deploy on push must be enabled                       |
+| Symptom                       | Fix                                                                                                                                |
+| ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `/keystatic` shows local mode | `PUBLIC_KEYSTATIC_GITHUB_REPO` env var missing — check Vercel env vars, redeploy                                                   |
+| OAuth redirect error          | Callback URL in the GitHub App must exactly match `https://domain.com/api/keystatic/github/oauth/callback`                         |
+| 401 on login                  | Keystatic requires a **GitHub App** (not an OAuth App). Verify you created the correct type under Developer settings → GitHub Apps |
+| Permission denied on save     | Editor needs write access to the GitHub repo                                                                                       |
+| Site not updating after save  | Check Vercel Deployments tab — auto-deploy on push must be enabled                                                                 |

@@ -60,7 +60,9 @@ These are ideas for after the demo is approved — do NOT implement until a PRD 
 - Astro (static output, no SSR)
 - TypeScript (strict)
 - Markdown content collections
+- **Keystatic CMS** — git-backed browser editor at `/admin` with GitHub App auth in production, local file mode in dev
 - **Astro components** (`.astro`) for all static UI; **React islands** (`.tsx` with `client:load`) used sparingly for interactive elements that need client-side state (e.g., `HeroSection.tsx`, `GhostParticles.tsx`)
 - **Framer Motion** for animation in React islands
-- No backend or database
+- Hosted on **Vercel** (static adapter, auto-deploy on push to `main`)
+- No backend or database — content is stored as flat files committed to Git
 - Accessibility is a hard requirement, not a nice-to-have

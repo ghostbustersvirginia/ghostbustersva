@@ -5,8 +5,9 @@ Use this page if you manage content and do not work in code.
 ## Sign in
 
 1. Open `https://ghostbustersva.vercel.app/admin` in your browser.
-2. Sign in with your approved admin account.
-3. You will be taken to the content dashboard.
+2. Click **Sign in with GitHub** and authenticate with your GitHub account.
+3. You need **write access** to the `ghostbustersva` repo — ask the project lead if you don't have it.
+4. You will be taken to the content dashboard.
 
 If your team is still in setup mode, use the temporary URL shared by the project lead.
 
@@ -54,8 +55,9 @@ If your team is still in setup mode, use the temporary URL shared by the project
 
 ## Publishing behavior
 
-- Saving creates repository changes through the CMS.
-- Changes appear on the live site after deploy completes.
+- The CMS works through a **branch workflow**: when you save, Keystatic creates a branch and a pull request on GitHub.
+- After you confirm the PR is merged (or if your branch is set to auto-merge), Vercel auto-deploys the change within ~1-2 minutes.
+- You can choose an existing branch or create a new one from the dropdown at the top of the dashboard.
 - If content is urgent, notify the project lead to confirm deploy status.
 
 ## Limits (by design)
@@ -68,8 +70,8 @@ If your team is still in setup mode, use the temporary URL shared by the project
 
 **I cannot sign in**
 
-- Confirm your account was added to the admin list.
-- Ask the project lead to re-check repository/team access.
+- Confirm your GitHub account has **write access** to the `ghostbustersva` repo.
+- Ask the project lead to add you as a collaborator.
 
 **I saved, but site is unchanged**
 
