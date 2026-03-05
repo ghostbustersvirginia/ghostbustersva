@@ -88,6 +88,37 @@ const settings = defineCollection({
       )
       .optional()
       .default([]),
+
+    // Navbar
+    navLogo: z.string().optional(),
+    navTitle: z.string().optional(),
+    navSubtitle: z.string().optional(),
+    navItems: z
+      .array(
+        z.object({
+          label: z.string(),
+          href: z.string(),
+          external: z.boolean().optional().default(false),
+        }),
+      )
+      .optional()
+      .default([]),
+
+    // Footer
+    footerCopyrightText: z.string().optional(),
+    codeOfConductUrl: z.string().optional(),
+    codeOfConductLabel: z.string().optional(),
+    footerLogos: z
+      .array(
+        z.object({
+          src: z.string(),
+          alt: z.string(),
+        }),
+      )
+      .optional()
+      .default([]),
+
+    // Legacy field — kept for backwards compat, prefer footerCopyrightText
     footerText: z.string().optional(),
   }),
 });
@@ -196,9 +227,52 @@ const mediaPageCopy = z.object({
   newsHeading: z.string().optional(),
 });
 
+const homePageCopy = z.object({
+  page: z.literal("home"),
+  // Hero
+  heroTitle: z.string(),
+  heroTagline: z.string(),
+  heroPurposeItems: z.array(z.string()).optional().default([]),
+  heroImage: z.string().optional(),
+  heroPrimaryCtaLabel: z.string().optional(),
+  heroPrimaryCtaHref: z.string().optional(),
+  heroSecondaryCtaLabel: z.string().optional(),
+  heroSecondaryCtaHref: z.string().optional(),
+  // Mission
+  missionHeading: z.string().optional(),
+  missionSubtitle: z.string().optional(),
+  missionBodyParagraphs: z.array(z.string()).optional().default([]),
+  missionListItems: z.array(z.string()).optional().default([]),
+  // Gallery
+  galleryHeading: z.string().optional(),
+  gallerySubtitle: z.string().optional(),
+  galleryCtaLabel: z.string().optional(),
+  galleryCtaHref: z.string().optional(),
+  // Events
+  eventsHeading: z.string().optional(),
+  eventsSubtitle: z.string().optional(),
+  eventsCtaLabel: z.string().optional(),
+  eventsCtaHref: z.string().optional(),
+  // Join
+  joinHeading: z.string().optional(),
+  joinSubtitle: z.string().optional(),
+  joinImage: z.string().optional(),
+  joinImageAlt: z.string().optional(),
+  joinQuoteLineOne: z.string().optional(),
+  joinQuoteLineTwo: z.string().optional(),
+  joinCtaLabel: z.string().optional(),
+  joinCtaHref: z.string().optional(),
+  // Swag
+  swagHeading: z.string().optional(),
+  swagSubtitle: z.string().optional(),
+  swagCtaLabel: z.string().optional(),
+  swagCtaHref: z.string().optional(),
+});
+
 const pageCopy = defineCollection({
   loader: glob({ pattern: "**/*.json", base: "src/content/page-copy" }),
   schema: z.discriminatedUnion("page", [
+    homePageCopy,
     aboutPageCopy,
     joinPageCopy,
     eventsPageCopy,

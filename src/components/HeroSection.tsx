@@ -20,10 +20,17 @@ interface HeroImage {
 
 interface Props {
   heroImage: HeroImage;
+  heroTitle?: string;
+  heroTagline?: string;
+  heroPurposeItems?: string[];
+  primaryCtaLabel?: string;
+  primaryCtaHref?: string;
+  secondaryCtaLabel?: string;
+  secondaryCtaHref?: string;
 }
 
 /* ─── Constants ─── */
-const HEADING_TEXT = "Who Ya Gonna Call?";
+const DEFAULT_HEADING = "Who Ya Gonna Call?";
 
 /* ─── Motion variants ─── */
 const containerVariants: Variants = {
@@ -43,10 +50,10 @@ const fadeUp: Variants = {
 };
 
 /* ─── Typewriter heading ─── */
-function TypewriterHeading() {
+function TypewriterHeading({ text }: { text: string }) {
   return (
     <h1 id="home-hero-title" className="hero-title">
-      {HEADING_TEXT.split("").map((char, i) => (
+      {text.split("").map((char, i) => (
         <span key={i} className="hero-title-char">
           {char === " " ? "\u00A0" : char}
         </span>
@@ -56,7 +63,16 @@ function TypewriterHeading() {
 }
 
 /* ─── Main hero section ─── */
-export default function HeroSection({ heroImage }: Props) {
+export default function HeroSection({
+  heroImage,
+  heroTitle,
+  heroTagline,
+  heroPurposeItems,
+  primaryCtaLabel,
+  primaryCtaHref,
+  secondaryCtaLabel,
+  secondaryCtaHref,
+}: Props) {
   const prefersReduced = useReducedMotion();
   const [toggleOff, setToggleOff] = useState(false);
   const [enhanceMotion, setEnhanceMotion] = useState(false);
@@ -113,15 +129,15 @@ export default function HeroSection({ heroImage }: Props) {
             animate={shouldAnimate ? "visible" : undefined}
             variants={shouldAnimate ? containerVariants : undefined}
           >
-            <TypewriterHeading />
+            <TypewriterHeading text={heroTitle || DEFAULT_HEADING} />
 
             <motion.p
               className="hero-tagline"
               initial={shouldAnimate ? "initial" : "visible"}
               variants={shouldAnimate ? fadeUp : undefined}
             >
-              Virginia&rsquo;s official Ghostbusters nonprofit&thinsp;&mdash;&thinsp;real fans
-              making a real difference through charity, community events, and a whole lot of heart.
+              {heroTagline ||
+                "Virginia\u2019s official Ghostbusters nonprofit\u2009\u2014\u2009real fans making a real difference through charity, community events, and a whole lot of heart."}
             </motion.p>
 
             <motion.ul
@@ -130,9 +146,12 @@ export default function HeroSection({ heroImage }: Props) {
               variants={shouldAnimate ? fadeUp : undefined}
               aria-label="Key facts"
             >
-              <li>Registered 501c3 Nonprofit</li>
-              <li>Hospital Visits</li>
-              <li>Community Events</li>
+              {(heroPurposeItems && heroPurposeItems.length > 0
+                ? heroPurposeItems
+                : ["Registered 501c3 Nonprofit", "Hospital Visits", "Community Events"]
+              ).map((item, i) => (
+                <li key={i}>{item}</li>
+              ))}
             </motion.ul>
 
             <motion.div
@@ -140,11 +159,11 @@ export default function HeroSection({ heroImage }: Props) {
               initial={shouldAnimate ? "initial" : "visible"}
               variants={shouldAnimate ? fadeUp : undefined}
             >
-              <a href="/events" className="btn btn--lg btn--ghost">
-                See Our Events
+              <a href={secondaryCtaHref || "/events"} className="btn btn--lg btn--ghost">
+                {secondaryCtaLabel || "See Our Events"}
               </a>
-              <a href="/join" className="btn btn--lg btn--primary">
-                Join the Team
+              <a href={primaryCtaHref || "/join"} className="btn btn--lg btn--primary">
+                {primaryCtaLabel || "Join the Team"}
               </a>
             </motion.div>
           </motion.div>

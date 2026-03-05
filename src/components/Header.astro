@@ -3,19 +3,22 @@
  * Site header with responsive navigation.
  * Uses a <details> element for mobile menu — no JS required, fully accessible.
  * Logo sits proud above the nav bar, inspired by the original GBV site.
+ * Now reads logo, title, and nav items from CMS settings.
  */
-import { siteConfig } from "../config";
+import { getSiteSettings } from "../lib/settings";
 
+const settings = await getSiteSettings();
 const currentPath = Astro.url.pathname;
+const navItems = settings.navItems;
 ---
 
 <header class="site-header">
   <div class="container header-inner">
-    <a href="/" class="site-logo" aria-label={`${siteConfig.title} — home`}>
-      <img src="/images/logo.png" alt="" width="72" height="72" class="logo-img" />
+    <a href="/" class="site-logo" aria-label={`${settings.siteName} — home`}>
+      <img src={settings.navLogo} alt="" width="72" height="72" class="logo-img" />
       <span class="logo-text">
-        <span class="logo-text-main">Ghostbusters</span>
-        <span class="logo-text-sub">Virginia</span>
+        <span class="logo-text-main">{settings.navTitle}</span>
+        <span class="logo-text-sub">{settings.navSubtitle}</span>
       </span>
     </a>
 
@@ -27,16 +30,16 @@ const currentPath = Astro.url.pathname;
       <nav class="nav-links mobile" aria-label="Main navigation">
         <ul>
           {
-            siteConfig.nav.map((link) => (
+            navItems.map((link) => (
               <li>
                 <a
                   href={link.href}
                   class="nav-active-link"
                   aria-current={currentPath === link.href ? "page" : undefined}
-                  {...("external" in link ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+                  {...(link.external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
                 >
                   {link.label}
-                  {"external" in link && <span class="sr-only"> (opens in new tab)</span>}
+                  {link.external && <span class="sr-only"> (opens in new tab)</span>}
                 </a>
               </li>
             ))
@@ -49,16 +52,16 @@ const currentPath = Astro.url.pathname;
     <nav class="nav-links desktop" aria-label="Main navigation">
       <ul>
         {
-          siteConfig.nav.map((link) => (
+          navItems.map((link) => (
             <li>
               <a
                 href={link.href}
                 class="nav-active-link"
                 aria-current={currentPath === link.href ? "page" : undefined}
-                {...("external" in link ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+                {...(link.external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
               >
                 {link.label}
-                {"external" in link && <span class="sr-only"> (opens in new tab)</span>}
+                {link.external && <span class="sr-only"> (opens in new tab)</span>}
               </a>
             </li>
           ))

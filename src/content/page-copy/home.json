@@ -1,0 +1,43 @@
+{
+  "page": "home",
+  "heroTitle": "Who Ya Gonna Call?",
+  "heroTagline": "Virginia's official Ghostbusters nonprofit — real fans making a real difference through charity, community events, and a whole lot of heart.",
+  "heroPurposeItems": ["Registered 501c3 Nonprofit", "Hospital Visits", "Community Events"],
+  "heroImage": "/images/ghostbusters-virginia-slimer-stay-puft.jpg",
+  "heroPrimaryCtaLabel": "Join the Team",
+  "heroPrimaryCtaHref": "/join",
+  "heroSecondaryCtaLabel": "See Our Events",
+  "heroSecondaryCtaHref": "/events",
+  "missionHeading": "Officially Recognized. Community Driven.",
+  "missionSubtitle": "Since 2001, Virginia's only Sony-recognized Ghostbusters nonprofit has been turning fandom into community impact.",
+  "missionBodyParagraphs": [
+    "Ghostbusters Virginia is the only <strong class=\"glow\">501c3 nonprofit</strong> recognized by <strong class=\"glow\">Sony's Ghost Corps</strong> in the state. Since <strong class=\"glow\">2001</strong>, we've united fans across the Commonwealth to turn our love of Ghostbusters into <strong class=\"glow\">real community impact</strong>.",
+    "We participate in <strong class=\"glow\">community events all over Virginia</strong> to help raise money and awareness for other charities, and spread the love of Ghostbusters all over the Commonwealth in a <strong class=\"glow\">safe, fun, and family friendly</strong> manner."
+  ],
+  "missionListItems": [
+    "Raise money for local and national charities",
+    "Visit children's hospitals in full Ghostbusters gear",
+    "Appear at parades, comic cons, and community festivals",
+    "Welcome fans of all ages and backgrounds across Virginia"
+  ],
+  "galleryHeading": "Out in the Field",
+  "gallerySubtitle": "From charity fundraisers and hospital visits to comic conventions and community parades.",
+  "galleryCtaLabel": "See All Media",
+  "galleryCtaHref": "/media",
+  "eventsHeading": "Upcoming Events",
+  "eventsSubtitle": "Meet the team, support local charities, and see the Ecto in person. Check out where we'll be next — we'd love to see you there.",
+  "eventsCtaLabel": "See Past Events",
+  "eventsCtaHref": "/events",
+  "joinHeading": "Join the Team",
+  "joinSubtitle": "Whether you're a lifelong Ghosthead or just getting started, there's a place for you in our franchise. Join a community of fans who build props, attend events, visit hospitals, and raise money for charity — all while having a blast.",
+  "joinImage": "/images/ghostbusters-virginia-movie-premiere.jpg",
+  "joinImageAlt": "Three Ghostbusters Virginia members in full uniforms posing at a movie premiere event",
+  "joinQuoteLineOne": "Do you believe in UFOs, astral projections, mental telepathy, ESP, clairvoyance, spirit photography, telekinetic movement, full trance mediums, the Loch Ness monster and the theory of Atlantis?",
+  "joinQuoteLineTwo": "Ready to get out there and start busting some ghosts? Excellent news rookie, we have openings!",
+  "joinCtaLabel": "Join Now",
+  "joinCtaHref": "/join",
+  "swagHeading": "Support the Mission",
+  "swagSubtitle": "Every purchase helps fund our charity work, community events, and hospital visits across Virginia. Grab some gear and wear your support — we're ready to believe you!",
+  "swagCtaLabel": "Visit Our Store",
+  "swagCtaHref": "https://www.teepublic.com/user/ghostbustersva"
+}

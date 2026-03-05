@@ -1,14 +1,17 @@
 ---
 /**
  * Site footer with franchise logos, nav links, and copyright.
+ * Now reads logos, nav items, and code-of-conduct link from CMS settings.
  */
 import { siteConfig } from "../config";
 import { getSiteSettings } from "../lib/settings";
 import MotionToggle from "./ui/MotionToggle.astro";
 
-const [leftLogo, rightLogo] = siteConfig.footerLogos;
 const settings = await getSiteSettings();
-const footerCopyright = settings.footerText || siteConfig.copyright;
+const leftLogo = settings.footerLogos[0];
+const rightLogo = settings.footerLogos[1];
+const navItems = settings.navItems;
+const footerCopyright = settings.footerCopyrightText || siteConfig.copyright;
 ---
 
 <footer class="site-footer">
@@ -42,7 +45,7 @@ const footerCopyright = settings.footerText || siteConfig.copyright;
         <nav class="footer-nav" aria-label="Footer navigation">
           <ul>
             {
-              siteConfig.nav.map((link, i) => (
+              navItems.map((link, i) => (
                 <li>
                   {i > 0 && (
                     <span class="nav-dot" aria-hidden="true">
@@ -51,12 +54,10 @@ const footerCopyright = settings.footerText || siteConfig.copyright;
                   )}
                   <a
                     href={link.href}
-                    {...("external" in link
-                      ? { target: "_blank", rel: "noopener noreferrer" }
-                      : {})}
+                    {...(link.external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
                   >
                     {link.label}
-                    {"external" in link && <span class="sr-only"> (opens in new tab)</span>}
+                    {link.external && <span class="sr-only"> (opens in new tab)</span>}
                   </a>
                 </li>
               ))
@@ -66,7 +67,7 @@ const footerCopyright = settings.footerText || siteConfig.copyright;
 
         {/* Secondary links */}
         <nav class="footer-legal" aria-label="Legal links">
-          <a href="/code-of-conduct">Code of Conduct</a>
+          <a href={settings.codeOfConductUrl}>{settings.codeOfConductLabel}</a>
         </nav>
 
         {/* Copyright — uses CMS footer text if set, falls back to siteConfig */}

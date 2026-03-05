@@ -11,6 +11,17 @@
 import { getCollection } from "astro:content";
 import { siteConfig } from "../config";
 
+export interface NavItem {
+  label: string;
+  href: string;
+  external: boolean;
+}
+
+export interface FooterLogo {
+  src: string;
+  alt: string;
+}
+
 export interface SiteSettings {
   siteName: string;
   siteDescription: string;
@@ -18,8 +29,30 @@ export interface SiteSettings {
   storeUrl: string;
   contactEmail: string;
   socialLinks: { platform: string; url: string }[];
-  footerText: string;
+  // Navbar
+  navLogo: string;
+  navTitle: string;
+  navSubtitle: string;
+  navItems: NavItem[];
+  // Footer
+  footerCopyrightText: string;
+  codeOfConductUrl: string;
+  codeOfConductLabel: string;
+  footerLogos: FooterLogo[];
 }
+
+/** Default nav items derived from the static siteConfig. */
+const defaultNavItems: NavItem[] = siteConfig.nav.map((n) => ({
+  label: n.label,
+  href: n.href,
+  external: false,
+}));
+
+/** Default footer logos from siteConfig. */
+const defaultFooterLogos: FooterLogo[] = siteConfig.footerLogos.map((l) => ({
+  src: l.src,
+  alt: l.alt,
+}));
 
 /**
  * Load CMS-managed site settings. Falls back to siteConfig defaults
@@ -30,14 +63,31 @@ export async function getSiteSettings(): Promise<SiteSettings> {
     const entries = await getCollection("settings");
     const entry = entries[0];
     if (entry) {
+      const d = entry.data;
       return {
-        siteName: entry.data.siteName || siteConfig.title,
-        siteDescription: entry.data.siteDescription || siteConfig.description,
-        donateUrl: entry.data.donateUrl ?? "",
-        storeUrl: entry.data.storeUrl ?? "",
-        contactEmail: entry.data.contactEmail ?? "",
-        socialLinks: entry.data.socialLinks ?? [],
-        footerText: entry.data.footerText ?? siteConfig.copyright,
+        siteName: d.siteName || siteConfig.title,
+        siteDescription: d.siteDescription || siteConfig.description,
+        donateUrl: d.donateUrl ?? "",
+        storeUrl: d.storeUrl ?? "",
+        contactEmail: d.contactEmail ?? "",
+        socialLinks: d.socialLinks ?? [],
+        // Navbar — fall back to static config when CMS array is empty
+        navLogo: d.navLogo || "/images/logo.png",
+        navTitle: d.navTitle || "Ghostbusters",
+        navSubtitle: d.navSubtitle || "Virginia",
+        navItems:
+          d.navItems && d.navItems.length > 0
+            ? d.navItems.map((n: { label: string; href: string; external?: boolean }) => ({
+                label: n.label,
+                href: n.href,
+                external: n.external ?? false,
+              }))
+            : defaultNavItems,
+        // Footer
+        footerCopyrightText: d.footerCopyrightText || d.footerText || siteConfig.copyright,
+        codeOfConductUrl: d.codeOfConductUrl || "/code-of-conduct",
+        codeOfConductLabel: d.codeOfConductLabel || "Code of Conduct",
+        footerLogos: d.footerLogos && d.footerLogos.length > 0 ? d.footerLogos : defaultFooterLogos,
       };
     }
   } catch {
@@ -51,6 +101,13 @@ export async function getSiteSettings(): Promise<SiteSettings> {
     storeUrl: "",
     contactEmail: "",
     socialLinks: [],
-    footerText: siteConfig.copyright,
+    navLogo: "/images/logo.png",
+    navTitle: "Ghostbusters",
+    navSubtitle: "Virginia",
+    navItems: defaultNavItems,
+    footerCopyrightText: siteConfig.copyright,
+    codeOfConductUrl: "/code-of-conduct",
+    codeOfConductLabel: "Code of Conduct",
+    footerLogos: defaultFooterLogos,
   };
 }

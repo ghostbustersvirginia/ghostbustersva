@@ -22,5 +22,28 @@
       "url": "https://www.youtube.com/@Ghostbusters_Virginia"
     }
   ],
-  "footerText": ""
+  "navLogo": "/images/logo.png",
+  "navTitle": "Ghostbusters",
+  "navSubtitle": "Virginia",
+  "navItems": [
+    { "label": "About", "href": "/about", "external": false },
+    { "label": "Join", "href": "/join", "external": false },
+    { "label": "Events", "href": "/events", "external": false },
+    { "label": "Media", "href": "/media", "external": false },
+    { "label": "Contact", "href": "/contact", "external": false },
+    { "label": "Donate", "href": "/donate", "external": false }
+  ],
+  "footerCopyrightText": "",
+  "codeOfConductUrl": "/code-of-conduct",
+  "codeOfConductLabel": "Code of Conduct",
+  "footerLogos": [
+    {
+      "src": "/images/sony-ghost-corps-franchise-letter.png",
+      "alt": "Ghost Corps Franchise Logo"
+    },
+    {
+      "src": "/images/irs-501c3-determination-letter.png",
+      "alt": "IRS 501(c)(3) determination letter"
+    }
+  ]
 }

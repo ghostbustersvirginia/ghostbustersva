@@ -1,6 +1,7 @@
 ---
 /**
  * Home page — hero, gallery, upcoming events, join CTA, swag.
+ * Content is CMS-driven via the homePageCopy singleton.
  */
 import BaseLayout from "../layouts/BaseLayout.astro";
 import Button from "../components/ui/Button.astro";
@@ -11,22 +12,31 @@ import { getCollection } from "astro:content";
 import { splitEventsByStatus } from "../lib/events";
 import { swagItems } from "../lib/swag";
 import { getResponsiveImageAttrs } from "../lib/images";
+import { getPageCopy } from "../lib/page-copy";
+
+const homeCopy = (await getPageCopy("home")) as Record<string, unknown> | null;
 
 const allEvents = await getCollection("events");
 // Date-derived partitions reflect the current build snapshot.
 const { upcoming } = splitEventsByStatus(allEvents);
 
 const galleryItems = await getCollection("gallery");
+
+const heroImagePath =
+  (homeCopy?.heroImage as string) || "/images/ghostbusters-virginia-slimer-stay-puft.jpg";
 const heroImage = await getResponsiveImageAttrs({
-  src: "/images/ghostbusters-virginia-slimer-stay-puft.jpg",
+  src: heroImagePath,
   widths: [768, 1200, 1600],
   sizes: "100vw",
   width: 1600,
   height: 900,
   quality: 80,
 });
+
+const joinImagePath =
+  (homeCopy?.joinImage as string) || "/images/ghostbusters-virginia-movie-premiere.jpg";
 const joinImage = await getResponsiveImageAttrs({
-  src: "/images/ghostbusters-virginia-movie-premiere.jpg",
+  src: joinImagePath,
   widths: [640, 960, 1200],
   sizes: "(max-width: 768px) 100vw, 50vw",
   width: 1200,
@@ -70,7 +80,17 @@ const swagImageAttrs = await Promise.all(
   heroImagePreload={heroImage}
 >
   <!-- ───── HERO (React island — PRD 009 Tier 2) ───── -->
-  <HeroSection client:load heroImage={heroImage} />
+  <HeroSection
+    client:load
+    heroImage={heroImage}
+    heroTitle={homeCopy?.heroTitle as string | undefined}
+    heroTagline={homeCopy?.heroTagline as string | undefined}
+    heroPurposeItems={homeCopy?.heroPurposeItems as string[] | undefined}
+    primaryCtaLabel={homeCopy?.heroPrimaryCtaLabel as string | undefined}
+    primaryCtaHref={homeCopy?.heroPrimaryCtaHref as string | undefined}
+    secondaryCtaLabel={homeCopy?.heroSecondaryCtaLabel as string | undefined}
+    secondaryCtaHref={homeCopy?.heroSecondaryCtaHref as string | undefined}
+  />
   <!-- Inline script: reveal hero only after the background image has loaded.
        Runs immediately when parsed — no React hydration dependency. -->
   <script is:inline>
@@ -136,10 +156,11 @@ const swagImageAttrs = await Promise.all(
     galleryItems.length > 0 && (
       <section class="container section fade-in-section" aria-labelledby="gallery-heading">
         <h2 id="gallery-heading" class="section-heading">
-          Out in the Field
+          {(homeCopy?.galleryHeading as string) || "Out in the Field"}
         </h2>
         <p class="section-subtitle">
-          From charity fundraisers and hospital visits to comic conventions and community parades.
+          {(homeCopy?.gallerySubtitle as string) ||
+            "From charity fundraisers and hospital visits to comic conventions and community parades."}
         </p>
         <div id="gallery-splide" class="splide" aria-label="Photo gallery carousel">
           <div class="splide__track">
@@ -173,8 +194,8 @@ const swagImageAttrs = await Promise.all(
           </div>
         </div>
         <div class="gallery-cta">
-          <Button variant="primary" href="/media">
-            See All Media
+          <Button variant="primary" href={(homeCopy?.galleryCtaHref as string) || "/media"}>
+            {(homeCopy?.galleryCtaLabel as string) || "See All Media"}
           </Button>
         </div>
       </section>
@@ -186,11 +207,11 @@ const swagImageAttrs = await Promise.all(
     upcoming.length > 0 && (
       <section class="container section fade-in-section" aria-labelledby="upcoming-heading">
         <h2 id="upcoming-heading" class="section-heading">
-          Upcoming Events
+          {(homeCopy?.eventsHeading as string) || "Upcoming Events"}
         </h2>
         <p class="section-subtitle">
-          Meet the team, support local charities, and see the Ecto in person. Check out where
-          we&rsquo;ll be next &mdash; we&rsquo;d love to see you there.
+          {(homeCopy?.eventsSubtitle as string) ||
+            "Meet the team, support local charities, and see the Ecto in person. Check out where we\u2019ll be next \u2014 we\u2019d love to see you there."}
         </p>
         <ul class="event-list">
           {upcoming.map((event) => (
@@ -198,8 +219,8 @@ const swagImageAttrs = await Promise.all(
           ))}
         </ul>
         <div class="section-cta">
-          <Button variant="primary" href="/events">
-            See Past Events
+          <Button variant="primary" href={(homeCopy?.eventsCtaHref as string) || "/events"}>
+            {(homeCopy?.eventsCtaLabel as string) || "See Past Events"}
           </Button>
         </div>
       </section>
@@ -208,11 +229,14 @@ const swagImageAttrs = await Promise.all(
 
   <!-- ───── JOIN US ───── -->
   <section class="container section join-section fade-in-section" aria-labelledby="join-heading">
-    <h2 id="join-heading" class="section-heading">Join the Team</h2>
+    <h2 id="join-heading" class="section-heading">
+      {(homeCopy?.joinHeading as string) || "Join the Team"}
+    </h2>
     <p class="section-subtitle">
-      Whether you&rsquo;re a lifelong Ghosthead or just getting started, there&rsquo;s a place for
-      you in our franchise. Join a community of fans who build props, attend events, visit
-      hospitals, and raise money for charity &mdash; all while having a blast.
+      {
+        (homeCopy?.joinSubtitle as string) ||
+          "Whether you\u2019re a lifelong Ghosthead or just getting started, there\u2019s a place for you in our franchise. Join a community of fans who build props, attend events, visit hospitals, and raise money for charity \u2014 all while having a blast."
+      }
     </p>
     <div class="join-layout">
       <div class="join-image-wrapper">
@@ -220,7 +244,8 @@ const swagImageAttrs = await Promise.all(
           src={joinImage.src}
           srcset={joinImage.srcset}
           sizes={joinImage.sizes}
-          alt="Three Ghostbusters Virginia members in full uniforms posing at a movie premiere event"
+          alt={(homeCopy?.joinImageAlt as string) ||
+            "Three Ghostbusters Virginia members in full uniforms posing at a movie premiere event"}
           class="join-image"
           loading="lazy"
           decoding="async"
@@ -230,27 +255,36 @@ const swagImageAttrs = await Promise.all(
       </div>
       <blockquote class="quote-block">
         <p>
-          &ldquo;Do you believe in UFOs, astral projections, mental telepathy, ESP, clairvoyance,
-          spirit photography, telekinetic movement, full trance mediums, the Loch Ness monster and
-          the theory of Atlantis?&rdquo;
+          &ldquo;{
+            (homeCopy?.joinQuoteLineOne as string) ||
+              "Do you believe in UFOs, astral projections, mental telepathy, ESP, clairvoyance, spirit photography, telekinetic movement, full trance mediums, the Loch Ness monster and the theory of Atlantis?"
+          }&rdquo;
         </p>
         <p>
-          Ready to get out there and start busting some ghosts? Excellent news rookie, we have
-          openings!
+          {
+            (homeCopy?.joinQuoteLineTwo as string) ||
+              "Ready to get out there and start busting some ghosts? Excellent news rookie, we have openings!"
+          }
         </p>
       </blockquote>
     </div>
     <div class="section-cta">
-      <Button variant="primary" href="/join">Join Now</Button>
+      <Button variant="primary" href={(homeCopy?.joinCtaHref as string) || "/join"}>
+        {(homeCopy?.joinCtaLabel as string) || "Join Now"}
+      </Button>
     </div>
   </section>
 
   <!-- ───── GBVA SWAG ───── -->
   <section class="container section swag-section fade-in-section" aria-labelledby="swag-heading">
-    <h2 id="swag-heading" class="section-heading">Support the Mission</h2>
+    <h2 id="swag-heading" class="section-heading">
+      {(homeCopy?.swagHeading as string) || "Support the Mission"}
+    </h2>
     <p class="section-subtitle">
-      Every purchase helps fund our charity work, community events, and hospital visits across
-      Virginia. Grab some gear and wear your support &mdash; we&rsquo;re ready to believe you!
+      {
+        (homeCopy?.swagSubtitle as string) ||
+          "Every purchase helps fund our charity work, community events, and hospital visits across Virginia. Grab some gear and wear your support \u2014 we\u2019re ready to believe you!"
+      }
     </p>
     <div class="swag-grid">
       {
@@ -273,8 +307,12 @@ const swagImageAttrs = await Promise.all(
       }
     </div>
     <div class="section-cta">
-      <Button variant="primary" href="https://www.teepublic.com/user/ghostbustersva" external>
-        Visit Our Store
+      <Button
+        variant="primary"
+        href={(homeCopy?.swagCtaHref as string) || "https://www.teepublic.com/user/ghostbustersva"}
+        external
+      >
+        {(homeCopy?.swagCtaLabel as string) || "Visit Our Store"}
       </Button>
     </div>
   </section>

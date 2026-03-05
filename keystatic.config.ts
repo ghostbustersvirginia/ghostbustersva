@@ -40,6 +40,7 @@ export default config({
     navigation: {
       // Page-copy singletons — editors update titles, intros, and descriptions
       Pages: [
+        "homePageCopy",
         "aboutPageCopy",
         "joinPageCopy",
         "eventsPageCopy",
@@ -565,10 +566,275 @@ export default config({
             itemLabel: (props) => props.fields.platform.value || "New Link",
           },
         ),
-        footerText: fields.text({
-          label: "Footer Text",
+
+        // ── Navbar ──
+        navLogo: fields.text({
+          label: "Nav Logo Path",
+          description: "Path to the logo image displayed in the header (e.g. /images/logo.png).",
+          defaultValue: "/images/logo.png",
+        }),
+        navTitle: fields.text({
+          label: "Nav Title",
+          description: "Primary text next to the logo (e.g. 'Ghostbusters').",
+          defaultValue: "Ghostbusters",
+        }),
+        navSubtitle: fields.text({
+          label: "Nav Subtitle",
+          description: "Secondary text below the title (e.g. 'Virginia').",
+          defaultValue: "Virginia",
+        }),
+        navItems: fields.array(
+          fields.object({
+            label: fields.text({
+              label: "Label",
+              description: "Text shown in the navigation.",
+              validation: { isRequired: true },
+            }),
+            href: fields.text({
+              label: "URL",
+              description: "Link path (e.g. /about) or full URL for external links.",
+              validation: { isRequired: true },
+            }),
+            external: fields.checkbox({
+              label: "Opens in New Tab",
+              description: "Check if this link goes to an external site.",
+              defaultValue: false,
+            }),
+          }),
+          {
+            label: "Navigation Items",
+            description: "Links shown in the header and footer navigation. Drag to reorder.",
+            itemLabel: (props) => props.fields.label.value || "New Link",
+          },
+        ),
+
+        // ── Footer ──
+        footerCopyrightText: fields.text({
+          label: "Footer Copyright Text",
           description: "Copyright or legal text shown in the site footer.",
           multiline: true,
+        }),
+        codeOfConductUrl: fields.text({
+          label: "Code of Conduct URL",
+          description: "Path or URL for the Code of Conduct link in the footer.",
+          defaultValue: "/code-of-conduct",
+        }),
+        codeOfConductLabel: fields.text({
+          label: "Code of Conduct Label",
+          description: "Link text for the Code of Conduct.",
+          defaultValue: "Code of Conduct",
+        }),
+        footerLogos: fields.array(
+          fields.object({
+            src: fields.text({
+              label: "Image Path",
+              description:
+                "Path to the logo image (e.g. /images/sony-ghost-corps-franchise-letter.png).",
+              validation: { isRequired: true },
+            }),
+            alt: fields.text({
+              label: "Alt Text",
+              description: "Accessible description of the logo.",
+              validation: { isRequired: true },
+            }),
+          }),
+          {
+            label: "Footer Logos",
+            description: "Partner/franchise logos displayed in the footer.",
+            itemLabel: (props) => props.fields.alt.value || "New Logo",
+          },
+        ),
+      },
+    }),
+
+    /**
+     * Home page copy — editable text for the homepage hero, mission,
+     * gallery, events, join, and swag sections.
+     */
+    homePageCopy: singleton({
+      label: "Home Page",
+      path: "src/content/page-copy/home",
+      format: { data: "json" },
+      schema: {
+        page: fields.text({ label: "Page ID", defaultValue: "home" }),
+
+        // ── Hero ──
+        heroTitle: fields.text({
+          label: "Hero Title",
+          description: "Main heading displayed over the hero image.",
+          validation: { isRequired: true },
+        }),
+        heroTagline: fields.text({
+          label: "Hero Tagline",
+          description: "Subtitle text below the hero title.",
+          multiline: true,
+          validation: { isRequired: true },
+        }),
+        heroPurposeItems: fields.array(
+          fields.text({ label: "Item", validation: { isRequired: true } }),
+          {
+            label: "Hero Purpose Items",
+            description: "Short fact pills displayed below the tagline (e.g. '501c3 Nonprofit').",
+            itemLabel: (props) => props.value || "New Item",
+          },
+        ),
+        heroImage: fields.text({
+          label: "Hero Background Image",
+          description: "Path to the hero background image (e.g. /images/hero.jpg).",
+        }),
+        heroPrimaryCtaLabel: fields.text({
+          label: "Primary CTA Label",
+          description: "Text for the primary hero button.",
+          defaultValue: "Join the Team",
+        }),
+        heroPrimaryCtaHref: fields.text({
+          label: "Primary CTA URL",
+          description: "Link for the primary hero button.",
+          defaultValue: "/join",
+        }),
+        heroSecondaryCtaLabel: fields.text({
+          label: "Secondary CTA Label",
+          description: "Text for the secondary hero button.",
+          defaultValue: "See Our Events",
+        }),
+        heroSecondaryCtaHref: fields.text({
+          label: "Secondary CTA URL",
+          description: "Link for the secondary hero button.",
+          defaultValue: "/events",
+        }),
+
+        // ── Mission ──
+        missionHeading: fields.text({
+          label: "Mission Heading",
+          validation: { isRequired: true },
+        }),
+        missionSubtitle: fields.text({
+          label: "Mission Subtitle",
+          multiline: true,
+          validation: { isRequired: true },
+        }),
+        missionBodyParagraphs: fields.array(
+          fields.text({
+            label: "Paragraph",
+            multiline: true,
+            validation: { isRequired: true },
+          }),
+          {
+            label: "Mission Body Paragraphs",
+            description:
+              'Left-column body text. Each item is a paragraph. Supports <strong class="glow"> for emphasis.',
+            itemLabel: (props) => (props.value || "New Paragraph").slice(0, 60),
+          },
+        ),
+        missionListItems: fields.array(
+          fields.text({ label: "Item", validation: { isRequired: true } }),
+          {
+            label: "Mission List Items",
+            description: "Right-column bullet points (e.g. 'Visit children's hospitals').",
+            itemLabel: (props) => props.value || "New Item",
+          },
+        ),
+
+        // ── Gallery ──
+        galleryHeading: fields.text({
+          label: "Gallery Heading",
+          defaultValue: "Out in the Field",
+        }),
+        gallerySubtitle: fields.text({
+          label: "Gallery Subtitle",
+          multiline: true,
+          defaultValue:
+            "From charity fundraisers and hospital visits to comic conventions and community parades.",
+        }),
+        galleryCtaLabel: fields.text({
+          label: "Gallery CTA Label",
+          defaultValue: "See All Media",
+        }),
+        galleryCtaHref: fields.text({
+          label: "Gallery CTA URL",
+          defaultValue: "/media",
+        }),
+
+        // ── Upcoming Events ──
+        eventsHeading: fields.text({
+          label: "Events Heading",
+          defaultValue: "Upcoming Events",
+        }),
+        eventsSubtitle: fields.text({
+          label: "Events Subtitle",
+          multiline: true,
+          defaultValue:
+            "Meet the team, support local charities, and see the Ecto in person. Check out where we'll be next — we'd love to see you there.",
+        }),
+        eventsCtaLabel: fields.text({
+          label: "Events CTA Label",
+          defaultValue: "See Past Events",
+        }),
+        eventsCtaHref: fields.text({
+          label: "Events CTA URL",
+          defaultValue: "/events",
+        }),
+
+        // ── Join ──
+        joinHeading: fields.text({
+          label: "Join Heading",
+          defaultValue: "Join the Team",
+        }),
+        joinSubtitle: fields.text({
+          label: "Join Subtitle",
+          multiline: true,
+          defaultValue:
+            "Whether you're a lifelong Ghosthead or just getting started, there's a place for you in our franchise. Join a community of fans who build props, attend events, visit hospitals, and raise money for charity — all while having a blast.",
+        }),
+        joinImage: fields.text({
+          label: "Join Image Path",
+          description: "Path to the image shown in the join section.",
+          defaultValue: "/images/ghostbusters-virginia-movie-premiere.jpg",
+        }),
+        joinImageAlt: fields.text({
+          label: "Join Image Alt Text",
+          defaultValue:
+            "Three Ghostbusters Virginia members in full uniforms posing at a movie premiere event",
+        }),
+        joinQuoteLineOne: fields.text({
+          label: "Join Quote Line 1",
+          multiline: true,
+          defaultValue:
+            "Do you believe in UFOs, astral projections, mental telepathy, ESP, clairvoyance, spirit photography, telekinetic movement, full trance mediums, the Loch Ness monster and the theory of Atlantis?",
+        }),
+        joinQuoteLineTwo: fields.text({
+          label: "Join Quote Line 2",
+          multiline: true,
+          defaultValue:
+            "Ready to get out there and start busting some ghosts? Excellent news rookie, we have openings!",
+        }),
+        joinCtaLabel: fields.text({
+          label: "Join CTA Label",
+          defaultValue: "Join Now",
+        }),
+        joinCtaHref: fields.text({
+          label: "Join CTA URL",
+          defaultValue: "/join",
+        }),
+
+        // ── Swag ──
+        swagHeading: fields.text({
+          label: "Swag Heading",
+          defaultValue: "Support the Mission",
+        }),
+        swagSubtitle: fields.text({
+          label: "Swag Subtitle",
+          multiline: true,
+          defaultValue:
+            "Every purchase helps fund our charity work, community events, and hospital visits across Virginia. Grab some gear and wear your support — we're ready to believe you!",
+        }),
+        swagCtaLabel: fields.text({
+          label: "Swag CTA Label",
+          defaultValue: "Visit Our Store",
+        }),
+        swagCtaHref: fields.text({
+          label: "Swag CTA URL",
+          defaultValue: "https://www.teepublic.com/user/ghostbustersva",
         }),
       },
     }),
