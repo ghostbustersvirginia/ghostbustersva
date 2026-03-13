@@ -65,11 +65,7 @@ Anything else relevant.
 3. Implement the feature in small commits, referencing the PRD.
 4. When done, update the PRD status to `complete`.
 5. Commit the status update with the final code changes.
-6. Move the completed PRD into `docs/prds/archive/`.
-
-## Archive
-
-Completed PRDs live in the `archive/` subdirectory. They remain available for reference but are kept out of the active working set.
+6. Delete the completed PRD file to keep `docs/prds/` focused on active work.
 
 ## Design System PRDs
 

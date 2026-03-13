@@ -34,11 +34,9 @@ const storage = githubRepoConfig
 export default config({
   storage,
   ui: {
-    brand: {
-      name: "Ghostbusters Virginia CMS",
-    },
+    brand: { name: "Ghostbusters Virginia CMS" },
     navigation: {
-      // Page-copy singletons — editors update titles, intros, and descriptions
+      Content: ["events", "gallery", "videos", "news"],
       Pages: [
         "homePageCopy",
         "aboutPageCopy",
@@ -47,9 +45,8 @@ export default config({
         "mediaPageCopy",
         "contactPageCopy",
         "donatePageCopy",
+        "codeOfConductPageCopy",
       ],
-      // Collections with entries — events, photos, videos, press links
-      Content: ["events", "gallery", "videos", "news"],
       Settings: ["settings"],
     },
   },
@@ -67,12 +64,12 @@ export default config({
       path: "src/content/events/*",
       format: { contentField: "body" },
       entryLayout: "form",
-      columns: ["date", "location"],
+      columns: ["date", "location", "status"],
       schema: {
         title: fields.slug({
           name: {
             label: "Title",
-            description: "The name of the event.",
+            description: "Event name displayed in listings and the page heading.",
             validation: { isRequired: true },
           },
         }),
@@ -264,253 +261,463 @@ export default config({
   },
 
   singletons: {
-    /**
-     * About page copy — editable text for the About page.
-     */
+    homePageCopy: singleton({
+      label: "Home Page",
+      path: "src/content/page-copy/home",
+      format: { data: "json" },
+      schema: {
+        page: fields.text({ label: "Page ID", defaultValue: "home" }),
+        heroTitle: fields.text({ label: "Hero Title", validation: { isRequired: true } }),
+        heroTagline: fields.text({
+          label: "Hero Tagline",
+          multiline: true,
+          validation: { isRequired: true },
+        }),
+        heroImage: fields.image({
+          label: "Hero Background Image",
+          directory: "public/images/pages",
+          publicPath: "/images/pages/",
+        }),
+        heroLogoSrc: fields.text({
+          label: "Hero Logo Path",
+          description: "Path to the logo image in the hero section (e.g. /images/logo.png).",
+        }),
+        heroLogoAlt: fields.text({ label: "Hero Logo Alt Text" }),
+        heroPrimaryCtaLabel: fields.text({ label: "Hero Primary CTA Label" }),
+        heroPrimaryCtaHref: fields.text({ label: "Hero Primary CTA URL" }),
+        heroSecondaryCtaLabel: fields.text({ label: "Hero Secondary CTA Label" }),
+        heroSecondaryCtaHref: fields.text({ label: "Hero Secondary CTA URL" }),
+        heroPurposeItems: fields.array(fields.text({ label: "Purpose Item" }), {
+          label: "Hero Purpose Items",
+          description: "Key facts displayed below the hero tagline.",
+          itemLabel: (props) => props.value || "Item",
+        }),
+        missionHeading: fields.text({ label: "Mission Heading" }),
+        missionSubtitle: fields.text({ label: "Mission Subtitle", multiline: true }),
+        missionBody: fields.text({ label: "Mission Body", multiline: true }),
+        impactStats: fields.array(
+          fields.object({
+            value: fields.text({
+              label: "Value",
+              description: "Display value (e.g. '2001', '501c3', '50+').",
+              validation: { isRequired: true },
+            }),
+            label: fields.text({
+              label: "Label",
+              description: "Description below the number.",
+              validation: { isRequired: true },
+            }),
+            countTarget: fields.text({
+              label: "Count Target",
+              description:
+                "Numeric target for count-up animation (leave empty for non-numeric stats).",
+            }),
+            countSuffix: fields.text({
+              label: "Count Suffix",
+              description: "Suffix appended after count animation (e.g. '+').",
+            }),
+          }),
+          {
+            label: "Impact Stats",
+            description: "Key metrics displayed in the mission section.",
+            itemLabel: (props) => props.fields.label.value || "Stat",
+          },
+        ),
+        impactStatsAriaLabel: fields.text({
+          label: "Impact Stats Aria Label",
+          description: "Screen reader label for the impact stats section.",
+        }),
+        galleryHeading: fields.text({ label: "Gallery Heading" }),
+        gallerySubtitle: fields.text({ label: "Gallery Subtitle", multiline: true }),
+        galleryCtaLabel: fields.text({ label: "Gallery CTA Label" }),
+        galleryCtaHref: fields.text({ label: "Gallery CTA URL" }),
+        eventsHeading: fields.text({ label: "Events Heading" }),
+        eventsSubtitle: fields.text({ label: "Events Subtitle", multiline: true }),
+        eventsCtaLabel: fields.text({ label: "Events CTA Label" }),
+        eventsCtaHref: fields.text({ label: "Events CTA URL" }),
+        joinHeading: fields.text({ label: "Join Heading" }),
+        joinSubtitle: fields.text({ label: "Join Subtitle", multiline: true }),
+        joinImage: fields.image({
+          label: "Join Section Image",
+          directory: "public/images/pages",
+          publicPath: "/images/pages/",
+        }),
+        joinImageAlt: fields.text({ label: "Join Section Image Alt" }),
+        joinQuoteLineOne: fields.text({ label: "Join Quote Line 1", multiline: true }),
+        joinQuoteLineTwo: fields.text({ label: "Join Quote Line 2", multiline: true }),
+        joinCtaLabel: fields.text({ label: "Join CTA Label" }),
+        joinCtaHref: fields.text({ label: "Join CTA URL" }),
+        swagHeading: fields.text({ label: "Swag Heading" }),
+        swagSubtitle: fields.text({ label: "Swag Subtitle", multiline: true }),
+        swagCtaLabel: fields.text({ label: "Swag CTA Label" }),
+        swagCtaHref: fields.text({ label: "Swag CTA URL" }),
+        metaTitle: fields.text({ label: "Meta Title", description: "Browser tab title." }),
+        metaDescription: fields.text({
+          label: "Meta Description",
+          description: "SEO meta description for search engines.",
+          multiline: true,
+        }),
+        ogTitle: fields.text({
+          label: "OG Title",
+          description: "Title shown when shared on social media.",
+        }),
+        ogDescription: fields.text({
+          label: "OG Description",
+          description: "Description shown when shared on social media.",
+          multiline: true,
+        }),
+        ogImage: fields.image({
+          label: "Social Share Image",
+          directory: "public/images/pages",
+          publicPath: "/images/pages/",
+        }),
+      },
+    }),
+
     aboutPageCopy: singleton({
       label: "About Page",
       path: "src/content/page-copy/about",
       format: { data: "json" },
       schema: {
         page: fields.text({ label: "Page ID", defaultValue: "about" }),
-        pageTitle: fields.text({
-          label: "Page Title",
-          validation: { isRequired: true },
-        }),
+        pageTitle: fields.text({ label: "Page Title", validation: { isRequired: true } }),
         pageIntro: fields.text({
           label: "Page Intro",
           multiline: true,
           validation: { isRequired: true },
         }),
-        missionItems: fields.array(
-          fields.text({ label: "Mission Item", validation: { isRequired: true } }),
-          { label: "Mission Items", itemLabel: (props) => props.value || "New Item" },
-        ),
-        protonPetsImage: fields.text({
-          label: "Proton Pets Image Path",
-          description:
-            "Image path relative to / (e.g. /images/news/ghostbusters-virginia-proton-pets-rescue.jpeg).",
+        whoWeAreHeading: fields.text({ label: "Who We Are Heading" }),
+        whoWeAreBodyOne: fields.text({ label: "Who We Are — Paragraph 1", multiline: true }),
+        whoWeAreBodyTwo: fields.text({ label: "Who We Are — Paragraph 2", multiline: true }),
+        whoWeAreBodyThree: fields.text({ label: "Who We Are — Paragraph 3", multiline: true }),
+        teamImage: fields.image({
+          label: "Who We Are Image",
+          directory: "public/images",
+          publicPath: "/images/",
         }),
-        protonPetsImageAlt: fields.text({
-          label: "Proton Pets Image Alt Text",
+        teamImageAlt: fields.text({ label: "Who We Are Image Alt Text" }),
+        missionHeading: fields.text({ label: "Mission Section Heading" }),
+        missionItems: fields.array(fields.text({ label: "Mission Item" }), {
+          label: "Mission Items",
+          itemLabel: (props) => props.value || "Item",
         }),
-        protonPetsText: fields.text({
-          label: "Proton Pets Description",
-          multiline: true,
+        initiativesHeading: fields.text({ label: "Initiatives Section Heading" }),
+        initiativeTitle: fields.text({ label: "Initiative Title" }),
+        protonPetsImage: fields.image({
+          label: "Proton Pets Image",
+          directory: "public/images/pages",
+          publicPath: "/images/pages/",
         }),
+        protonPetsImageAlt: fields.text({ label: "Proton Pets Image Alt Text" }),
+        protonPetsText: fields.text({ label: "Proton Pets Description", multiline: true }),
         protonPetsLinkLabel: fields.text({ label: "Proton Pets Link Label" }),
         protonPetsLinkUrl: fields.url({ label: "Proton Pets Link URL" }),
+        metaTitle: fields.text({ label: "Meta Title", description: "Browser tab title." }),
+        metaDescription: fields.text({
+          label: "Meta Description",
+          description: "SEO meta description for search engines.",
+          multiline: true,
+        }),
+        ogTitle: fields.text({
+          label: "OG Title",
+          description: "Title shown when shared on social media.",
+        }),
+        ogDescription: fields.text({
+          label: "OG Description",
+          description: "Description shown when shared on social media.",
+          multiline: true,
+        }),
+        ogImage: fields.image({
+          label: "Social Share Image",
+          directory: "public/images/pages",
+          publicPath: "/images/pages/",
+        }),
       },
     }),
 
-    /**
-     * Join page copy — editable text for the Join page.
-     */
     joinPageCopy: singleton({
       label: "Join Page",
       path: "src/content/page-copy/join",
       format: { data: "json" },
       schema: {
         page: fields.text({ label: "Page ID", defaultValue: "join" }),
-        pageTitle: fields.text({
-          label: "Page Title",
-          validation: { isRequired: true },
-        }),
+        pageTitle: fields.text({ label: "Page Title", validation: { isRequired: true } }),
         pageIntro: fields.text({
           label: "Page Intro",
           multiline: true,
           validation: { isRequired: true },
         }),
-        quoteLineOne: fields.text({
-          label: "Quote Line 1",
-          multiline: true,
+        quoteLineOne: fields.text({ label: "Quote Line 1", multiline: true }),
+        quoteLineTwo: fields.text({ label: "Quote Line 2", multiline: true }),
+        whatWeLookForHeading: fields.text({ label: "What We Look For Heading" }),
+        whatWeLookForText: fields.text({ label: "What We Look For Text", multiline: true }),
+        requiredGearHeading: fields.text({ label: "Required Gear Heading" }),
+        requiredGearItems: fields.array(fields.text({ label: "Required Gear Item" }), {
+          label: "Required Gear Items",
+          itemLabel: (props) => props.value || "Item",
         }),
-        quoteLineTwo: fields.text({
-          label: "Quote Line 2",
-          multiline: true,
+        beltGizmoHeading: fields.text({ label: "Belt Gizmo Heading" }),
+        beltGizmoItems: fields.array(fields.text({ label: "Belt Gizmo Item" }), {
+          label: "Belt Gizmo Items",
+          itemLabel: (props) => props.value || "Item",
         }),
-        whatWeLookForText: fields.text({
-          label: "What We Look For (Intro Text)",
-          multiline: true,
-        }),
-        requiredGearItems: fields.array(
-          fields.text({ label: "Gear Item", validation: { isRequired: true } }),
-          { label: "Required Gear", itemLabel: (props) => props.value || "New Item" },
-        ),
-        beltGizmoItems: fields.array(
-          fields.text({ label: "Gizmo", validation: { isRequired: true } }),
-          { label: "Belt Gizmo Examples", itemLabel: (props) => props.value || "New Item" },
-        ),
-        applyText: fields.text({
-          label: "How to Apply Text",
-          multiline: true,
-        }),
+        howToApplyHeading: fields.text({ label: "How to Apply Heading" }),
+        applyText: fields.text({ label: "Apply Section Text", multiline: true }),
         applyLinkLabel: fields.text({ label: "Apply Link Label" }),
         applyLinkUrl: fields.url({ label: "Apply Link URL" }),
-        noteText: fields.text({
-          label: "Background Check Note",
+        notePrefix: fields.text({
+          label: "Note Prefix",
+          description: "Bold prefix text for the background check note (e.g. 'Please Note:').",
+        }),
+        noteText: fields.text({ label: "Background Check Note", multiline: true }),
+        metaTitle: fields.text({ label: "Meta Title", description: "Browser tab title." }),
+        metaDescription: fields.text({
+          label: "Meta Description",
+          description: "SEO meta description for search engines.",
           multiline: true,
+        }),
+        ogTitle: fields.text({
+          label: "OG Title",
+          description: "Title shown when shared on social media.",
+        }),
+        ogDescription: fields.text({
+          label: "OG Description",
+          description: "Description shown when shared on social media.",
+          multiline: true,
+        }),
+        ogImage: fields.image({
+          label: "Social Share Image",
+          directory: "public/images/pages",
+          publicPath: "/images/pages/",
         }),
       },
     }),
 
-    /**
-     * Events page copy — editable title and intro text for the Events page.
-     */
     eventsPageCopy: singleton({
       label: "Events Page",
       path: "src/content/page-copy/events",
       format: { data: "json" },
       schema: {
         page: fields.text({ label: "Page ID", defaultValue: "events" }),
-        pageTitle: fields.text({
-          label: "Page Title",
-          defaultValue: "Events",
-          validation: { isRequired: true },
-        }),
+        pageTitle: fields.text({ label: "Page Title", validation: { isRequired: true } }),
         pageIntro: fields.text({
           label: "Page Intro",
-          description: "Short description shown below the page title.",
           multiline: true,
-          defaultValue: "Meet the team, support local charities, and see the Ecto in person.",
           validation: { isRequired: true },
         }),
-        upcomingHeading: fields.text({
-          label: "Upcoming Section Heading",
-          defaultValue: "Upcoming Events",
+        upcomingHeading: fields.text({ label: "Upcoming Events Heading" }),
+        pastHeading: fields.text({ label: "Past Events Heading" }),
+        emptyText: fields.text({ label: "Empty State Text" }),
+        showMoreLabel: fields.text({ label: "Show More Button Label" }),
+        showLessLabel: fields.text({ label: "Show Less Button Label" }),
+        metaTitle: fields.text({ label: "Meta Title", description: "Browser tab title." }),
+        metaDescription: fields.text({
+          label: "Meta Description",
+          description: "SEO meta description for search engines.",
+          multiline: true,
         }),
-        pastHeading: fields.text({
-          label: "Past Section Heading",
-          defaultValue: "Past Events",
+        ogTitle: fields.text({
+          label: "OG Title",
+          description: "Title shown when shared on social media.",
         }),
-        emptyText: fields.text({
-          label: "Empty State Text",
-          description: "Shown when there are no events.",
-          defaultValue: "No events yet — check back soon!",
+        ogDescription: fields.text({
+          label: "OG Description",
+          description: "Description shown when shared on social media.",
+          multiline: true,
+        }),
+        ogImage: fields.image({
+          label: "Social Share Image",
+          directory: "public/images/pages",
+          publicPath: "/images/pages/",
         }),
       },
     }),
 
-    /**
-     * Media page copy — editable title and intro text for the Media page.
-     */
     mediaPageCopy: singleton({
       label: "Media Page",
       path: "src/content/page-copy/media",
       format: { data: "json" },
       schema: {
         page: fields.text({ label: "Page ID", defaultValue: "media" }),
-        pageTitle: fields.text({
-          label: "Page Title",
-          defaultValue: "Media",
-          validation: { isRequired: true },
-        }),
+        pageTitle: fields.text({ label: "Page Title", validation: { isRequired: true } }),
         pageIntro: fields.text({
           label: "Page Intro",
-          description: "Short description shown below the page title.",
           multiline: true,
-          defaultValue:
-            "Photos, videos, and press coverage from our events. Click any photo to enlarge.",
           validation: { isRequired: true },
         }),
-        videosHeading: fields.text({
-          label: "Videos Section Heading",
-          defaultValue: "Videos",
+        galleryHeading: fields.text({ label: "Gallery Heading" }),
+        videosHeading: fields.text({ label: "Videos Heading" }),
+        newsHeading: fields.text({ label: "News Heading" }),
+        showMoreGalleryLabel: fields.text({ label: "Show More Gallery Label" }),
+        showLessGalleryLabel: fields.text({ label: "Show Less Gallery Label" }),
+        showMoreNewsLabel: fields.text({ label: "Show More News Label" }),
+        showLessNewsLabel: fields.text({ label: "Show Less News Label" }),
+        metaTitle: fields.text({ label: "Meta Title", description: "Browser tab title." }),
+        metaDescription: fields.text({
+          label: "Meta Description",
+          description: "SEO meta description for search engines.",
+          multiline: true,
         }),
-        galleryHeading: fields.text({
-          label: "Gallery Section Heading",
-          defaultValue: "Photo Gallery",
+        ogTitle: fields.text({
+          label: "OG Title",
+          description: "Title shown when shared on social media.",
         }),
-        newsHeading: fields.text({
-          label: "News Section Heading",
-          defaultValue: "In the News",
+        ogDescription: fields.text({
+          label: "OG Description",
+          description: "Description shown when shared on social media.",
+          multiline: true,
+        }),
+        ogImage: fields.image({
+          label: "Social Share Image",
+          directory: "public/images/pages",
+          publicPath: "/images/pages/",
         }),
       },
     }),
 
-    /**
-     * Contact page copy — editable text for the Contact page.
-     */
     contactPageCopy: singleton({
       label: "Contact Page",
       path: "src/content/page-copy/contact",
       format: { data: "json" },
       schema: {
         page: fields.text({ label: "Page ID", defaultValue: "contact" }),
-        pageTitle: fields.text({
-          label: "Page Title",
-          validation: { isRequired: true },
-        }),
+        pageTitle: fields.text({ label: "Page Title", validation: { isRequired: true } }),
         pageIntro: fields.text({
           label: "Page Intro",
           multiline: true,
           validation: { isRequired: true },
         }),
-        bookUsText: fields.text({
-          label: "Book Us Text",
+        quoteLine: fields.text({ label: "Quote Line", multiline: true }),
+        reachOutHeading: fields.text({ label: "Reach Out Section Heading" }),
+        reachOutText: fields.text({ label: "Reach Out Text", multiline: true }),
+        bookingHeading: fields.text({ label: "Booking Section Heading" }),
+        bookingText: fields.text({ label: "Booking Text", multiline: true }),
+        bookingImage: fields.image({
+          label: "Booking Section Image",
+          directory: "public/images",
+          publicPath: "/images/",
+        }),
+        bookingImageAlt: fields.text({ label: "Booking Image Alt Text" }),
+        bookingCtaLabel: fields.text({ label: "Booking CTA Label" }),
+        metaTitle: fields.text({ label: "Meta Title", description: "Browser tab title." }),
+        metaDescription: fields.text({
+          label: "Meta Description",
+          description: "SEO meta description for search engines.",
           multiline: true,
         }),
-        serviceAreasText: fields.text({
-          label: "Service Areas Intro",
+        ogTitle: fields.text({
+          label: "OG Title",
+          description: "Title shown when shared on social media.",
+        }),
+        ogDescription: fields.text({
+          label: "OG Description",
+          description: "Description shown when shared on social media.",
           multiline: true,
         }),
-        regions: fields.array(
-          fields.object({
-            title: fields.text({ label: "Region Title", validation: { isRequired: true } }),
-            areas: fields.array(fields.text({ label: "Area", validation: { isRequired: true } }), {
-              label: "Areas",
-              itemLabel: (props) => props.value || "New Area",
-            }),
-          }),
-          {
-            label: "Service Regions",
-            itemLabel: (props) => props.fields.title.value || "New Region",
-          },
-        ),
-        ctaCallout: fields.text({ label: "CTA Callout" }),
-        ctaAside: fields.text({ label: "CTA Aside" }),
-        footnoteText: fields.text({
-          label: "Footnote Text",
-          multiline: true,
+        ogImage: fields.image({
+          label: "Social Share Image",
+          directory: "public/images/pages",
+          publicPath: "/images/pages/",
         }),
       },
     }),
 
-    /**
-     * Donate page copy — editable text for the Donate page.
-     */
     donatePageCopy: singleton({
       label: "Donate Page",
       path: "src/content/page-copy/donate",
       format: { data: "json" },
       schema: {
         page: fields.text({ label: "Page ID", defaultValue: "donate" }),
-        pageTitle: fields.text({
-          label: "Page Title",
-          validation: { isRequired: true },
-        }),
+        pageTitle: fields.text({ label: "Page Title", validation: { isRequired: true } }),
         pageIntro: fields.text({
           label: "Page Intro",
           multiline: true,
           validation: { isRequired: true },
         }),
-        supportPanelText: fields.text({
-          label: "Support Panel Text",
+        donationHeading: fields.text({ label: "Donation Section Heading" }),
+        donationText: fields.text({ label: "Donation Section Text", multiline: true }),
+        donationCtaLabel: fields.text({ label: "Donate CTA Label" }),
+        swagHeading: fields.text({ label: "Swag Section Heading" }),
+        swagIntro: fields.text({ label: "Swag Intro Text", multiline: true }),
+        swagCtaLabel: fields.text({ label: "Swag CTA Label" }),
+        communityHeading: fields.text({ label: "Community Partners Heading" }),
+        communityText: fields.text({ label: "Community Partners Text", multiline: true }),
+        volunteerHeading: fields.text({ label: "Volunteer Heading" }),
+        volunteerText: fields.text({ label: "Volunteer Text", multiline: true }),
+        volunteerCtaLabel: fields.text({ label: "Volunteer CTA Label" }),
+        volunteerCtaHref: fields.text({ label: "Volunteer CTA URL" }),
+        metaTitle: fields.text({ label: "Meta Title", description: "Browser tab title." }),
+        metaDescription: fields.text({
+          label: "Meta Description",
+          description: "SEO meta description for search engines.",
           multiline: true,
         }),
-        protonPetsText: fields.text({
-          label: "Proton Pets Description",
+        ogTitle: fields.text({
+          label: "OG Title",
+          description: "Title shown when shared on social media.",
+        }),
+        ogDescription: fields.text({
+          label: "OG Description",
+          description: "Description shown when shared on social media.",
           multiline: true,
         }),
-        protonPetsLinkLabel: fields.text({ label: "Proton Pets Link Label" }),
-        protonPetsLinkUrl: fields.url({ label: "Proton Pets Link URL" }),
-        swagPanelText: fields.text({
-          label: "Swag Panel Text",
+        ogImage: fields.image({
+          label: "Social Share Image",
+          directory: "public/images/pages",
+          publicPath: "/images/pages/",
+        }),
+      },
+    }),
+
+    codeOfConductPageCopy: singleton({
+      label: "Code of Conduct",
+      path: "src/content/page-copy/code-of-conduct",
+      format: { data: "json" },
+      schema: {
+        page: fields.text({ label: "Page ID", defaultValue: "code-of-conduct" }),
+        pageTitle: fields.text({ label: "Page Title", validation: { isRequired: true } }),
+        pageIntro: fields.text({
+          label: "Page Intro",
+          multiline: true,
+          validation: { isRequired: true },
+        }),
+        sections: fields.array(
+          fields.object({
+            heading: fields.text({
+              label: "Heading",
+              validation: { isRequired: true },
+            }),
+            body: fields.text({
+              label: "Body",
+              multiline: true,
+              validation: { isRequired: true },
+            }),
+          }),
+          {
+            label: "Sections",
+            description: "Each section of the Code of Conduct.",
+            itemLabel: (props) => props.fields.heading.value || "Section",
+          },
+        ),
+        metaTitle: fields.text({ label: "Meta Title", description: "Browser tab title." }),
+        metaDescription: fields.text({
+          label: "Meta Description",
+          description: "SEO meta description for search engines.",
           multiline: true,
         }),
-        swagNote: fields.text({
-          label: "Swag Note",
+        ogTitle: fields.text({
+          label: "OG Title",
+          description: "Title shown when shared on social media.",
+        }),
+        ogDescription: fields.text({
+          label: "OG Description",
+          description: "Description shown when shared on social media.",
           multiline: true,
+        }),
+        ogImage: fields.image({
+          label: "Social Share Image",
+          directory: "public/images/pages",
+          publicPath: "/images/pages/",
         }),
       },
     }),
@@ -644,198 +851,6 @@ export default config({
             itemLabel: (props) => props.fields.alt.value || "New Logo",
           },
         ),
-      },
-    }),
-
-    /**
-     * Home page copy — editable text for the homepage hero, mission,
-     * gallery, events, join, and swag sections.
-     */
-    homePageCopy: singleton({
-      label: "Home Page",
-      path: "src/content/page-copy/home",
-      format: { data: "json" },
-      schema: {
-        page: fields.text({ label: "Page ID", defaultValue: "home" }),
-
-        // ── Hero ──
-        heroTitle: fields.text({
-          label: "Hero Title",
-          description: "Main heading displayed over the hero image.",
-          validation: { isRequired: true },
-        }),
-        heroTagline: fields.text({
-          label: "Hero Tagline",
-          description: "Subtitle text below the hero title.",
-          multiline: true,
-          validation: { isRequired: true },
-        }),
-        heroPurposeItems: fields.array(
-          fields.text({ label: "Item", validation: { isRequired: true } }),
-          {
-            label: "Hero Purpose Items",
-            description: "Short fact pills displayed below the tagline (e.g. '501c3 Nonprofit').",
-            itemLabel: (props) => props.value || "New Item",
-          },
-        ),
-        heroImage: fields.text({
-          label: "Hero Background Image",
-          description: "Path to the hero background image (e.g. /images/hero.jpg).",
-        }),
-        heroPrimaryCtaLabel: fields.text({
-          label: "Primary CTA Label",
-          description: "Text for the primary hero button.",
-          defaultValue: "Join the Team",
-        }),
-        heroPrimaryCtaHref: fields.text({
-          label: "Primary CTA URL",
-          description: "Link for the primary hero button.",
-          defaultValue: "/join",
-        }),
-        heroSecondaryCtaLabel: fields.text({
-          label: "Secondary CTA Label",
-          description: "Text for the secondary hero button.",
-          defaultValue: "See Our Events",
-        }),
-        heroSecondaryCtaHref: fields.text({
-          label: "Secondary CTA URL",
-          description: "Link for the secondary hero button.",
-          defaultValue: "/events",
-        }),
-
-        // ── Mission ──
-        missionHeading: fields.text({
-          label: "Mission Heading",
-          validation: { isRequired: true },
-        }),
-        missionSubtitle: fields.text({
-          label: "Mission Subtitle",
-          multiline: true,
-          validation: { isRequired: true },
-        }),
-        missionBodyParagraphs: fields.array(
-          fields.text({
-            label: "Paragraph",
-            multiline: true,
-            validation: { isRequired: true },
-          }),
-          {
-            label: "Mission Body Paragraphs",
-            description:
-              'Left-column body text. Each item is a paragraph. Supports <strong class="glow"> for emphasis.',
-            itemLabel: (props) => (props.value || "New Paragraph").slice(0, 60),
-          },
-        ),
-        missionListItems: fields.array(
-          fields.text({ label: "Item", validation: { isRequired: true } }),
-          {
-            label: "Mission List Items",
-            description: "Right-column bullet points (e.g. 'Visit children's hospitals').",
-            itemLabel: (props) => props.value || "New Item",
-          },
-        ),
-
-        // ── Gallery ──
-        galleryHeading: fields.text({
-          label: "Gallery Heading",
-          defaultValue: "Out in the Field",
-        }),
-        gallerySubtitle: fields.text({
-          label: "Gallery Subtitle",
-          multiline: true,
-          defaultValue:
-            "From charity fundraisers and hospital visits to comic conventions and community parades.",
-        }),
-        galleryCtaLabel: fields.text({
-          label: "Gallery CTA Label",
-          defaultValue: "See All Media",
-        }),
-        galleryCtaHref: fields.text({
-          label: "Gallery CTA URL",
-          defaultValue: "/media",
-        }),
-
-        // ── Upcoming Events ──
-        eventsHeading: fields.text({
-          label: "Events Heading",
-          defaultValue: "Upcoming Events",
-        }),
-        eventsSubtitle: fields.text({
-          label: "Events Subtitle",
-          multiline: true,
-          defaultValue:
-            "Meet the team, support local charities, and see the Ecto in person. Check out where we'll be next — we'd love to see you there.",
-        }),
-        eventsCtaLabel: fields.text({
-          label: "Events CTA Label",
-          defaultValue: "See Past Events",
-        }),
-        eventsCtaHref: fields.text({
-          label: "Events CTA URL",
-          defaultValue: "/events",
-        }),
-
-        // ── Join ──
-        joinHeading: fields.text({
-          label: "Join Heading",
-          defaultValue: "Join the Team",
-        }),
-        joinSubtitle: fields.text({
-          label: "Join Subtitle",
-          multiline: true,
-          defaultValue:
-            "Whether you're a lifelong Ghosthead or just getting started, there's a place for you in our franchise. Join a community of fans who build props, attend events, visit hospitals, and raise money for charity — all while having a blast.",
-        }),
-        joinImage: fields.text({
-          label: "Join Image Path",
-          description: "Path to the image shown in the join section.",
-          defaultValue: "/images/ghostbusters-virginia-movie-premiere.jpg",
-        }),
-        joinImageAlt: fields.text({
-          label: "Join Image Alt Text",
-          defaultValue:
-            "Three Ghostbusters Virginia members in full uniforms posing at a movie premiere event",
-        }),
-        joinQuoteLineOne: fields.text({
-          label: "Join Quote Line 1",
-          multiline: true,
-          defaultValue:
-            "Do you believe in UFOs, astral projections, mental telepathy, ESP, clairvoyance, spirit photography, telekinetic movement, full trance mediums, the Loch Ness monster and the theory of Atlantis?",
-        }),
-        joinQuoteLineTwo: fields.text({
-          label: "Join Quote Line 2",
-          multiline: true,
-          defaultValue:
-            "Ready to get out there and start busting some ghosts? Excellent news rookie, we have openings!",
-        }),
-        joinCtaLabel: fields.text({
-          label: "Join CTA Label",
-          defaultValue: "Join Now",
-        }),
-        joinCtaHref: fields.text({
-          label: "Join CTA URL",
-          defaultValue: "/join",
-        }),
-
-        // ── Swag ──
-        swagHeading: fields.text({
-          label: "Swag Heading",
-          defaultValue: "Support the Mission",
-        }),
-        swagSubtitle: fields.text({
-          label: "Swag Subtitle",
-          multiline: true,
-          defaultValue:
-            "Every purchase helps fund our charity work, community events, and hospital visits across Virginia. Grab some gear and wear your support — we're ready to believe you!",
-        }),
-        swagCtaLabel: fields.text({
-          label: "Swag CTA Label",
-          defaultValue: "Visit Our Store",
-        }),
-        swagCtaHref: fields.text({
-          label: "Swag CTA URL",
-          defaultValue: "https://www.teepublic.com/user/ghostbustersva",
-        }),
       },
     }),
   },

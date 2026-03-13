@@ -18,7 +18,7 @@
   },
   "dependencies": {
     "@astrojs/markdoc": "^0.15.10",
-    "@astrojs/react": "^4.4.2",
+    "@astrojs/react": "^5.0.0",
     "@astrojs/sitemap": "^3.6.0",
     "@astrojs/vercel": "^9.0.4",
     "@keystatic/astro": "^5.0.6",
@@ -27,7 +27,6 @@
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "astro": "^5.17.1",
-    "framer-motion": "^12.34.3",
     "react": "^19.2.4",
     "react-dom": "^19.2.4"
   },

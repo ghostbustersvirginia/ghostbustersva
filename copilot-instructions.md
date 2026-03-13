@@ -1,48 +1,86 @@
 # Copilot Instructions — Ghostbusters Virginia
 
-These are the repo-level instructions for AI-assisted development.
+Repo-level operating rules for AI-assisted work.
 
-## Core Principles
+## Decision Order (follow in this exact order)
 
-1. **Small PRDs, small commits.** Every feature or change gets a short PRD in `/docs/prds/` before work begins. Each PRD is completed and committed before moving to the next.
-2. **Accessibility and performance first.** Never ship a feature that harms a11y or degrades load times. Use semantic HTML, ARIA where needed, and test with keyboard navigation.
-3. **No big refactors without a PRD.** If you want to restructure something, write a PRD explaining why, what changes, and what the migration path looks like.
-4. **Keep it static.** This is a static Astro site with a git-backed CMS (Keystatic). Do not add a backend, database, or server-rendered pages unless a PRD explicitly calls for it.
-5. **Content lives in collections.** Events and gallery items use `.md` files; page copy and settings use `.json` files. All are Astro Content Collections validated by Zod schemas in `src/content.config.ts`.
-6. **Astro-first, React only when needed.** Use `.astro` components for static UI. React islands (`.tsx` with `client:load`) are only for elements requiring client-side state (e.g., `HeroSection.tsx`, `GhostParticles.tsx`).
+1. `docs/prds/` (active PRD scope and acceptance criteria)
+2. `AGENT.md` (product vision and constraints)
+3. This file (`copilot-instructions.md`) for implementation guardrails
 
-## Code Style
+If rules conflict, follow the highest item in this list and note the conflict in your response.
 
-- TypeScript strict mode. No `any` unless absolutely necessary (and commented why).
-- Use Astro components (`.astro`) for pages and layouts. React (`.tsx`) only for interactive islands that need client-side state.
-- Follow the Prettier config in `.prettierrc`. Run `npm run format` before committing.
-- Follow ESLint rules. Run `npm run lint` before committing.
+## Delivery Rules
 
-## Commit Standards
+- **PRD-first for non-trivial work.** Any new feature, redesign, or refactor must have a PRD in `docs/prds/` before implementation.
+- **Small direct fixes are allowed without a PRD.** Typos, copy edits, tiny bug fixes, and low-risk maintenance can be done directly.
+- **No scope creep.** Implement only what the request/PRD asks for.
+- **Small, focused changes.** Prefer minimal diffs and reusable patterns already in the repo.
 
-- Use conventional commit messages: `feat:`, `fix:`, `docs:`, `chore:`, `refactor:`, `test:`.
-- Keep commits small and focused. One logical change per commit.
-- Link to the relevant PRD in the commit body when applicable.
+## Platform Constraints
 
-## File Organisation
+- Static Astro site + Keystatic CMS (git-backed content).
+- No backend, database, SSR, or API surface unless a PRD explicitly requires it.
+- Astro-first UI: use `.astro` components; avoid client-side JS unless clearly necessary.
+- Do not add React islands or animation libraries without explicit PRD approval.
 
-- Site config (nav, footer logos, metadata) → `src/config.ts`
-- Layouts → `src/layouts/`
-- Components → `src/components/`
-- Pages → `src/pages/`
-- Content → `src/content/{collection}/`
-- Documentation → `docs/`
-- PRDs → `docs/prds/`
+## Design System and Accessibility (March 2026 baseline)
 
-## Testing
+- Follow existing theme tokens and UI primitives in `src/styles/theme.css` and `src/components/ui/`.
+- No decorative motion; no blinking or moving text.
+- Transitions are allowed **only** on interactive elements (links, buttons, interactive cards).
+- No all-caps UI text (`text-transform: uppercase` is disallowed outside logo assets).
+- Body text uses dark text tokens (do not use blue/yellow/green/red for body copy).
+- Keep contrast and focus states WCAG 2.2 AA compliant.
+- Use semantic HTML and keyboard-accessible interactions.
 
-- Write unit tests in `tests/` using Vitest.
-- Keep tests minimal and meaningful — test behaviour, not implementation.
-- Run `npm run check` to validate everything before committing.
+## Styling and Component Rules
 
-## What NOT To Do
+- Use existing theme tokens in `src/styles/theme.css`; avoid hardcoded visual values.
+- Reuse existing UI primitives in `src/components/ui/` before creating new ones.
+- Keep components simple, typed, and consistent with current Astro patterns.
+- Do not introduce new design patterns if current components already cover the need.
 
-- Don't add animations, transitions, or sound effects without a PRD.
-- Don't install new dependencies without justification.
-- Don't modify the content collection schemas without updating the README.
-- Don't commit generated files (`dist/`, `.astro/`, `node_modules/`).
+## Content and Schema Rules
+
+- Content lives in Astro content collections under `src/content/`.
+- Respect current collection formats:
+  - events/gallery/pages: markdown
+  - settings/news/videos: json
+- Any schema change in `src/content.config.ts` must include updates to relevant docs and usage points.
+
+## Code Quality Rules
+
+- TypeScript strict mode; avoid `any` unless truly unavoidable.
+- Preserve accessibility and performance in every change.
+- Avoid new dependencies unless necessary and justified by the task/PRD.
+- Do not commit generated artifacts (`dist/`, `.astro/`, `node_modules/`).
+
+## Validation Checklist
+
+Before finishing substantial work, run:
+
+1. `npm run typecheck`
+2. `npm run lint`
+3. `npm run format:check`
+4. `npm run test`
+
+Or run `npm run check` for full validation.
+
+## File Organization Quick Reference
+
+- Site config: `src/config.ts`
+- Layouts: `src/layouts/`
+- Components: `src/components/`
+- Pages/routes: `src/pages/`
+- Content: `src/content/{collection}/`
+- Docs: `docs/`
+- PRDs: `docs/prds/`
+
+## Explicit Do-Not List
+
+- Do not redesign pages, navigation, or information architecture without a PRD.
+- Do not add decorative animation, particle effects, parallax, or motion libraries.
+- Do not hardcode colors/spacing/typography where tokens exist.
+- Do not modify schemas, slugs, or reserved routes casually.
+- Do not install packages "just in case".

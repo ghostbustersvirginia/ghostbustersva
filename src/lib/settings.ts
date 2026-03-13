@@ -64,6 +64,15 @@ export async function getSiteSettings(): Promise<SiteSettings> {
     const entry = entries[0];
     if (entry) {
       const d = entry.data;
+      const coreNavItems: NavItem[] =
+        d.navItems && d.navItems.length > 0
+          ? d.navItems.map((n: { label: string; href: string; external?: boolean }) => ({
+              label: n.label,
+              href: n.href,
+              external: n.external ?? false,
+            }))
+          : defaultNavItems;
+
       return {
         siteName: d.siteName || siteConfig.title,
         siteDescription: d.siteDescription || siteConfig.description,
@@ -75,14 +84,7 @@ export async function getSiteSettings(): Promise<SiteSettings> {
         navLogo: d.navLogo || "/images/logo.png",
         navTitle: d.navTitle || "Ghostbusters",
         navSubtitle: d.navSubtitle || "Virginia",
-        navItems:
-          d.navItems && d.navItems.length > 0
-            ? d.navItems.map((n: { label: string; href: string; external?: boolean }) => ({
-                label: n.label,
-                href: n.href,
-                external: n.external ?? false,
-              }))
-            : defaultNavItems,
+        navItems: coreNavItems,
         // Footer
         footerCopyrightText: d.footerCopyrightText || d.footerText || siteConfig.copyright,
         codeOfConductUrl: d.codeOfConductUrl || "/code-of-conduct",
