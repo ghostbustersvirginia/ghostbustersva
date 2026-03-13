@@ -12,7 +12,7 @@
  */
 interface Props {
   /** Visual variant */
-  variant?: "primary" | "secondary";
+  variant?: "primary" | "secondary" | "secondary-alt";
   /** When provided, renders as an <a> tag */
   href?: string;
   /** Button type attribute (only for <button>) */
@@ -23,6 +23,10 @@ interface Props {
   disabled?: boolean;
   /** Open link in new tab */
   external?: boolean;
+  /** Element ID */
+  id?: string;
+  /** Hidden state */
+  hidden?: boolean;
 }
 
 const {
@@ -32,6 +36,8 @@ const {
   class: className = "",
   disabled = false,
   external = false,
+  id,
+  hidden,
 } = Astro.props;
 
 const externalAttrs = external ? { target: "_blank", rel: "noopener noreferrer" } : {};
@@ -44,12 +50,20 @@ const externalAttrs = external ? { target: "_blank", rel: "noopener noreferrer" 
       class:list={["btn", `btn--${variant}`, className]}
       {...externalAttrs}
       aria-disabled={disabled || undefined}
+      id={id}
+      hidden={hidden}
     >
       <slot />
       {external && <span class="sr-only"> (opens in new tab)</span>}
     </a>
   ) : (
-    <button type={type} class:list={["btn", `btn--${variant}`, className]} disabled={disabled}>
+    <button
+      type={type}
+      class:list={["btn", `btn--${variant}`, className]}
+      disabled={disabled}
+      id={id}
+      hidden={hidden}
+    >
       <slot />
     </button>
   )
@@ -80,10 +94,10 @@ const externalAttrs = external ? { target: "_blank", rel: "noopener noreferrer" 
     white-space: nowrap;
   }
 
-  /* Primary — solid red fill */
+  /* Primary — solid fill */
   .btn--primary {
     background: var(--color-action-primary);
-    color: #fff;
+    color: var(--color-text-inverse);
     border-color: var(--color-action-primary);
   }
 
@@ -91,12 +105,12 @@ const externalAttrs = external ? { target: "_blank", rel: "noopener noreferrer" 
   .btn--primary:focus-visible {
     background: var(--color-action-primary-hover);
     border-color: var(--color-action-primary-hover);
-    box-shadow: var(--shadow-glow);
-    transform: scale(1.03);
+    box-shadow: 0 2px 8px var(--color-glow);
+    transform: translateY(-1px);
   }
 
   .btn--primary:active {
-    transform: scale(0.97);
+    transform: translateY(0);
   }
 
   /* Secondary — outlined */
@@ -111,11 +125,31 @@ const externalAttrs = external ? { target: "_blank", rel: "noopener noreferrer" 
     border-color: var(--color-action-secondary-hover);
     color: var(--color-text);
     background: var(--color-action-secondary-hover);
-    transform: scale(1.03);
+    transform: translateY(-1px);
   }
 
   .btn--secondary:active {
-    transform: scale(0.97);
+    transform: translateY(0);
+  }
+
+  /* Secondary-alt — filled white, for use on tinted/alt backgrounds */
+  .btn--secondary-alt {
+    background: var(--color-surface);
+    color: var(--color-text);
+    border-color: var(--color-border);
+  }
+
+  .btn--secondary-alt:hover,
+  .btn--secondary-alt:focus-visible {
+    border-color: var(--color-border);
+    color: var(--color-text);
+    background: var(--color-surface);
+    box-shadow: var(--shadow-hover);
+    transform: translateY(-1px);
+  }
+
+  .btn--secondary-alt:active {
+    transform: translateY(0);
   }
 
   /* Focus */
@@ -136,5 +170,10 @@ const externalAttrs = external ? { target: "_blank", rel: "noopener noreferrer" 
   .btn--lg {
     padding: 0.75rem 1.75rem;
     font-size: var(--text-base);
+  }
+
+  /* Hidden — respect the native hidden attribute */
+  .btn[hidden] {
+    display: none;
   }
 </style>

@@ -4,7 +4,9 @@
   "pageIntro": "Think you have what it takes? Here's how to suit up and join our franchise.",
   "quoteLineOne": "Do you believe in UFOs, astral projections, mental telepathy, ESP, clairvoyance, spirit photography, telekinetic movement, full trance mediums, the Loch Ness monster and the theory of Atlantis?",
   "quoteLineTwo": "Ready to get out there and start busting some ghosts? Excellent news rookie, we have openings!",
+  "whatWeLookForHeading": "What We Look For",
   "whatWeLookForText": "To apply for membership in Ghostbusters, Virginia we simply ask that you review our Code of Conduct, and have at least one Ghostbusters canon costume. To meet these requirements, a canon costume needs to include the following:",
+  "requiredGearHeading": "Required Gear",
   "requiredGearItems": [
     "A flight suit",
     "Black boots",
@@ -12,6 +14,7 @@
     "Elbow pads",
     "At least one belt gizmo"
   ],
+  "beltGizmoHeading": "Belt Gizmo Examples",
   "beltGizmoItems": [
     "MT500 Motorola Walkie Talkie",
     "Belt Gizmo (circuit board + daughter board)",
@@ -19,8 +22,15 @@
     "LifeGard 2",
     "PKE Meter"
   ],
+  "howToApplyHeading": "How to Apply",
   "applyText": "Got all your gear and ready to show us you ain't afraid of no ghosts? Message our Facebook page and let us know; you will be provided a link to the membership survey and once complete, you will be notified of results following Membership Liaison Officer verification.",
   "applyLinkLabel": "Facebook page",
   "applyLinkUrl": "https://www.facebook.com/GhostbustersVA",
-  "noteText": "We ask all applicants be able to pass a high-level background check to verify no felonies are on their record; this includes a verification with no results found on the national sex offender registry."
+  "notePrefix": "Please Note:",
+  "noteText": "We ask all applicants be able to pass a high-level background check to verify no felonies are on their record; this includes a verification with no results found on the national sex offender registry.",
+  "metaTitle": "Join",
+  "metaDescription": "Learn membership requirements and how to join Ghostbusters Virginia as an active community volunteer.",
+  "ogTitle": "Join Ghostbusters Virginia",
+  "ogDescription": "Suit up with Ghostbusters Virginia and become part of our statewide nonprofit franchise.",
+  "ogImage": "/images/ghostbusters-virginia-movie-premiere.jpg"
 }

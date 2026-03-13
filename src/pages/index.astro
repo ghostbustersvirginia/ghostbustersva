@@ -1,40 +1,103 @@
 ---
 /**
  * Home page — hero, gallery, upcoming events, join CTA, swag.
- * Content is CMS-driven via the homePageCopy singleton.
  */
 import BaseLayout from "../layouts/BaseLayout.astro";
 import Button from "../components/ui/Button.astro";
 import EventCard from "../components/EventCard.astro";
-import HeroSection from "../components/HeroSection";
+import HeroSection from "../components/HeroSection.astro";
 import Lightbox from "../components/ui/Lightbox.astro";
 import { getCollection } from "astro:content";
 import { splitEventsByStatus } from "../lib/events";
-import { swagItems } from "../lib/swag";
 import { getResponsiveImageAttrs } from "../lib/images";
+import SwagGrid from "../components/SwagGrid.astro";
 import { getPageCopy } from "../lib/page-copy";
 
-const homeCopy = (await getPageCopy("home")) as Record<string, unknown> | null;
+const copy = await getPageCopy("home");
 
 const allEvents = await getCollection("events");
-// Date-derived partitions reflect the current build snapshot.
-const { upcoming } = splitEventsByStatus(allEvents);
-
+const { upcoming, past } = splitEventsByStatus(allEvents);
 const galleryItems = await getCollection("gallery");
 
-const heroImagePath =
-  (homeCopy?.heroImage as string) || "/images/ghostbusters-virginia-slimer-stay-puft.jpg";
-const heroImage = await getResponsiveImageAttrs({
-  src: heroImagePath,
-  widths: [768, 1200, 1600],
-  sizes: "100vw",
-  width: 1600,
-  height: 900,
-  quality: 80,
-});
-
+/* ── CMS-driven copy ── */
+const heroTitle = copy!.heroTitle as string;
+const heroTagline = copy!.heroTagline as string;
+const heroPrimaryCtaLabel = copy!.heroPrimaryCtaLabel as string;
+const heroPrimaryCtaHref = copy!.heroPrimaryCtaHref as string;
+const heroSecondaryCtaLabel = copy!.heroSecondaryCtaLabel as string;
+const heroSecondaryCtaHref = copy!.heroSecondaryCtaHref as string;
+const heroLogoSrc = copy!.heroLogoSrc as string;
+const heroLogoAlt = copy!.heroLogoAlt as string;
+const missionHeading = (copy?.missionHeading as string) || "Who We Are";
+const missionSubtitle =
+  (copy?.missionSubtitle as string) ||
+  "Ghostbusters Virginia is the only 501(c)3 nonprofit recognized by Sony\u2019s Ghost Corps in the state. Since 2001, we\u2019ve united fans across the Commonwealth to turn our love of Ghostbusters into real community impact.";
+const missionBody =
+  (copy?.missionBody as string) ||
+  "We participate in community events all over Virginia to help raise money and awareness for charities, visit children\u2019s hospitals in full Ghostbusters gear, appear at parades and comic conventions, and welcome fans of all ages and backgrounds \u2014 all in a safe, fun, and family friendly manner.";
+const galleryHeading = (copy?.galleryHeading as string) || "Out in the Field";
+const gallerySubtitle =
+  (copy?.gallerySubtitle as string) ||
+  "From charity fundraisers and hospital visits to comic conventions and community parades.";
+const galleryCtaLabel = (copy?.galleryCtaLabel as string) || "See All Media";
+const galleryCtaHref = (copy?.galleryCtaHref as string) || "/media";
+const eventsHeading = (copy?.eventsHeading as string) || "Events";
+const eventsSubtitle =
+  (copy?.eventsSubtitle as string) ||
+  "Meet the team, support local charities, and see the Ecto in person. Check out where we\u2019ll be next \u2014 we\u2019d love to see you there.";
+const eventsCtaLabel = (copy?.eventsCtaLabel as string) || "See All Events";
+const eventsCtaHref = (copy?.eventsCtaHref as string) || "/events";
+const joinHeading = (copy?.joinHeading as string) || "Join the Team";
+const joinSubtitle =
+  (copy?.joinSubtitle as string) ||
+  "Whether you\u2019re a lifelong Ghosthead or just getting started, there\u2019s a place for you in our franchise. Join a community of fans who build props, attend events, visit hospitals, and raise money for charity \u2014 all while having a blast.";
 const joinImagePath =
-  (homeCopy?.joinImage as string) || "/images/ghostbusters-virginia-movie-premiere.jpg";
+  (copy?.joinImage as string) || "/images/ghostbusters-virginia-movie-premiere.jpg";
+const joinImageAlt =
+  (copy?.joinImageAlt as string) ||
+  "Three Ghostbusters Virginia members in full uniforms posing at a movie premiere event";
+const joinQuoteLineOne =
+  (copy?.joinQuoteLineOne as string) ||
+  "Do you believe in UFOs, astral projections, mental telepathy, ESP, clairvoyance, spirit photography, telekinetic movement, full trance mediums, the Loch Ness monster and the theory of Atlantis?";
+const joinQuoteLineTwo =
+  (copy?.joinQuoteLineTwo as string) ||
+  "Ready to get out there and start busting some ghosts? Excellent news rookie, we have openings!";
+const joinCtaLabel = (copy?.joinCtaLabel as string) || "Join Now";
+const joinCtaHref = (copy?.joinCtaHref as string) || "/join";
+const swagSectionHeading = (copy?.swagHeading as string) || "Support the Mission";
+const swagSubtitle =
+  (copy?.swagSubtitle as string) ||
+  "Every purchase helps fund our charity work, community events, and hospital visits across Virginia. Grab some gear and wear your support \u2014 each item opens our TeePublic store in a new tab!";
+const swagCtaLabel = (copy?.swagCtaLabel as string) || "Visit Our Store";
+const swagCtaHref =
+  (copy?.swagCtaHref as string) || "https://www.teepublic.com/user/ghostbusters-virginia";
+
+interface ImpactStat {
+  value: string;
+  label: string;
+  countTarget?: string;
+  countSuffix?: string;
+}
+const defaultImpactStats: ImpactStat[] = [
+  { value: "2001", label: "Founded", countTarget: "2001" },
+  { value: "501c3", label: "Registered Nonprofit" },
+  { value: "50+", label: "Community Events", countTarget: "50", countSuffix: "+" },
+  { value: "VA", label: "Statewide Presence" },
+];
+const impactStats = (copy?.impactStats as ImpactStat[] | undefined) || defaultImpactStats;
+const impactStatsAriaLabel = (copy?.impactStatsAriaLabel as string) || "Our impact";
+
+const metaTitle = (copy?.metaTitle as string) || "Home";
+const metaDescription =
+  (copy?.metaDescription as string) ||
+  "Ghostbusters Virginia is a Sony-recognized 501(c)(3) nonprofit bringing fandom and community service together across Virginia.";
+const ogTitleVal = (copy?.ogTitle as string) || "Ghostbusters Virginia";
+const ogDescVal =
+  (copy?.ogDescription as string) ||
+  "See upcoming events, media, and ways to join or support Ghostbusters Virginia.";
+const ogImage = (copy?.ogImage as string) || "/images/ghostbusters-virginia-slimer-stay-puft.jpg";
+
+/* ── Responsive image processing ── */
 const joinImage = await getResponsiveImageAttrs({
   src: joinImagePath,
   widths: [640, 960, 1200],
@@ -55,265 +118,182 @@ const galleryImageAttrs = await Promise.all(
     }),
   ),
 );
-const swagImageAttrs = await Promise.all(
-  swagItems.map((item) =>
-    getResponsiveImageAttrs({
-      src: item.image,
-      widths: [320, 480, 640],
-      sizes: "(max-width: 768px) 50vw, 20vw",
-      width: 640,
-      height: 640,
-      quality: 72,
-    }),
-  ),
-);
 ---
 
 <BaseLayout
-  title="Home"
-  description="Ghostbusters Virginia is a Sony-recognized 501(c)(3) nonprofit bringing fandom and community service together across Virginia."
+  title={metaTitle}
+  description={metaDescription}
   canonical="/"
-  ogTitle="Ghostbusters Virginia"
-  ogDescription="See upcoming events, media, and ways to join or support Ghostbusters Virginia."
-  ogImage="/images/ghostbusters-virginia-slimer-stay-puft.jpg"
-  showGhostParticles
-  heroImagePreload={heroImage}
+  ogTitle={ogTitleVal}
+  ogDescription={ogDescVal}
+  ogImage={ogImage}
 >
-  <!-- ───── HERO (React island — PRD 009 Tier 2) ───── -->
+  <!-- ───── HERO (static Astro component) ───── -->
   <HeroSection
-    client:load
-    heroImage={heroImage}
-    heroTitle={homeCopy?.heroTitle as string | undefined}
-    heroTagline={homeCopy?.heroTagline as string | undefined}
-    heroPurposeItems={homeCopy?.heroPurposeItems as string[] | undefined}
-    primaryCtaLabel={homeCopy?.heroPrimaryCtaLabel as string | undefined}
-    primaryCtaHref={homeCopy?.heroPrimaryCtaHref as string | undefined}
-    secondaryCtaLabel={homeCopy?.heroSecondaryCtaLabel as string | undefined}
-    secondaryCtaHref={homeCopy?.heroSecondaryCtaHref as string | undefined}
+    heroTitle={heroTitle}
+    heroTagline={heroTagline}
+    primaryCtaLabel={heroPrimaryCtaLabel}
+    primaryCtaHref={heroPrimaryCtaHref}
+    secondaryCtaLabel={heroSecondaryCtaLabel}
+    secondaryCtaHref={heroSecondaryCtaHref}
+    heroLogoSrc={heroLogoSrc}
+    heroLogoAlt={heroLogoAlt}
   />
-  <!-- Inline script: reveal hero only after the background image has loaded.
-       Runs immediately when parsed — no React hydration dependency. -->
-  <script is:inline>
-    (function () {
-      var container = document.querySelector(".hero-container");
-      var img = container && container.querySelector(".hero-bg-img");
-      if (!container) return;
-      function reveal() {
-        container.classList.add("hero-ready");
-      }
-      if (img && img.complete && img.naturalWidth > 0) {
-        reveal();
-      } else if (img) {
-        img.addEventListener("load", reveal, { once: true });
-        img.addEventListener("error", reveal, { once: true });
-        setTimeout(reveal, 1500);
-      } else {
-        setTimeout(reveal, 800);
-      }
-    })();
-  </script>
 
   <!-- ───── MISSION / IDENTITY ───── -->
-  <section
-    class="container section mission-section fade-in-section"
-    aria-labelledby="mission-heading"
-  >
-    <h2 id="mission-heading" class="section-heading">Officially Recognized. Community Driven.</h2>
-    <p class="section-subtitle">
-      Since 2001, Virginia’s only Sony-recognized Ghostbusters nonprofit has been turning fandom
-      into community impact.
-    </p>
+  <section class="section hp-section--white mission-section" aria-labelledby="mission-heading">
+    <div class="container">
+      <h2 id="mission-heading" class="section-heading">{missionHeading}</h2>
+      <p class="section-subtitle">
+        {missionSubtitle}
+      </p>
 
-    <div class="mission-grid">
-      <div class="mission-text">
-        <p class="mission-body">
-          Ghostbusters Virginia is the only <strong class="glow">501c3 nonprofit</strong> recognized by
-          <strong class="glow">Sony&rsquo;s Ghost Corps</strong> in the state. Since <strong
-            class="glow">2001</strong
-          >, we&rsquo;ve united fans across the Commonwealth to turn our love of Ghostbusters into <strong
-            class="glow">real community impact</strong
-          >.
-        </p>
-        <p class="mission-body">
-          We participate in <strong class="glow">community events all over Virginia</strong> to help raise
-          money and awareness for other charities, and spread the love of Ghostbusters all over the Commonwealth
-          in a <strong class="glow">safe, fun, and family friendly</strong> manner.
-        </p>
+      <div class="impact-stats" role="list" aria-label={impactStatsAriaLabel}>
+        {
+          impactStats.map((stat) => (
+            <div class="impact-stat" role="listitem">
+              <span
+                class="impact-stat__number"
+                {...(stat.countTarget ? { "data-count-target": stat.countTarget } : {})}
+                {...(stat.countSuffix ? { "data-count-suffix": stat.countSuffix } : {})}
+              >
+                {stat.value}
+              </span>
+              <span class="impact-stat__label">{stat.label}</span>
+            </div>
+          ))
+        }
       </div>
-      <div class="mission-card">
-        <ul class="mission-list glow-list" role="list">
-          <li>Raise money for local and national charities</li>
-          <li>Visit children&rsquo;s hospitals in full Ghostbusters gear</li>
-          <li>Appear at parades, comic cons, and community festivals</li>
-          <li>Welcome fans of all ages and backgrounds across Virginia</li>
-        </ul>
-      </div>
+
+      <p class="mission-body">
+        {missionBody}
+      </p>
     </div>
   </section>
 
   <!-- ───── GALLERY ───── -->
   {
     galleryItems.length > 0 && (
-      <section class="container section fade-in-section" aria-labelledby="gallery-heading">
-        <h2 id="gallery-heading" class="section-heading">
-          {(homeCopy?.galleryHeading as string) || "Out in the Field"}
-        </h2>
-        <p class="section-subtitle">
-          {(homeCopy?.gallerySubtitle as string) ||
-            "From charity fundraisers and hospital visits to comic conventions and community parades."}
-        </p>
-        <div id="gallery-splide" class="splide" aria-label="Photo gallery carousel">
-          <div class="splide__track">
-            <ul class="splide__list">
-              {galleryItems.map((item, index) => (
-                <li class="splide__slide">
-                  <button
-                    class="gallery-slide"
-                    type="button"
-                    aria-label={`View full image: ${item.data.title}`}
-                    data-image={item.data.image}
-                    data-alt={item.data.alt}
-                    data-title={item.data.title}
-                  >
-                    <img
-                      src={galleryImageAttrs[index].src}
-                      srcset={galleryImageAttrs[index].srcset}
-                      sizes={galleryImageAttrs[index].sizes}
-                      alt={item.data.alt}
-                      loading="lazy"
-                      decoding="async"
-                      width={galleryImageAttrs[index].width}
-                      height={galleryImageAttrs[index].height}
-                      class="gallery-slide__img"
-                    />
-                    <span class="gallery-slide__title">{item.data.title}</span>
-                  </button>
-                </li>
-              ))}
-            </ul>
+      <section class="section hp-section--alt" aria-labelledby="gallery-heading">
+        <div class="container">
+          <h2 id="gallery-heading" class="section-heading">
+            {galleryHeading}
+          </h2>
+          <p class="section-subtitle">{gallerySubtitle}</p>
+          <div id="gallery-splide" class="splide" aria-label="Photo gallery carousel">
+            <div class="splide__track">
+              <ul class="splide__list">
+                {galleryItems.map((item, index) => (
+                  <li class="splide__slide">
+                    <button
+                      class="gallery-slide"
+                      type="button"
+                      aria-label={`View full image: ${item.data.title}`}
+                      data-image={item.data.image}
+                      data-alt={item.data.alt}
+                      data-title={item.data.title}
+                    >
+                      <img
+                        src={galleryImageAttrs[index].src}
+                        srcset={galleryImageAttrs[index].srcset}
+                        sizes={galleryImageAttrs[index].sizes}
+                        alt={item.data.alt}
+                        loading="lazy"
+                        decoding="async"
+                        width={galleryImageAttrs[index].width}
+                        height={galleryImageAttrs[index].height}
+                        class="gallery-slide__img"
+                      />
+                      <span class="gallery-slide__overlay" aria-hidden="true">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <polyline points="15 3 21 3 21 9" />
+                          <polyline points="9 21 3 21 3 15" />
+                          <line x1="21" y1="3" x2="14" y2="10" />
+                          <line x1="3" y1="21" x2="10" y2="14" />
+                        </svg>
+                      </span>
+                      <span class="gallery-slide__title">{item.data.title}</span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+          <div class="gallery-cta">
+            <Button variant="secondary-alt" href={galleryCtaHref}>
+              {galleryCtaLabel}
+            </Button>
           </div>
         </div>
-        <div class="gallery-cta">
-          <Button variant="primary" href={(homeCopy?.galleryCtaHref as string) || "/media"}>
-            {(homeCopy?.galleryCtaLabel as string) || "See All Media"}
-          </Button>
-        </div>
       </section>
     )
   }
 
-  <!-- ───── UPCOMING EVENTS ───── -->
-  {
-    upcoming.length > 0 && (
-      <section class="container section fade-in-section" aria-labelledby="upcoming-heading">
-        <h2 id="upcoming-heading" class="section-heading">
-          {(homeCopy?.eventsHeading as string) || "Upcoming Events"}
-        </h2>
-        <p class="section-subtitle">
-          {(homeCopy?.eventsSubtitle as string) ||
-            "Meet the team, support local charities, and see the Ecto in person. Check out where we\u2019ll be next \u2014 we\u2019d love to see you there."}
-        </p>
-        <ul class="event-list">
-          {upcoming.map((event) => (
-            <EventCard event={event} status="upcoming" showCountdown />
-          ))}
-        </ul>
-        <div class="section-cta">
-          <Button variant="primary" href={(homeCopy?.eventsCtaHref as string) || "/events"}>
-            {(homeCopy?.eventsCtaLabel as string) || "See Past Events"}
-          </Button>
-        </div>
-      </section>
-    )
-  }
+  <!-- ───── EVENTS ───── -->
+  <section class="section hp-section--white" aria-labelledby="upcoming-heading">
+    <div class="container">
+      <h2 id="upcoming-heading" class="section-heading">
+        {eventsHeading}
+      </h2>
+      <p class="section-subtitle">{eventsSubtitle}</p>
+      <ul class="event-list">
+        {
+          upcoming.length > 0
+            ? upcoming.map((event) => (
+                <EventCard event={event} showCountdown className="event-item--homepage-upcoming" />
+              ))
+            : past.length > 0 && <EventCard event={past[0]} />
+        }
+      </ul>
+      <div class="section-cta">
+        <Button variant="secondary" href={eventsCtaHref}>
+          {eventsCtaLabel}
+        </Button>
+      </div>
+    </div>
+  </section>
 
   <!-- ───── JOIN US ───── -->
-  <section class="container section join-section fade-in-section" aria-labelledby="join-heading">
-    <h2 id="join-heading" class="section-heading">
-      {(homeCopy?.joinHeading as string) || "Join the Team"}
-    </h2>
-    <p class="section-subtitle">
-      {
-        (homeCopy?.joinSubtitle as string) ||
-          "Whether you\u2019re a lifelong Ghosthead or just getting started, there\u2019s a place for you in our franchise. Join a community of fans who build props, attend events, visit hospitals, and raise money for charity \u2014 all while having a blast."
-      }
-    </p>
-    <div class="join-layout">
-      <div class="join-image-wrapper">
-        <img
-          src={joinImage.src}
-          srcset={joinImage.srcset}
-          sizes={joinImage.sizes}
-          alt={(homeCopy?.joinImageAlt as string) ||
-            "Three Ghostbusters Virginia members in full uniforms posing at a movie premiere event"}
-          class="join-image"
-          loading="lazy"
-          decoding="async"
-          width={joinImage.width}
-          height={joinImage.height}
-        />
+  <section class="section hp-section--alt join-section" aria-labelledby="join-heading">
+    <div class="container">
+      <h2 id="join-heading" class="section-heading">{joinHeading}</h2>
+      <p class="section-subtitle">
+        {joinSubtitle}
+      </p>
+      <div class="join-layout">
+        <div class="join-image-wrapper">
+          <img
+            src={joinImage.src}
+            srcset={joinImage.srcset}
+            sizes={joinImage.sizes}
+            alt={joinImageAlt}
+            class="join-image"
+            loading="lazy"
+            decoding="async"
+            width={joinImage.width}
+            height={joinImage.height}
+          />
+        </div>
+        <blockquote class="quote-block">
+          <p>
+            &ldquo;{joinQuoteLineOne}&rdquo;
+          </p>
+          <p>
+            {joinQuoteLineTwo}
+          </p>
+        </blockquote>
       </div>
-      <blockquote class="quote-block">
-        <p>
-          &ldquo;{
-            (homeCopy?.joinQuoteLineOne as string) ||
-              "Do you believe in UFOs, astral projections, mental telepathy, ESP, clairvoyance, spirit photography, telekinetic movement, full trance mediums, the Loch Ness monster and the theory of Atlantis?"
-          }&rdquo;
-        </p>
-        <p>
-          {
-            (homeCopy?.joinQuoteLineTwo as string) ||
-              "Ready to get out there and start busting some ghosts? Excellent news rookie, we have openings!"
-          }
-        </p>
-      </blockquote>
-    </div>
-    <div class="section-cta">
-      <Button variant="primary" href={(homeCopy?.joinCtaHref as string) || "/join"}>
-        {(homeCopy?.joinCtaLabel as string) || "Join Now"}
-      </Button>
+      <div class="section-cta">
+        <Button variant="secondary-alt" href={joinCtaHref}>{joinCtaLabel}</Button>
+      </div>
     </div>
   </section>
 
   <!-- ───── GBVA SWAG ───── -->
-  <section class="container section swag-section fade-in-section" aria-labelledby="swag-heading">
-    <h2 id="swag-heading" class="section-heading">
-      {(homeCopy?.swagHeading as string) || "Support the Mission"}
-    </h2>
-    <p class="section-subtitle">
-      {
-        (homeCopy?.swagSubtitle as string) ||
-          "Every purchase helps fund our charity work, community events, and hospital visits across Virginia. Grab some gear and wear your support \u2014 we\u2019re ready to believe you!"
-      }
-    </p>
-    <div class="swag-grid">
-      {
-        swagItems.map((item, index) => (
-          <a href={item.url} target="_blank" rel="noopener noreferrer" class="swag-item">
-            <img
-              src={swagImageAttrs[index].src}
-              srcset={swagImageAttrs[index].srcset}
-              sizes={swagImageAttrs[index].sizes}
-              alt={item.alt}
-              loading="lazy"
-              decoding="async"
-              width={swagImageAttrs[index].width}
-              height={swagImageAttrs[index].height}
-              class="swag-thumb"
-            />
-            <span class="sr-only"> (opens in new tab)</span>
-          </a>
-        ))
-      }
-    </div>
-    <div class="section-cta">
-      <Button
-        variant="primary"
-        href={(homeCopy?.swagCtaHref as string) || "https://www.teepublic.com/user/ghostbustersva"}
-        external
-      >
-        {(homeCopy?.swagCtaLabel as string) || "Visit Our Store"}
-      </Button>
+  <section class="section hp-section--white swag-section" aria-labelledby="swag-heading">
+    <div class="container">
+      <h2 id="swag-heading" class="section-heading">{swagSectionHeading}</h2>
+      <SwagGrid subtitle={swagSubtitle} ctaLabel={swagCtaLabel} ctaHref={swagCtaHref} />
     </div>
   </section>
 
@@ -330,6 +310,20 @@ const swagImageAttrs = await Promise.all(
   /* Override global left-align for homepage centered layout */
   .section-heading {
     text-align: center;
+    padding-left: 0;
+  }
+
+  .section-heading::before {
+    display: none;
+  }
+
+  .section-heading::after {
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80px;
+    height: 3px;
+    background: var(--color-gb-green);
+    right: auto;
   }
 
   /* ── Mission / Identity section ── */
@@ -338,73 +332,71 @@ const swagImageAttrs = await Promise.all(
     padding-top: var(--space-3xl);
   }
 
-  .mission-grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: var(--space-xl);
-    margin-bottom: var(--space-lg);
-    text-align: left;
-  }
-
-  @media (min-width: 768px) {
-    .mission-grid {
-      grid-template-columns: 1fr 1fr;
-      gap: var(--space-2xl);
-      align-items: stretch;
-    }
-  }
-
-  .mission-text {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-lg);
+  /* Ensure paragraph text in this section is clearly secondary to headings */
+  .mission-section .section-subtitle,
+  .mission-body {
+    color: var(--color-text-muted);
   }
 
   .mission-body {
-    font-size: var(--text-lg);
+    font-size: var(--text-base);
     line-height: var(--leading-loose);
-    color: var(--color-text-muted);
     margin: 0;
+    max-width: var(--content-width-mid);
+    margin-inline: auto;
+    text-align: center;
   }
 
-  /* ── Mission card ── */
-  .mission-card {
-    background: var(--color-surface);
-    border: 1px solid var(--color-border);
-    border-left: 3px solid rgba(0, 230, 118, 0.45);
-    border-radius: var(--radius-md);
-    padding: var(--space-xl) var(--space-2xl);
-    text-align: left;
+  /* ── Impact stats row ── */
+  .impact-stats {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-lg);
+    margin-bottom: var(--space-2xl);
+    background: var(--color-surface-alt);
+    border-radius: var(--radius-lg);
+    padding: var(--space-xl);
+  }
+
+  @media (min-width: 640px) {
+    .impact-stats {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+
+  .impact-stat {
     display: flex;
-    align-items: center;
-    transition:
-      border-color var(--transition-base),
-      box-shadow var(--transition-base);
-  }
-
-  .mission-card:hover {
-    border-color: rgba(0, 230, 118, 0.35);
-    box-shadow:
-      0 0 10px rgba(0, 230, 118, 0.2),
-      0 0 20px rgba(0, 230, 118, 0.08);
-  }
-
-  .mission-card:hover .glow-list li {
-    color: var(--color-text);
-  }
-
-  .mission-card:hover .glow-list li::before {
-    background: rgba(0, 230, 118, 0.9);
-    box-shadow:
-      0 0 6px rgba(0, 230, 118, 0.7),
-      0 0 14px rgba(0, 230, 118, 0.35);
-  }
-
-  .mission-list {
-    margin: 0;
-    columns: 1 !important;
-    display: flex !important;
     flex-direction: column;
+    align-items: center;
+    gap: var(--space-xs);
+    padding: var(--space-xl) var(--space-lg);
+    background: var(--color-surface);
+    border: none;
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-panel);
+    transition:
+      box-shadow var(--transition-base),
+      transform var(--transition-base);
+  }
+
+  .impact-stat:hover {
+    box-shadow: var(--shadow-hover);
+    transform: translateY(-2px);
+  }
+
+  .impact-stat__number {
+    font-family: var(--font-brand-title);
+    font-size: var(--text-3xl);
+    font-weight: 700;
+    color: var(--color-accent);
+    line-height: 1;
+  }
+
+  .impact-stat__label {
+    font-size: var(--text-sm);
+    font-weight: var(--weight-medium);
+    color: var(--color-text-muted);
+    letter-spacing: var(--tracking-wide);
   }
 
   .gallery-cta {
@@ -446,10 +438,8 @@ const swagImageAttrs = await Promise.all(
   }
 
   .join-image-wrapper:hover {
-    border-color: rgba(0, 230, 118, 0.35);
-    box-shadow:
-      0 0 10px rgba(0, 230, 118, 0.2),
-      0 0 20px rgba(0, 230, 118, 0.08);
+    border-color: var(--color-hover-border);
+    box-shadow: var(--shadow-hover);
   }
 
   .join-image {
@@ -458,8 +448,63 @@ const swagImageAttrs = await Promise.all(
     display: block;
     object-fit: cover;
     filter: brightness(0.85) saturate(0.9);
+    transition: filter 0.4s ease;
+  }
+
+  .join-image-wrapper:hover .join-image {
+    filter: brightness(1) saturate(1);
+  }
+
+  /* ── Full-bleed section backgrounds ── */
+  .hp-section--white {
+    background-color: var(--color-surface);
+  }
+
+  .hp-section--alt {
+    background-color: var(--color-surface-alt);
   }
 </style>
+
+<!-- Stat count-up animation -->
+<script>
+  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  if (!reducedMotion) {
+    const statEls = document.querySelectorAll<HTMLElement>("[data-count-target]");
+
+    const observer = new IntersectionObserver(
+      (entries, obs) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+          const el = entry.target as HTMLElement;
+          const target = parseInt(el.dataset.countTarget ?? "0", 10);
+          const suffix = el.dataset.countSuffix ?? "";
+          const duration = 1400;
+          const startTime = performance.now();
+
+          function tick(now: number) {
+            const elapsed = now - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+            // easeOutQuart
+            const ease = 1 - Math.pow(1 - progress, 4);
+            el.textContent = Math.round(ease * target) + suffix;
+            if (progress < 1) {
+              requestAnimationFrame(tick);
+            } else {
+              el.textContent = target + suffix;
+            }
+          }
+
+          requestAnimationFrame(tick);
+          obs.unobserve(el);
+        });
+      },
+      { threshold: 0.4 },
+    );
+
+    statEls.forEach((el) => observer.observe(el));
+  }
+</script>
 
 <!-- Splide carousel + lightbox -->
 <script>
@@ -473,8 +518,8 @@ const swagImageAttrs = await Promise.all(
 
     const splide = new Splide(el, {
       type: "loop",
-      perPage: 3,
-      gap: "1rem",
+      perPage: 2,
+      gap: "1.5rem",
       autoplay: true,
       interval: 7000,
       pauseOnHover: true,
@@ -566,8 +611,8 @@ const swagImageAttrs = await Promise.all(
   }
   #gallery-splide .splide__arrow:hover {
     background: var(--color-surface-alt);
-    border-color: var(--color-accent);
-    box-shadow: var(--shadow-glow);
+    border-color: var(--color-gb-green);
+    box-shadow: var(--shadow-glow-green);
     opacity: 1;
   }
   #gallery-splide .splide__arrow svg {
@@ -576,7 +621,7 @@ const swagImageAttrs = await Promise.all(
     height: 1rem;
   }
   #gallery-splide .splide__arrow:hover svg {
-    fill: var(--color-accent-hover);
+    fill: var(--color-gb-green);
   }
 
   /* Pagination dots */
@@ -588,21 +633,14 @@ const swagImageAttrs = await Promise.all(
     opacity: 0.6;
     width: 8px;
     height: 8px;
-    transition:
-      background var(--transition-base),
-      transform var(--transition-base),
-      box-shadow var(--transition-base);
+    transition: background var(--transition-base);
   }
   #gallery-splide .splide__pagination__page.is-active {
-    background: #00e676;
-    transform: scale(1.3);
-    box-shadow:
-      0 0 8px rgba(0, 230, 118, 0.6),
-      0 0 16px rgba(0, 230, 118, 0.25);
+    background: var(--color-gb-green);
     opacity: 1;
   }
   #gallery-splide .splide__pagination__page:hover {
-    background: rgba(0, 230, 118, 0.7);
+    background: var(--color-gb-green);
     opacity: 1;
   }
 
@@ -625,33 +663,63 @@ const swagImageAttrs = await Promise.all(
       box-shadow var(--transition-base);
   }
   .gallery-slide:hover {
-    border-color: rgba(0, 230, 118, 0.35);
+    border-color: var(--color-hover-border);
     box-shadow:
-      0 0 10px rgba(0, 230, 118, 0.2),
-      0 0 20px rgba(0, 230, 118, 0.08);
+      0 8px 24px rgba(0, 0, 0, 0.15),
+      0 2px 8px rgba(0, 0, 0, 0.08);
   }
   .gallery-slide__img {
     width: 100%;
-    aspect-ratio: 16 / 10;
+    aspect-ratio: 3 / 2;
     object-fit: cover;
     display: block;
-    filter: brightness(0.82) saturate(0.9);
+    transition: transform 0.3s ease;
+  }
+  .gallery-slide:hover .gallery-slide__img {
+    transform: scale(1.03);
+  }
+  .gallery-slide__overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.4);
+    color: #fff;
+    opacity: 0;
+    transition: opacity 0.25s ease;
+    pointer-events: none;
+    z-index: 1;
+  }
+  .gallery-slide:hover .gallery-slide__overlay,
+  .gallery-slide:focus-visible .gallery-slide__overlay {
+    opacity: 1;
   }
   .gallery-slide__title {
     position: absolute;
     bottom: 0;
     left: 0;
     right: 0;
-    padding: 2.5rem 0.75rem 0.6rem;
-    font-size: var(--text-sm);
-    color: #fff;
-    background: linear-gradient(transparent 0%, rgba(0, 0, 0, 0.45) 40%, rgba(0, 0, 0, 0.9) 100%);
+    padding: 3rem 1rem 0.75rem;
+    font-size: var(--text-base);
+    font-weight: var(--weight-semibold);
+    color: var(--color-text-inverse);
+    text-align: center;
+    background: linear-gradient(transparent 0%, rgba(0, 0, 0, 0.55) 35%, rgba(0, 0, 0, 0.92) 100%);
     pointer-events: none;
-    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
+    text-shadow: 0 1px 6px rgba(0, 0, 0, 0.9);
   }
 
   /* Spacing for pagination below */
   #gallery-splide {
     padding-bottom: var(--space-2xl);
+    max-width: 64rem;
+    margin-inline: auto;
+  }
+
+  @media (min-width: 1024px) {
+    #gallery-splide {
+      max-width: none;
+    }
   }
 </style>

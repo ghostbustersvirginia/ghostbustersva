@@ -1,113 +1,103 @@
 ---
+/**
+ * Code of Conduct — Standards for GBVA members and community.
+ */
 import BaseLayout from "../layouts/BaseLayout.astro";
-import Panel from "../components/ui/Panel.astro";
+import PageHeader from "../components/ui/PageHeader.astro";
+import SectionHeading from "../components/ui/SectionHeading.astro";
+import { getPageCopy } from "../lib/page-copy";
+
+const copy = await getPageCopy("code-of-conduct");
+
+interface CocSection {
+  heading: string;
+  body: string;
+}
+
+const defaultSections: CocSection[] = [
+  {
+    heading: "Be Respectful",
+    body: "Treat all members, fans, event organizers, and the public with courtesy, dignity, and respect at all times — both online and in person.",
+  },
+  {
+    heading: "Represent the Franchise Well",
+    body: "When in costume or at events, you represent Ghostbusters Virginia and the broader Ghostbusters community. Conduct yourself professionally, stay in character appropriately, and keep the experience fun and welcoming for everyone — especially kids.",
+  },
+  {
+    heading: "No Discrimination or Harassment",
+    body: "Ghostbusters Virginia has zero tolerance for discrimination, harassment, or bullying based on race, gender, sexual orientation, disability, religion, or any other characteristic. We're all here because we love Ghostbusters.",
+  },
+  {
+    heading: "Keep It Family-Friendly",
+    body: "Our events often involve children and families. Language, behavior, and social media posts representing GBVA should be appropriate for all ages.",
+  },
+  {
+    heading: "Follow Event Rules",
+    body: "Respect the rules and policies of every venue and event we attend. This includes parking, prop handling, restricted areas, and photo policies. If you're unsure, ask a coordinator.",
+  },
+  {
+    heading: "Support Charitable Missions",
+    body: "GBVA exists to give back. Participate in good faith in charity drives, community events, and fundraisers. Never use a GBVA event for personal commercial gain without authorization.",
+  },
+  {
+    heading: "Report Concerns",
+    body: "If you experience or witness behavior that violates this Code of Conduct, report it to a franchise officer immediately. All reports will be handled discreetly and taken seriously.",
+  },
+  {
+    heading: "Consequences",
+    body: "Violations may result in a warning, suspension, or removal from the franchise depending on severity. Serious violations (legal offenses, threats, etc.) will result in immediate removal and may be reported to authorities.",
+  },
+];
+
+const pageTitle = (copy?.pageTitle as string) || "Code of Conduct";
+const pageIntro =
+  (copy?.pageIntro as string) ||
+  "The standards that keep our franchise strong and our community welcoming.";
+const sections = (copy?.sections as CocSection[] | undefined) || defaultSections;
+const metaTitle = (copy?.metaTitle as string) || "Code of Conduct";
+const metaDescription =
+  (copy?.metaDescription as string) ||
+  "Ghostbusters Virginia's Code of Conduct — the standards we uphold as a franchise and community.";
+const ogTitleVal = (copy?.ogTitle as string) || "Code of Conduct | Ghostbusters Virginia";
+const ogDescriptionVal =
+  (copy?.ogDescription as string) ||
+  "Our commitment to respect, professionalism, and community as Ghostbusters Virginia members.";
+const ogImage = (copy?.ogImage as string) || "";
 ---
 
 <BaseLayout
-  title="Code of Conduct"
-  description="Read the behavior and safety expectations for all Ghostbusters Virginia members and representatives."
+  title={metaTitle}
+  description={metaDescription}
   canonical="/code-of-conduct"
-  ogTitle="Code of Conduct | Ghostbusters Virginia"
-  ogDescription="Standards and expectations for members representing Ghostbusters Virginia in public and online."
-  ogImage="/images/logo.png"
+  ogTitle={ogTitleVal}
+  ogDescription={ogDescriptionVal}
+  {...ogImage ? { ogImage } : {}}
 >
-  <section class="container page" aria-labelledby="coc-title">
-    <h1 id="coc-title" class="page-title">Code of Conduct</h1>
-    <p class="page-intro">Standards and expectations for all Ghostbusters Virginia members.</p>
+  <section class="page" aria-labelledby="coc-title">
+    <div class="page-band page-band--white">
+      <div class="container container--mid">
+        <PageHeader id="coc-title" title={pageTitle} subtitle={pageIntro} />
+      </div>
+    </div>
 
-    <p class="coc-preamble">
-      Ghostbusters, Virginia recognizes that our members portray characters and ideas from the
-      Ghostbusters Universe, which is owned by Sony Corporation. As such, members carry the
-      responsibility of portraying these characters professionally and with respect while in public
-      or when representing themselves as a steward of Ghostbusters, Virginia. For these reasons, all
-      members are prohibited from acting in a manner disrespectful toward the image they are
-      portraying, toward fellow club members, or toward the public at large while in costume at an
-      event or acting as a representative of the group. Examples of unacceptable conduct include,
-      but are not limited to, the following:
-    </p>
-
-    <Panel heading="Public Image" headingLevel={2}>
-      <p>
-        Foul language, obscene gestures, and use of alcohol or tobacco are not allowed while in
-        costume in view of the public (especially children) as it jeopardizes the group's image. Any
-        convention or gathering where adult content is prevalent may be considered a private venue
-        and a non-Ghostbusters event and behavioral standards shall be relaxed on an equivalent
-        basis in consideration.
-      </p>
-    </Panel>
-
-    <Panel heading="Prohibited Behavior" headingLevel={2}>
-      <p>
-        Acting in a threatening or violent manner, sexual harassment or misconduct, theft, breaking
-        the law, and illegal substance abuse are all prohibited and considered unacceptable
-        behavior. This applies to members in or out of costume at events or while representing the
-        Ghostbusters, Virginia.
-      </p>
-    </Panel>
-
-    <Panel heading="Digital Communication" headingLevel={2}>
-      <p>
-        Breaking any established Ghostbusters, Virginia forum or social media rules and policies, in
-        grossly negligent volume, will cause a member to be banned. This item specifically shall
-        pertain to only those means of digital communication as established and administered by the
-        Ghostbusters, Virginia.
-      </p>
-    </Panel>
-
-    <Panel heading="Merchandise" headingLevel={2}>
-      <p>
-        Creating and distributing unauthorized merchandise which contains "Ghostbusters, Virginia"
-        name or logo is forbidden. All merchandise bearing Ghostbusters, Virginia logos must be
-        approved by the Merchandising and Branding Officer.
-      </p>
-    </Panel>
-
-    <Panel heading="Non-Discrimination" headingLevel={2}>
-      <p>
-        Being discriminatory, verbally or physically abusive, or acting out in bad taste is not
-        tolerated. Members will not discriminate based on race, nationality, creed, color, gender,
-        disability, or sexual orientation. Members who engage in such conduct may be subject to
-        Oversight/Disciplinary committee inquiry and disciplinary action, including expulsion from
-        Ghostbusters, Virginia. This code is meant to give fair warning and not restrict freedom. In
-        or out of costume, members are required to observe reasonable behavioral standards towards
-        fellow members and the general public.
-      </p>
-    </Panel>
-
-    <Panel heading="Props & Equipment Safety" headingLevel={2}>
-      <p>
-        Acting irresponsibly with prop equipment/weaponry is considered unacceptable behavior.
-        Equipment/Weapons are key components to Ghostbusters costuming; however, Ghostbusters,
-        Virginia places the utmost importance upon the safety of our members as well as the safety
-        of the general public while attending events. Ghostbusters, Virginia members are required to
-        abide by all relevant Federal, State, and local laws pertaining to weapons, as well as the
-        individual rules and policies of specific venues and events. When carrying or displaying
-        props, members are expected to behave responsibly and use common sense at all times. Members
-        should not point weapons at other persons, act aggressively, behave erratically, or exhibit
-        any similar behavior which could result in a public safety issue. For more information on
-        equipment, please refer to the Equipment Policies in the Operations Protocols.
-      </p>
-    </Panel>
-
-    <Panel heading="Masks & Facial Coverings" headingLevel={2}>
-      <p>
-        Mask and facial covering requirements at events shall be adhered to at all times in
-        accordance with Federal, State, and local laws pertaining to mask and facial coverings, as
-        well as the individual rules and policies of specific venues and events.
-      </p>
-    </Panel>
+    {
+      sections.map((section, index) => (
+        <div class:list={["page-band", index % 2 === 0 ? "page-band--alt" : "page-band--white"]}>
+          <div class="container container--mid">
+            <SectionHeading level={3}>{section.heading}</SectionHeading>
+            <p class="prose-text">{section.body}</p>
+          </div>
+        </div>
+      ))
+    }
   </section>
 </BaseLayout>
 
 <style>
-  .page :global(.panel) {
-    width: 100%;
-  }
-
-  .coc-preamble {
+  .prose-text {
     color: var(--color-text-muted);
     font-family: var(--font-body);
     font-size: var(--text-base);
-    line-height: var(--leading-normal);
+    line-height: var(--leading-loose);
   }
 </style>

@@ -1,508 +1,490 @@
 ---
 /**
- * Media page — gallery, videos, and press coverage from Ghostbusters Virginia.
- * PRD 008: Media & Gallery Page Redesign
+ * Media page — Gallery, videos, and news coverage.
  */
 import BaseLayout from "../layouts/BaseLayout.astro";
+import Button from "../components/ui/Button.astro";
 import Lightbox from "../components/ui/Lightbox.astro";
+import PageHeader from "../components/ui/PageHeader.astro";
+import SectionHeading from "../components/ui/SectionHeading.astro";
 import { getCollection } from "astro:content";
 import { getResponsiveImageAttrs } from "../lib/images";
 import { getPageCopy } from "../lib/page-copy";
 
-const galleryItems = await getCollection("gallery");
+const copy = await getPageCopy("media");
 
-// Sort by date descending (newest first); undated items go last
-const sorted = galleryItems.sort((a, b) => {
-  if (a.data.date && b.data.date) return b.data.date.getTime() - a.data.date.getTime();
-  if (a.data.date) return -1;
-  if (b.data.date) return 1;
-  return 0;
-});
+/* ── Data ── */
+const gallery = await getCollection("gallery");
+const videos = await getCollection("videos");
+const news = await getCollection("news");
 
-const galleryImageAttrs = await Promise.all(
-  sorted.map((item) =>
-    getResponsiveImageAttrs({
+/* Sort news newest-first */
+const sortedNews = [...news].sort(
+  (a, b) => new Date(b.data.date).getTime() - new Date(a.data.date).getTime(),
+);
+
+/* Pre-compute responsive gallery images */
+const galleryImages = await Promise.all(
+  gallery.map(async (item) => ({
+    ...item,
+    responsive: await getResponsiveImageAttrs({
       src: item.data.image,
-      widths: [480, 768, 1200],
-      sizes: "(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw",
-      width: 1200,
-      height: 750,
-      quality: 72,
+      widths: [320, 640, 960],
+      sizes: "(max-width: 480px) 100vw, (max-width: 768px) 50vw, 33vw",
+      width: 640,
+      height: 480,
     }),
-  ),
+  })),
 );
 
-// Videos and news are now CMS-managed collections
-const videoEntries = await getCollection("videos");
-const videos = videoEntries
-  .sort((a, b) => {
-    if (a.data.date && b.data.date) return b.data.date.localeCompare(a.data.date);
-    if (a.data.date) return -1;
-    if (b.data.date) return 1;
-    return 0;
-  })
-  .map((v) => ({ id: v.data.youtubeId, title: v.data.title }));
-
-const newsEntries = await getCollection("news");
-const newsLinks = newsEntries.map((n) => ({
-  title: n.data.title,
-  date: n.data.date,
-  location: n.data.location ?? "",
-  url: n.data.url,
-  source: n.data.source,
-  image: n.data.image ?? "/images/logo.png",
-  excerpt: n.data.excerpt,
-}));
-
-const newsImageAttrs = await Promise.all(
-  newsLinks.map((link) =>
-    getResponsiveImageAttrs({
-      src: link.image,
-      widths: [480, 768, 960],
-      sizes: "(max-width: 768px) 100vw, 280px",
-      width: 960,
-      height: 540,
-      quality: 72,
-    }),
-  ),
-);
-
-const copy = (await getPageCopy("media")) as {
-  pageTitle?: string;
-  pageIntro?: string;
-  videosHeading?: string;
-  galleryHeading?: string;
-  newsHeading?: string;
-} | null;
+const pageTitle = (copy?.pageTitle as string) || "Media";
+const pageIntro =
+  (copy?.pageIntro as string) ||
+  "Photos, videos, and press coverage of our adventures across Virginia.";
+const galleryHeading = (copy?.galleryHeading as string) || "Gallery";
+const videosHeading = (copy?.videosHeading as string) || "Videos";
+const newsHeading = (copy?.newsHeading as string) || "In The News";
+const showMoreGalleryLabel = (copy?.showMoreGalleryLabel as string) || "Show More";
+const showLessGalleryLabel = (copy?.showLessGalleryLabel as string) || "Show Less";
+const showMoreNewsLabel = (copy?.showMoreNewsLabel as string) || "Show More";
+const showLessNewsLabel = (copy?.showLessNewsLabel as string) || "Show Less";
+const metaTitle = (copy?.metaTitle as string) || "Media";
+const metaDescription =
+  (copy?.metaDescription as string) ||
+  "Browse the Ghostbusters Virginia photo gallery, watch videos, and read news coverage from across the Commonwealth.";
+const ogTitleVal = (copy?.ogTitle as string) || "Media | Ghostbusters Virginia";
+const ogDescriptionVal =
+  (copy?.ogDescription as string) ||
+  "Photos, videos, and news coverage of Ghostbusters Virginia events and appearances.";
+const ogImage = (copy?.ogImage as string) || "/images/ghostbusters-virginia-full-team-photo.jpg";
 ---
 
 <BaseLayout
-  title="Media"
-  description="Browse Ghostbusters Virginia photos, videos, and press coverage from events across the state."
+  title={metaTitle}
+  description={metaDescription}
   canonical="/media"
-  ogTitle="Media | Ghostbusters Virginia"
-  ogDescription="Explore the latest gallery photos, videos, and news features for Ghostbusters Virginia."
-  ogImage="/images/ghostbusters-virginia-bike-show-dog.jpg"
+  ogTitle={ogTitleVal}
+  ogDescription={ogDescriptionVal}
+  ogImage={ogImage}
 >
-  <section class="container page" aria-labelledby="media-title">
-    <h1 id="media-title" class="page-title">{copy?.pageTitle || "Media"}</h1>
-    <p class="page-intro">
-      {
-        copy?.pageIntro ||
-          "Photos, videos, and press coverage from our events. Click any photo to enlarge."
-      }
-    </p>
-
-    <!-- ── Videos ── -->
-    <div class="media-section fade-in-section">
-      <h2 class="section-heading">{copy?.videosHeading || "Videos"}</h2>
-      <div class="video-grid">
-        {
-          videos.map((video) => (
-            <button
-              class="video-card"
-              type="button"
-              aria-label={`Play video: ${video.title}`}
-              data-video-id={video.id}
-              data-video-title={video.title}
-            >
-              <div class="video-card__thumb">
-                <img
-                  src={`https://img.youtube.com/vi/${video.id}/hqdefault.jpg`}
-                  srcset={`https://img.youtube.com/vi/${video.id}/mqdefault.jpg 320w, https://img.youtube.com/vi/${video.id}/hqdefault.jpg 480w, https://img.youtube.com/vi/${video.id}/maxresdefault.jpg 1280w`}
-                  sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                  alt={`Thumbnail for ${video.title}`}
-                  loading="lazy"
-                  decoding="async"
-                  width="480"
-                  height="360"
-                  class="video-card__image"
-                />
-                <div class="video-card__play" aria-hidden="true">
-                  <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
-                    <circle cx="24" cy="24" r="24" fill="rgba(0,0,0,0.6)" />
-                    <polygon points="19,14 19,34 36,24" fill="white" />
-                  </svg>
-                </div>
-              </div>
-              <p class="video-card__title">{video.title}</p>
-            </button>
-          ))
-        }
+  <section class="page" aria-labelledby="media-title">
+    <div class="page-band page-band--white">
+      <div class="container container--mid">
+        <PageHeader id="media-title" title={pageTitle} subtitle={pageIntro} />
       </div>
     </div>
 
-    <!-- ── Gallery ── -->
-    <div class="media-section fade-in-section">
-      <h2 class="section-heading">{copy?.galleryHeading || "Photo Gallery"}</h2>
-      {
-        sorted.length > 0 ? (
-          <>
-            <ul class="gallery-grid" role="list" id="gallery-grid">
-              {sorted.map((item, index) => (
-                <li class:list={[{ "gallery-hidden": index >= 6 }]}>
-                  <button
-                    class="gallery-card"
-                    type="button"
-                    aria-label={`View full image: ${item.data.title}`}
-                    data-image={item.data.image}
-                    data-alt={item.data.alt}
-                    data-title={item.data.title}
+    {/* ── Gallery ── */}
+    {
+      galleryImages.length > 0 && (
+        <div class="page-band page-band--alt">
+          <div class="container">
+            <SectionHeading id="gallery">{galleryHeading}</SectionHeading>
+            <div class="gallery-grid" id="gallery-grid">
+              {galleryImages.map((item, index) => (
+                <button
+                  class={`gallery-thumb${index >= 12 ? " gallery-hidden" : ""}`}
+                  type="button"
+                  data-lightbox-src={item.data.image}
+                  data-lightbox-alt={item.data.alt}
+                  aria-label={`View: ${item.data.title}`}
+                >
+                  <img
+                    src={item.responsive.src}
+                    srcset={item.responsive.srcset}
+                    sizes={item.responsive.sizes}
+                    alt={item.data.alt}
+                    width={item.responsive.width}
+                    height={item.responsive.height}
+                    loading={index < 6 ? "eager" : "lazy"}
+                    decoding="async"
+                  />
+                  <span class="gallery-thumb__expand" aria-hidden="true">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <polyline points="15 3 21 3 21 9" />
+                      <polyline points="9 21 3 21 3 15" />
+                      <line x1="21" y1="3" x2="14" y2="10" />
+                      <line x1="3" y1="21" x2="10" y2="14" />
+                    </svg>
+                  </span>
+                </button>
+              ))}
+            </div>
+            {galleryImages.length > 12 && (
+              <div class="show-toggle">
+                <Button variant="secondary-alt" type="button" class="toggle-btn" id="gallery-show-more">
+                  {showMoreGalleryLabel} ({galleryImages.length - 12} more)
+                </Button>
+                <Button
+                  variant="secondary-alt"
+                  type="button"
+                  class="toggle-btn"
+                  id="gallery-show-less"
+                  hidden
+                >
+                  {showLessGalleryLabel}
+                </Button>
+              </div>
+            )}
+          </div>
+        </div>
+      )
+    }
+
+    {/* ── Videos ── */}
+    {
+      videos.length > 0 && (
+        <div class="page-band page-band--white">
+          <div class="container">
+            <SectionHeading id="videos">{videosHeading}</SectionHeading>
+            <div class="video-grid">
+              {videos.map((video) => (
+                <div class="video-card">
+                  <div class="video-embed">
+                    <lite-youtube
+                      videoid={video.data.youtubeId}
+                      playlabel={`Play: ${video.data.title}`}
+                    >
+                      <a
+                        href={`https://youtube.com/watch?v=${video.data.youtubeId}`}
+                        class="lty-playbtn"
+                        title={`Play: ${video.data.title}`}
+                      >
+                        <span class="lyt-visually-hidden">Play: {video.data.title}</span>
+                      </a>
+                    </lite-youtube>
+                  </div>
+                  <h3 class="video-title">{video.data.title}</h3>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )
+    }
+
+    {/* ── News ── */}
+    {
+      sortedNews.length > 0 && (
+        <div class="page-band page-band--alt">
+          <div class="container">
+            <SectionHeading id="news">{newsHeading}</SectionHeading>
+            <ul class="news-list" id="news-grid" role="list">
+              {sortedNews.map((article, index) => (
+                <li class={`news-item${index >= 6 ? " news-hidden" : ""}`}>
+                  <a
+                    href={article.data.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="news-link"
                   >
-                    <div class="gallery-card__image-wrapper">
-                      <img
-                        src={galleryImageAttrs[index].src}
-                        srcset={galleryImageAttrs[index].srcset}
-                        sizes={galleryImageAttrs[index].sizes}
-                        alt={item.data.alt}
-                        loading="lazy"
-                        decoding="async"
-                        width={galleryImageAttrs[index].width}
-                        height={galleryImageAttrs[index].height}
-                        class="gallery-card__image"
-                      />
+                    {article.data.image && (
+                      <div class="news-link__image-wrapper">
+                        <img
+                          class="news-link__image"
+                          src={article.data.image}
+                          alt=""
+                          loading="lazy"
+                          decoding="async"
+                        />
+                      </div>
+                    )}
+                    <div class="news-link__body">
+                      <span class="news-link__title">{article.data.title}</span>
+                      <p class="news-link__excerpt">{article.data.excerpt}</p>
+                      <div class="news-link__footer">
+                        <span class="news-link__source">{article.data.source}</span>
+                        {article.data.location && (
+                          <span class="news-link__location">
+                            <svg
+                              class="news-link__footer-icon"
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="14"
+                              height="14"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              stroke-width="2"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              aria-hidden="true"
+                            >
+                              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                              <circle cx="12" cy="10" r="3" />
+                            </svg>
+                            <span>{article.data.location}</span>
+                          </span>
+                        )}
+                      </div>
                     </div>
-                    <div class="gallery-card__info">
-                      <span class="gallery-card__title">{item.data.title}</span>
-                      {item.data.date && (
-                        <time
-                          class="gallery-card__date"
-                          datetime={item.data.date.toISOString().split("T")[0]}
-                        >
-                          {item.data.date.toLocaleDateString("en-US", {
-                            year: "numeric",
-                            month: "long",
-                            day: "numeric",
-                          })}
-                        </time>
-                      )}
-                    </div>
-                  </button>
+                    <svg
+                      class="news-link__external"
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      aria-hidden="true"
+                    >
+                      <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                      <polyline points="15 3 21 3 21 9" />
+                      <line x1="10" y1="14" x2="21" y2="3" />
+                    </svg>
+                  </a>
                 </li>
               ))}
             </ul>
-            {sorted.length > 6 && (
-              <div class="gallery-toggle">
-                <button class="toggle-btn" type="button" id="gallery-show-more">
-                  Show More ({sorted.length - 6} more)
-                </button>
-                <button class="toggle-btn" type="button" id="gallery-show-less" hidden>
-                  Show Less
-                </button>
+            {sortedNews.length > 6 && (
+              <div class="show-toggle">
+                <Button variant="secondary-alt" type="button" class="toggle-btn" id="news-show-more">
+                  {showMoreNewsLabel} ({sortedNews.length - 6} more)
+                </Button>
+                <Button
+                  variant="secondary-alt"
+                  type="button"
+                  class="toggle-btn"
+                  id="news-show-less"
+                  hidden
+                >
+                  {showLessNewsLabel}
+                </Button>
               </div>
             )}
-          </>
-        ) : (
-          <p class="empty-state">No media yet — check back after our next event!</p>
-        )
-      }
-    </div>
+          </div>
+        </div>
+      )
+    }
 
-    <!-- ── In the News ── -->
-    <div class="media-section fade-in-section">
-      <h2 class="section-heading">{copy?.newsHeading || "In the News"}</h2>
-      <ul class="news-list" role="list">
-        {
-          newsLinks.map((link, index) => (
-            <li class="news-item">
-              <a href={link.url} target="_blank" rel="noopener noreferrer" class="news-link">
-                <div class="news-link__image-wrapper">
-                  <img
-                    src={newsImageAttrs[index].src}
-                    srcset={newsImageAttrs[index].srcset}
-                    sizes={newsImageAttrs[index].sizes}
-                    alt={`${link.title} article thumbnail`}
-                    loading="lazy"
-                    decoding="async"
-                    width={newsImageAttrs[index].width}
-                    height={newsImageAttrs[index].height}
-                    class="news-link__image"
-                  />
-                </div>
-                <div class="news-link__body">
-                  <span class="news-link__title">{link.title}</span>
-                  <span class="news-link__meta">
-                    <span class="news-link__date">{link.date}</span>
-                    <span class="news-link__location">{link.location}</span>
-                  </span>
-                  <p class="news-link__excerpt">
-                    <em class="news-link__source">{link.source}</em> — {link.excerpt}
-                  </p>
-                </div>
-                <svg
-                  class="news-link__external"
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  aria-hidden="true"
-                >
-                  <>
-                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-                    <polyline points="15 3 21 3 21 9" />
-                    <line x1="10" y1="14" x2="21" y2="3" />
-                  </>
-                </svg>
-              </a>
-            </li>
-          ))
-        }
-      </ul>
-    </div>
+    <Lightbox id="gallery-lightbox" hasNav label="Gallery viewer" />
   </section>
-
-  <!-- ── Lightbox overlay ── -->
-  <Lightbox id="lightbox" hasVideo label="Media viewer" />
 </BaseLayout>
+
+{/* ── lite-youtube embed (lightweight YouTube facade) ── */}
+<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/lite-youtube-embed@0.3.3/src/lite-yt-embed.min.css"
+/>
+<script
+  is:inline
+  src="https://cdn.jsdelivr.net/npm/lite-youtube-embed@0.3.3/src/lite-yt-embed.min.js"></script>
 
 <script>
   import { setLightboxPreviousFocus } from "../lib/lightbox";
 
-  // Lightbox functionality — shared component handles close/escape/focus-trap
-  const lightbox = document.getElementById("lightbox") as HTMLElement;
-  const lightboxImage = document.getElementById("lightbox-image") as HTMLImageElement;
-  const lightboxVideo = document.getElementById("lightbox-video") as HTMLElement;
-  const lightboxIframe = document.getElementById("lightbox-iframe") as HTMLIFrameElement;
-  const lightboxCaption = document.getElementById("lightbox-caption") as HTMLParagraphElement;
+  /* ── Gallery lightbox ── */
+  const lightbox = document.getElementById("gallery-lightbox") as HTMLElement | null;
+  const lbImage = lightbox?.querySelector(".lightbox__image") as HTMLImageElement | null;
+  const lbPrev = lightbox?.querySelector(".lightbox__nav--prev") as HTMLButtonElement | null;
+  const lbNext = lightbox?.querySelector(".lightbox__nav--next") as HTMLButtonElement | null;
 
-  function openImageLightbox(image: string, alt: string, title: string, opener?: HTMLElement) {
-    if (!lightbox || !lightboxImage || !lightboxCaption) return;
-    if (opener) {
-      setLightboxPreviousFocus(lightbox, opener, "media-opener");
-    }
-    lightboxImage.src = image;
-    lightboxImage.alt = alt;
-    lightboxImage.hidden = false;
-    lightboxVideo!.hidden = true;
-    lightboxCaption.textContent = title;
+  const thumbs = Array.from(document.querySelectorAll<HTMLButtonElement>("[data-lightbox-src]"));
+  let currentIndex = 0;
+
+  function openLightbox(index: number) {
+    if (!lightbox || !lbImage) return;
+    currentIndex = index;
+    const thumb = thumbs[index];
+    lbImage.src = thumb.dataset.lightboxSrc ?? "";
+    lbImage.alt = thumb.dataset.lightboxAlt ?? "";
+    setLightboxPreviousFocus(lightbox, thumb, "gallery-thumb");
     lightbox.hidden = false;
     document.body.style.overflow = "hidden";
-    (lightbox.querySelector(".lightbox__close") as HTMLElement)?.focus();
+    lightbox.querySelector<HTMLButtonElement>(".lightbox__close")?.focus();
   }
 
-  function openVideoLightbox(videoId: string, title: string, opener?: HTMLElement) {
-    if (!lightbox || !lightboxIframe || !lightboxCaption) return;
-    if (opener) {
-      setLightboxPreviousFocus(lightbox, opener, "media-opener");
+  thumbs.forEach((thumb, i) => {
+    thumb.addEventListener("click", () => openLightbox(i));
+  });
+
+  lbPrev?.addEventListener("click", () => {
+    openLightbox((currentIndex - 1 + thumbs.length) % thumbs.length);
+  });
+
+  lbNext?.addEventListener("click", () => {
+    openLightbox((currentIndex + 1) % thumbs.length);
+  });
+
+  lightbox?.querySelector(".lightbox__close")?.addEventListener("click", () => {
+    if (!lightbox) return;
+    lightbox.hidden = true;
+    document.body.style.overflow = "";
+    const prevId = lightbox.dataset.previousFocus;
+    if (prevId) document.getElementById(prevId)?.focus();
+  });
+
+  lightbox?.addEventListener("keydown", (e: KeyboardEvent) => {
+    if (e.key === "Escape") {
+      lightbox.querySelector<HTMLButtonElement>(".lightbox__close")?.click();
+    } else if (e.key === "ArrowLeft") {
+      lbPrev?.click();
+    } else if (e.key === "ArrowRight") {
+      lbNext?.click();
     }
-    lightboxIframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1`;
-    lightboxIframe.title = title;
-    lightboxImage!.hidden = true;
-    lightboxVideo!.hidden = false;
-    lightboxCaption.textContent = title;
-    lightbox.hidden = false;
-    document.body.style.overflow = "hidden";
-    (lightbox.querySelector(".lightbox__close") as HTMLElement)?.focus();
+  });
+
+  /* ── Show more / less toggles ── */
+  function setupToggle(
+    showMoreId: string,
+    showLessId: string,
+    hiddenClass: string,
+    containerId: string,
+  ) {
+    const showMore = document.getElementById(showMoreId) as HTMLButtonElement | null;
+    const showLess = document.getElementById(showLessId) as HTMLButtonElement | null;
+    const container = document.getElementById(containerId);
+    if (!showMore || !showLess || !container) return;
+
+    showMore.addEventListener("click", () => {
+      container.querySelectorAll<HTMLElement>(`.${hiddenClass}`).forEach((el) => {
+        el.classList.remove(hiddenClass);
+      });
+      showMore.hidden = true;
+      showLess.hidden = false;
+    });
+
+    showLess.addEventListener("click", () => {
+      container.querySelectorAll<HTMLElement>(`:scope > :nth-child(n+13)`).forEach((el) => {
+        el.classList.add(hiddenClass);
+      });
+      showLess.hidden = true;
+      showMore.hidden = false;
+      container.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
   }
 
-  // Gallery card clicks
-  document.querySelectorAll<HTMLButtonElement>(".gallery-card").forEach((card) => {
-    card.addEventListener("click", () => {
-      const image = card.dataset.image ?? "";
-      const alt = card.dataset.alt ?? "";
-      const title = card.dataset.title ?? "";
-      openImageLightbox(image, alt, title, card);
-    });
-  });
-
-  // Video card clicks
-  document.querySelectorAll<HTMLButtonElement>(".video-card").forEach((card) => {
-    card.addEventListener("click", () => {
-      const videoId = card.dataset.videoId ?? "";
-      const title = card.dataset.videoTitle ?? "";
-      openVideoLightbox(videoId, title, card);
-    });
-  });
-
-  // Gallery show more / show less
-  const showMoreBtn = document.getElementById("gallery-show-more") as HTMLButtonElement | null;
-  const showLessBtn = document.getElementById("gallery-show-less") as HTMLButtonElement | null;
-  const hiddenItems = document.querySelectorAll<HTMLElement>("#gallery-grid .gallery-hidden");
-
-  showMoreBtn?.addEventListener("click", () => {
-    hiddenItems.forEach((item) => item.classList.remove("gallery-hidden"));
-    showMoreBtn.hidden = true;
-    showLessBtn!.hidden = false;
-  });
-
-  showLessBtn?.addEventListener("click", () => {
-    hiddenItems.forEach((item) => item.classList.add("gallery-hidden"));
-    showLessBtn.hidden = true;
-    showMoreBtn!.hidden = false;
-    document.getElementById("gallery-grid")?.scrollIntoView({ behavior: "smooth", block: "start" });
-  });
+  setupToggle("gallery-show-more", "gallery-show-less", "gallery-hidden", "gallery-grid");
+  setupToggle("news-show-more", "news-show-less", "news-hidden", "news-grid");
 </script>
 
 <style>
-  /* ── Section layout ── */
   .media-section {
     width: 100%;
-  }
-
-  /* ── Video grid ── */
-  .video-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: var(--space-xl);
-  }
-
-  @media (max-width: 1024px) {
-    .video-grid {
-      grid-template-columns: repeat(2, 1fr);
-    }
-  }
-
-  @media (max-width: 768px) {
-    .video-grid {
-      grid-template-columns: 1fr;
-    }
-  }
-
-  .video-card {
-    display: block;
-    width: 100%;
-    background: var(--color-surface);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
-    overflow: hidden;
-    box-shadow: var(--shadow-panel);
-    cursor: pointer;
-    padding: 0;
-    font: inherit;
-    text-align: left;
-    color: inherit;
-    transition:
-      border-color var(--transition-base),
-      box-shadow var(--transition-base),
-      transform var(--transition-fast);
-  }
-
-  .video-card:hover,
-  .video-card:focus-visible {
-    border-color: var(--color-hover-border);
-    box-shadow: var(--shadow-hover), var(--shadow-panel);
-    transform: translateY(-2px);
-  }
-
-  .video-card__thumb {
-    position: relative;
-    overflow: hidden;
-  }
-
-  .video-card__image {
-    width: 100%;
-    aspect-ratio: 16 / 9;
-    object-fit: cover;
-    display: block;
-  }
-
-  .video-card__play {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: opacity var(--transition-fast);
-  }
-
-  .video-card:hover .video-card__play {
-    opacity: 0.8;
-  }
-
-  .video-card__title {
-    padding: var(--space-md) var(--space-lg);
-    font-size: var(--text-sm);
-    font-weight: var(--weight-semibold);
-    color: var(--color-text);
-    letter-spacing: var(--tracking-wide);
   }
 
   /* ── Gallery grid ── */
   .gallery-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: var(--space-xl);
-    width: 100%;
-    list-style: none;
-    padding: 0;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: var(--space-md);
   }
 
-  @media (max-width: 768px) {
+  @media (min-width: 768px) {
     .gallery-grid {
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    }
+  }
+
+  .gallery-thumb {
+    position: relative;
+    background: none;
+    border: none;
+    border-radius: var(--radius-md);
+    padding: 0;
+    cursor: pointer;
+    overflow: hidden;
+    aspect-ratio: 4 / 3;
+    transition: box-shadow 0.2s ease;
+  }
+
+  .gallery-thumb:hover,
+  .gallery-thumb:focus-visible {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  }
+
+  .gallery-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.2s ease;
+  }
+
+  .gallery-thumb:hover img {
+    transform: scale(1.03);
+  }
+
+  .gallery-thumb__expand {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.4);
+    color: #fff;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    pointer-events: none;
+  }
+
+  .gallery-thumb:hover .gallery-thumb__expand,
+  .gallery-thumb:focus-visible .gallery-thumb__expand {
+    opacity: 1;
+  }
+
+  .gallery-hidden {
+    display: none;
+  }
+
+  /* ── Video grid ── */
+  .video-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-xl);
+  }
+
+  @media (min-width: 768px) {
+    .video-grid {
       grid-template-columns: repeat(2, 1fr);
     }
   }
 
-  @media (max-width: 480px) {
-    .gallery-grid {
-      grid-template-columns: 1fr;
+  @media (min-width: 1100px) {
+    .video-grid {
+      grid-template-columns: repeat(3, 1fr);
     }
   }
 
-  /* ── Gallery card (button) ── */
-  .gallery-card {
-    display: block;
-    width: 100%;
+  .video-card {
     background: var(--color-surface);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-md);
-    box-shadow: var(--shadow-panel);
-    overflow: hidden;
-    cursor: pointer;
-    padding: 0;
-    font: inherit;
-    text-align: left;
-    color: inherit;
-    transition:
-      border-color var(--transition-base),
-      box-shadow var(--transition-base),
-      transform var(--transition-fast);
-  }
-
-  .gallery-card:hover,
-  .gallery-card:focus-visible {
-    border-color: var(--color-hover-border);
-    box-shadow: var(--shadow-hover), var(--shadow-panel);
-    transform: translateY(-2px);
-  }
-
-  .gallery-card__image-wrapper {
     overflow: hidden;
   }
 
-  .gallery-card__image {
+  .video-embed {
+    aspect-ratio: 16 / 9;
     width: 100%;
-    aspect-ratio: 4 / 3;
-    object-fit: cover;
-    display: block;
   }
 
-  .gallery-card__info {
+  .video-embed lite-youtube {
+    width: 100%;
+    height: 100%;
+  }
+
+  .video-title {
     padding: var(--space-md) var(--space-lg);
-  }
-
-  .gallery-card__title {
-    display: block;
+    font-family: var(--font-heading);
     font-size: var(--text-sm);
     font-weight: var(--weight-semibold);
-    color: var(--color-text);
-    letter-spacing: var(--tracking-wide);
-  }
-
-  .gallery-card__date {
-    display: block;
-    margin-top: var(--space-xs);
-    font-family: var(--font-mono);
-    font-size: var(--text-xs);
     color: var(--color-text-muted);
+    letter-spacing: var(--tracking-wider);
   }
 
-  /* ── News list ── */
+  /* ── News list (single column, event-card style) ── */
   .news-list {
     list-style: none;
     padding: 0;
@@ -519,7 +501,17 @@ const copy = (await getPageCopy("media")) as {
     position: relative;
     transition:
       border-color var(--transition-base),
-      box-shadow var(--transition-base);
+      box-shadow var(--transition-base),
+      color var(--transition-base);
+  }
+
+  @media (min-width: 769px) {
+    .news-item {
+      color: var(--color-text-muted);
+    }
+    .news-item:hover {
+      color: var(--color-text);
+    }
   }
 
   .news-item:hover {
@@ -530,6 +522,7 @@ const copy = (await getPageCopy("media")) as {
   .news-link {
     display: flex;
     gap: var(--space-xl);
+    align-items: flex-start;
     padding: var(--space-xl);
     text-decoration: none;
     color: inherit;
@@ -537,7 +530,7 @@ const copy = (await getPageCopy("media")) as {
 
   .news-link__image-wrapper {
     flex-shrink: 0;
-    width: 200px;
+    width: 260px;
     overflow: hidden;
     border-radius: var(--radius-sm);
   }
@@ -552,65 +545,75 @@ const copy = (await getPageCopy("media")) as {
   .news-link__body {
     display: flex;
     flex-direction: column;
-    gap: var(--space-sm);
+    gap: var(--space-md);
     flex: 1;
   }
 
   .news-link__title {
-    font-size: var(--text-lg);
-    font-weight: var(--weight-semibold);
-    color: var(--color-text);
+    font-family: var(--font-display);
+    font-size: var(--text-2xl);
+    font-weight: var(--weight-bold);
+    color: inherit;
     line-height: var(--leading-tight);
-    transition: color var(--transition-fast);
+    transition: color var(--transition-base);
   }
 
-  .news-link:hover .news-link__title {
-    color: var(--color-accent-atmospheric);
-  }
-
-  .news-link__date {
-    font-family: var(--font-body);
-    font-size: var(--text-sm);
-    color: var(--color-text);
-    letter-spacing: var(--tracking-wide);
+  @media (min-width: 769px) {
+    .news-item:hover .news-link__title {
+      color: var(--color-accent);
+    }
   }
 
   .news-link__meta {
-    display: flex;
-    align-items: center;
-    gap: var(--space-md);
-    flex-wrap: wrap;
-  }
-
-  .news-link__location {
-    font-family: var(--font-body);
     font-size: var(--text-sm);
     color: var(--color-text-muted);
+    font-weight: var(--weight-semibold);
     letter-spacing: var(--tracking-wide);
   }
 
-  .news-link__location::before {
-    content: "\00B7";
-    color: var(--color-accent);
-    font-weight: var(--weight-bold);
-    margin-right: var(--space-md);
+  .news-link__excerpt {
+    font-size: var(--text-base);
+    color: inherit;
+    line-height: var(--leading-normal);
+    margin: 0;
+    transition: color var(--transition-base);
   }
 
-  .news-link__excerpt {
+  .news-link__footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-top: var(--space-lg);
+    padding-top: var(--space-md);
+    border-top: 1px solid var(--color-border);
+    font-family: var(--font-body);
     font-size: var(--text-sm);
     color: var(--color-text-muted);
-    line-height: var(--leading-normal);
-    transition: color var(--transition-fast);
-  }
-
-  .news-link:hover .news-link__excerpt {
-    color: var(--color-text);
+    line-height: 1;
+    transition: color var(--transition-base);
   }
 
   .news-link__source {
-    font-style: italic;
-    color: var(--color-text);
     font-weight: var(--weight-semibold);
+    letter-spacing: var(--tracking-wide);
+  }
+
+  .news-link__location {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    margin-left: auto;
+  }
+
+  .news-link__footer-icon {
+    flex-shrink: 0;
+  }
+
+  @media (min-width: 769px) {
+    .news-item:hover .news-link__footer {
+      color: var(--color-gb-green);
+    }
   }
 
   .news-link__external {
@@ -631,20 +634,19 @@ const copy = (await getPageCopy("media")) as {
     .news-link {
       flex-direction: column;
       gap: var(--space-lg);
+      padding: var(--space-lg);
     }
-
     .news-link__image-wrapper {
       width: 100%;
       max-height: 200px;
     }
   }
 
-  /* ── Gallery toggle buttons ── */
-  .gallery-hidden {
+  .news-hidden {
     display: none;
   }
 
-  .gallery-toggle {
+  .show-toggle {
     display: flex;
     justify-content: center;
     margin-top: var(--space-xl);

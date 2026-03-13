@@ -1,156 +1,206 @@
 ---
 /**
- * Donate page — Support the team.
- * PRD 007: Join, Contact & Donate Pages Redesign
+ * Donate page — Supporting Ghostbusters Virginia's charitable mission.
  */
 import BaseLayout from "../layouts/BaseLayout.astro";
-import Panel from "../components/ui/Panel.astro";
 import Button from "../components/ui/Button.astro";
-import { swagItems } from "../lib/swag";
+import PageHeader from "../components/ui/PageHeader.astro";
+import SectionHeading from "../components/ui/SectionHeading.astro";
+import SwagGrid from "../components/SwagGrid.astro";
 import { getResponsiveImageAttrs } from "../lib/images";
 import { getSiteSettings } from "../lib/settings";
 import { getPageCopy } from "../lib/page-copy";
 
+const copy = await getPageCopy("donate");
 const settings = await getSiteSettings();
-const storeUrl = settings.storeUrl || "https://www.teepublic.com/user/ghostbustersva";
+const donateUrl = settings.donateUrl || "https://www.paypal.com/paypalme/GhostbustersVA";
+const storeUrl = settings.storeUrl || "https://www.teepublic.com/user/ghostbusters-virginia";
 
-const copy = (await getPageCopy("donate")) as {
-  pageTitle?: string;
-  pageIntro?: string;
-  supportPanelText?: string;
-  protonPetsText?: string;
-  protonPetsLinkLabel?: string;
-  protonPetsLinkUrl?: string;
-  swagPanelText?: string;
-  swagNote?: string;
-} | null;
+const pageTitle = (copy?.pageTitle as string) || "Support Our Mission";
+const pageIntro =
+  (copy?.pageIntro as string) ||
+  "Every dollar helps us keep busting ghosts and supporting communities across Virginia.";
+const donationHeading = (copy?.donationHeading as string) || "Make a Donation";
+const donationText =
+  (copy?.donationText as string) ||
+  "Ghostbusters Virginia is a volunteer-run, community-focused franchise. Your generous donations help us fund charitable events, maintain the Ecto, purchase supplies for community outreach, and keep the franchise running strong.";
+const donationCtaLabel = (copy?.donationCtaLabel as string) || "Donate";
+const swagHeading = (copy?.swagHeading as string) || "Get Some Swag";
+const swagIntro =
+  (copy?.swagIntro as string) ||
+  "Rep the franchise! Every purchase supports Ghostbusters Virginia. Each item opens our TeePublic store in a new tab.";
+const swagCtaLabel = (copy?.swagCtaLabel as string) || "Visit Our Store";
+const communityHeading = (copy?.communityHeading as string) || "Community Partners";
+const communityText =
+  (copy?.communityText as string) ||
+  "Ghostbusters Virginia partners with schools, nonprofits, shelters, and event organizers to bring positive, family-friendly experiences to communities.";
+const volunteerHeading = (copy?.volunteerHeading as string) || "Volunteer With Us";
+const volunteerText =
+  (copy?.volunteerText as string) ||
+  "Volunteers help Ghostbusters Virginia deliver welcoming, community-first events that raise awareness and support local causes.";
+const volunteerCtaLabel = (copy?.volunteerCtaLabel as string) || "Join the Team";
+const volunteerCtaHref = (copy?.volunteerCtaHref as string) || "/join";
+const communityCtaLabel = (copy?.communityCtaLabel as string) || "Contact Us";
+const communityCtaHref = (copy?.communityCtaHref as string) || "/contact";
+const communityImageSrc =
+  (copy?.communityImage as string) || "/images/ghostbusters-virginia-toys-for-tots-drive.jpg";
+const communityImageAlt =
+  (copy?.communityImageAlt as string) ||
+  "Ghostbusters Virginia members at a Toys for Tots charity drive";
+const volunteerImageSrc =
+  (copy?.volunteerImage as string) || "/images/ghostbusters-virginia-firefighters-visit.jpg";
+const volunteerImageAlt =
+  (copy?.volunteerImageAlt as string) ||
+  "Ghostbusters Virginia members visiting a local fire station";
+const metaTitle = (copy?.metaTitle as string) || "Donate";
+const metaDescription =
+  (copy?.metaDescription as string) ||
+  "Support Ghostbusters Virginia through donations, swag purchases, and community partnerships.";
+const ogTitleVal = (copy?.ogTitle as string) || "Donate | Ghostbusters Virginia";
+const ogDescriptionVal =
+  (copy?.ogDescription as string) ||
+  "Help fund Ghostbusters Virginia's charitable events and community outreach across the Commonwealth.";
+const ogImage =
+  (copy?.ogImage as string) || "/images/ghostbusters-virginia-toys-for-tots-drive.jpg";
 
-const swagImageAttrs = await Promise.all(
-  swagItems.map((item) =>
-    getResponsiveImageAttrs({
-      src: item.image,
-      widths: [320, 480, 640],
-      sizes: "(max-width: 768px) 50vw, 20vw",
-      width: 640,
-      height: 640,
-      quality: 72,
-    }),
-  ),
-);
+const communityImage = await getResponsiveImageAttrs({
+  src: communityImageSrc,
+  widths: [640, 960, 1200],
+  sizes: "(max-width: 768px) 100vw, 864px",
+  width: 1200,
+  height: 675,
+  quality: 75,
+});
+const volunteerImage = await getResponsiveImageAttrs({
+  src: volunteerImageSrc,
+  widths: [640, 960, 1200],
+  sizes: "(max-width: 768px) 100vw, 864px",
+  width: 1200,
+  height: 675,
+  quality: 75,
+});
 ---
 
 <BaseLayout
-  title="Donate"
-  description="Support Ghostbusters Virginia with donations, Proton Pets participation, and official merch purchases."
+  title={metaTitle}
+  description={metaDescription}
   canonical="/donate"
-  ogTitle="Donate | Ghostbusters Virginia"
-  ogDescription="Help fund charity events, community outreach, and hospital visits through Ghostbusters Virginia."
-  ogImage="/images/gbv-community-photo.jpg"
+  ogTitle={ogTitleVal}
+  ogDescription={ogDescriptionVal}
+  ogImage={ogImage}
 >
-  <section class="container page" aria-labelledby="donate-title">
-    <h1 id="donate-title" class="page-title">
-      {copy?.pageTitle || "Support Ghostbusters Virginia"}
-    </h1>
-
-    <p class="page-intro">
-      {
-        copy?.pageIntro ||
-          "Your donations help us maintain our equipment, attend community events, and support the charitable causes we care about. Every contribution \u2014 big or small \u2014 makes a difference."
-      }
-    </p>
-
-    <Panel heading="Support Us">
-      <p>
-        {copy?.supportPanelText || "Donation integration coming soon. Thank you for your patience!"}
-      </p>
-      <div class="cta-row">
-        <Button variant="primary" disabled>Donate Now (Coming Soon)</Button>
+  <section class="page" aria-labelledby="donate-title">
+    <div class="page-band page-band--white">
+      <div class="container container--mid">
+        <PageHeader id="donate-title" title={pageTitle} subtitle={pageIntro} />
       </div>
-    </Panel>
+    </div>
 
-    <Panel heading="Proton Pets">
-      <p>
-        {
-          copy?.protonPetsText ||
-            "Every April, GBVA leads Proton Pets \u2014 a month-long fundraiser calling on Ghostbusters franchises around the world to support local pet shelters and pet pantries. Dogs and cats living together equals MASS CARING!"
-        }
-      </p>
-      <div class="cta-row">
-        <Button
-          variant="secondary"
-          href={copy?.protonPetsLinkUrl || "https://whoyagonnacall.org/proton-pets"}
-          external
-        >
-          {copy?.protonPetsLinkLabel || "Learn About Proton Pets"}
-        </Button>
+    <div class="page-band page-band--alt">
+      <div class="container container--mid">
+        <SectionHeading>{donationHeading}</SectionHeading>
+        <div class="highlight-card highlight-card--centered">
+          <p class="prose-text">{donationText}</p>
+          <div class="donate-cta">
+            <Button variant="secondary" disabled> {donationCtaLabel} </Button>
+          </div>
+        </div>
       </div>
-    </Panel>
+    </div>
 
-    <Panel heading="GBVA Swag">
-      <p>
-        {
-          copy?.swagPanelText ||
-            "Show your support by grabbing some merch! Every purchase helps fund our community events and charitable efforts. Click any design to buy."
-        }
-      </p>
-      <div class="swag-grid">
-        {
-          swagItems.map((item, index) => (
-            <a href={item.url} target="_blank" rel="noopener noreferrer" class="swag-item">
-              <img
-                src={swagImageAttrs[index].src}
-                srcset={swagImageAttrs[index].srcset}
-                sizes={swagImageAttrs[index].sizes}
-                alt={item.alt}
-                loading="lazy"
-                decoding="async"
-                width={swagImageAttrs[index].width}
-                height={swagImageAttrs[index].height}
-                class="swag-thumb"
-              />
-              <span class="sr-only"> (opens in new tab)</span>
-            </a>
-          ))
-        }
+    <div class="page-band page-band--white">
+      <div class="container">
+        <SectionHeading id="swag">{swagHeading}</SectionHeading>
+        <SwagGrid subtitle={swagIntro} ctaLabel={swagCtaLabel} ctaHref={storeUrl} ctaVariant="secondary" />
       </div>
-      <p class="swag-note">
-        {
-          copy?.swagNote ||
-            "You can also browse the full collection on our TeePublic store for t-shirts, hoodies, stickers, magnets, pins, and more."
-        }
-      </p>
-      <div class="cta-row">
-        <Button variant="secondary" href={storeUrl} external> Visit Our Store </Button>
+    </div>
+
+    <div class="page-band page-band--alt">
+      <div class="container container--mid">
+        <SectionHeading>{communityHeading}</SectionHeading>
+        <img
+          src={communityImage.src}
+          srcset={communityImage.srcset}
+          sizes={communityImage.sizes}
+          alt={communityImageAlt}
+          class="section-image"
+          loading="lazy"
+          decoding="async"
+          width={communityImage.width}
+          height={communityImage.height}
+        />
+        <div class="highlight-card highlight-card--centered">
+          <p class="prose-text">{communityText}</p>
+          <div class="donate-cta">
+            <Button variant="secondary" href={communityCtaHref}>
+              {communityCtaLabel}
+            </Button>
+          </div>
+        </div>
       </div>
-    </Panel>
+    </div>
+
+    <div class="page-band page-band--white">
+      <div class="container container--mid">
+        <SectionHeading>{volunteerHeading}</SectionHeading>
+        <img
+          src={volunteerImage.src}
+          srcset={volunteerImage.srcset}
+          sizes={volunteerImage.sizes}
+          alt={volunteerImageAlt}
+          class="section-image"
+          loading="lazy"
+          decoding="async"
+          width={volunteerImage.width}
+          height={volunteerImage.height}
+        />
+        <div class="highlight-card highlight-card--alt highlight-card--centered">
+          <p class="prose-text">{volunteerText}</p>
+          <div class="donate-cta">
+            <Button variant="secondary-alt" href={volunteerCtaHref}>
+              {volunteerCtaLabel}
+            </Button>
+          </div>
+        </div>
+      </div>
+    </div>
   </section>
 </BaseLayout>
 
 <style>
-  /* ── Panel sizing ── */
-  .page :global(.panel) {
-    width: 100%;
-  }
 
-  .page :global(.panel) p {
-    text-align: center;
-  }
-
-  .cta-row {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: var(--space-md);
-    margin-top: var(--space-md);
-  }
-
-  /* ── Swag note ── */
-  .swag-note {
-    font-family: var(--font-body);
-    font-size: var(--text-sm);
+  .prose-text {
     color: var(--color-text-muted);
-    font-style: italic;
-    text-align: center;
-    margin-top: var(--space-lg);
+    font-family: var(--font-body);
+    font-size: var(--text-base);
+    line-height: var(--leading-loose);
   }
+
+  .highlight-card {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: var(--space-xl) var(--space-2xl);
+    box-shadow: var(--shadow-panel);
+  }
+
+  .highlight-card--alt {
+    background: var(--color-surface-alt);
+  }
+
+  .highlight-card--centered {
+    text-align: center;
+  }
+
+  .highlight-card .prose-text {
+    margin-bottom: 0;
+  }
+
+  .donate-cta {
+    display: flex;
+    justify-content: center;
+    margin-top: var(--space-xl);
+  }
+
+
 </style>

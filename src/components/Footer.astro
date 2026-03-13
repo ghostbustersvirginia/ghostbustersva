@@ -1,57 +1,59 @@
 ---
 /**
- * Site footer with franchise logos, nav links, and copyright.
- * Now reads logos, nav items, and code-of-conduct link from CMS settings.
+ * Site footer with compact center content, social row, and credential logos.
+ * Reads logos, nav items, social links, and legal link from CMS settings.
  */
 import { siteConfig } from "../config";
 import { getSiteSettings } from "../lib/settings";
-import MotionToggle from "./ui/MotionToggle.astro";
 
 const settings = await getSiteSettings();
 const leftLogo = settings.footerLogos[0];
 const rightLogo = settings.footerLogos[1];
 const navItems = settings.navItems;
 const footerCopyright = settings.footerCopyrightText || siteConfig.copyright;
+const tagline = settings.siteDescription || siteConfig.description;
+
+const findSocial = (platform: string) =>
+  settings.socialLinks.find((s) => s.platform.toLowerCase() === platform.toLowerCase())?.url;
+
+const socialLinks = [
+  {
+    label: "Facebook",
+    href: findSocial("facebook") || "https://www.facebook.com/Ghostbusters.Virginia.757",
+    icon: "facebook",
+  },
+  {
+    label: "Instagram",
+    href: findSocial("instagram") || "https://www.instagram.com/ghostbustersva/",
+    icon: "instagram",
+  },
+  {
+    label: "TikTok",
+    href: findSocial("tiktok") || "https://www.tiktok.com/@ghostbustersvirginia",
+    icon: "tiktok",
+  },
+  {
+    label: "YouTube",
+    href: findSocial("youtube") || "https://www.youtube.com/@Ghostbusters_Virginia",
+    icon: "youtube",
+  },
+];
 ---
 
 <footer class="site-footer">
-  {/* Matching proton-stream divider from the header */}
-  <div class="container">
-    <div class="footer-divider" aria-hidden="true"></div>
+  <div class="footer-stripe" aria-hidden="true">
+    <div class="caution-divider"></div>
   </div>
-  <div class="container footer-inner">
-    <div class="footer-grid">
-      {
-        leftLogo && (
-          <div
-            class="footer-logo footer-logo--left"
-            role="group"
-            aria-label="Partner and franchise logos"
-          >
-            <img
-              src={leftLogo.src}
-              alt={leftLogo.alt}
-              width="280"
-              height="80"
-              loading="lazy"
-              decoding="async"
-            />
-          </div>
-        )
-      }
-
+  <div class="container footer-shell">
+    <div class="footer-main">
       <div class="footer-content">
-        {/* Footer nav — condensed repeat of main nav */}
+        <p class="footer-tagline">{tagline}</p>
+
         <nav class="footer-nav" aria-label="Footer navigation">
           <ul>
             {
-              navItems.map((link, i) => (
+              navItems.map((link) => (
                 <li>
-                  {i > 0 && (
-                    <span class="nav-dot" aria-hidden="true">
-                      ·
-                    </span>
-                  )}
                   <a
                     href={link.href}
                     {...(link.external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
@@ -65,189 +67,314 @@ const footerCopyright = settings.footerCopyrightText || siteConfig.copyright;
           </ul>
         </nav>
 
-        {/* Secondary links */}
         <nav class="footer-legal" aria-label="Legal links">
           <a href={settings.codeOfConductUrl}>{settings.codeOfConductLabel}</a>
         </nav>
-
-        {/* Copyright — uses CMS footer text if set, falls back to siteConfig */}
-        <p class="copyright">{footerCopyright}</p>
-
-        {/* Motion toggle — PRD 009 */}
-        <div class="footer-motion-toggle">
-          <MotionToggle />
-        </div>
       </div>
 
-      {
-        rightLogo && (
-          <div
-            class="footer-logo footer-logo--right"
-            role="group"
-            aria-label="Partner and franchise logos"
-          >
-            <img
-              src={rightLogo.src}
-              alt={rightLogo.alt}
-              width="280"
-              height="80"
-              loading="lazy"
-              decoding="async"
-            />
-          </div>
-        )
-      }
+      <div class="footer-credentials" role="group" aria-label="Franchise and nonprofit credentials">
+        {
+          leftLogo && (
+            <div class="footer-logo footer-logo--left">
+              <img
+                src={leftLogo.src}
+                alt={leftLogo.alt}
+                width="380"
+                height="104"
+                loading="lazy"
+                decoding="async"
+              />
+            </div>
+          )
+        }
+
+        <div class="footer-social" role="list" aria-label="Social media links">
+          {
+            socialLinks.map((social) => (
+              <a
+                href={social.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="footer-social-link"
+                role="listitem"
+                aria-label={`${social.label} (opens in new tab)`}
+              >
+                {social.icon === "facebook" && (
+                  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+                  </svg>
+                )}
+                {social.icon === "instagram" && (
+                  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                    <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z" />
+                  </svg>
+                )}
+                {social.icon === "tiktok" && (
+                  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                    <path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1v-3.5a6.37 6.37 0 00-.79-.05A6.34 6.34 0 003.15 15.2a6.34 6.34 0 0010.86 4.48V13a8.28 8.28 0 005.58 2.16v-3.45a4.85 4.85 0 01-3.77-1.25V6.69h3.77z" />
+                  </svg>
+                )}
+                {social.icon === "youtube" && (
+                  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                    <path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
+                  </svg>
+                )}
+              </a>
+            ))
+          }
+        </div>
+
+        {
+          rightLogo && (
+            <div class="footer-logo footer-logo--right">
+              <img
+                src={rightLogo.src}
+                alt={rightLogo.alt}
+                width="380"
+                height="104"
+                loading="lazy"
+                decoding="async"
+              />
+            </div>
+          )
+        }
+      </div>
     </div>
+
+    <p class="copyright">{footerCopyright}</p>
   </div>
 </footer>
 
 <style>
   .site-footer {
-    background: transparent;
-    border-top: none;
-    margin-top: auto;
-    padding-block: var(--space-2xl);
+    background: var(--color-footer-bg);
+    color: var(--color-footer-text);
+    margin-top: 0;
+    padding-block: 0 var(--space-xl);
   }
 
-  /* Proton-stream divider — matches header */
-  .footer-divider {
-    height: 2px;
-    margin-bottom: var(--space-2xl);
-    background: linear-gradient(
-      90deg,
-      transparent 0%,
-      var(--color-glow) 20%,
-      var(--color-divider-structural) 40%,
-      var(--color-action-primary-hover) 50%,
-      var(--color-divider-structural) 60%,
-      var(--color-glow) 80%,
-      transparent 100%
-    );
-    box-shadow:
-      0 0 6px var(--color-glow),
-      0 0 15px var(--color-glow-dim);
-    border-radius: 1px;
+  .footer-stripe {
+    margin-bottom: var(--space-xl);
+    line-height: 0;
   }
 
-  .footer-inner {
-    text-align: center;
-  }
-
-  .footer-grid {
-    display: grid;
-    grid-template-columns: 1fr;
+  .footer-shell {
+    display: flex;
+    flex-direction: column;
     gap: var(--space-lg);
-    align-items: center;
+  }
+
+  .footer-main {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
   }
 
   .footer-content {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0.6rem;
+    text-align: center;
+    gap: var(--space-md);
+    width: 100%;
   }
 
-  /* Side logos */
-  .footer-logo {
-    display: flex;
-    justify-content: center;
-    align-items: center;
+  .footer-tagline {
+    margin: 0;
+    max-width: 36rem;
+    font-size: var(--text-sm);
+    line-height: var(--leading-normal);
+    color: rgba(255, 255, 255, 0.85);
   }
 
-  .footer-logo img {
-    max-height: 60px;
-    width: auto;
-    object-fit: contain;
-  }
-
-  /* Footer nav */
   .footer-nav ul {
     list-style: none;
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    align-items: center;
-    gap: var(--space-xs);
+    gap: var(--space-sm) var(--space-md);
+    padding: 0;
+    margin: 0;
   }
-  .footer-nav li {
-    display: flex;
-    align-items: center;
-    gap: var(--space-xs);
-  }
-  .nav-dot {
-    color: var(--color-text-muted);
-    opacity: 0.4;
-    font-size: 0.85rem;
-    user-select: none;
-  }
+
   .footer-nav a {
-    font-family: var(--font-mono);
-    font-size: var(--text-xs);
+    font-family: var(--font-body);
+    font-size: var(--text-sm);
+    font-weight: var(--weight-medium);
     text-decoration: none;
-    text-transform: uppercase;
-    letter-spacing: var(--tracking-wider);
-    color: var(--color-text);
-    transition: color 0.2s ease;
-    padding: 0.15rem 0.35rem;
-    border-radius: 2px;
+    letter-spacing: var(--tracking-wide);
+    color: #ffffff;
+    transition: color var(--transition-fast);
+    padding: 0.25rem 0.35rem;
+    border-radius: var(--radius-sm);
   }
+
   .footer-nav a:hover,
   .footer-nav a:focus-visible {
-    color: var(--color-link);
+    color: var(--color-gb-caution);
   }
 
-  /* Secondary legal links */
   .footer-legal {
     display: flex;
-    gap: var(--space-lg);
     justify-content: center;
   }
+
   .footer-legal a {
-    font-size: var(--text-xs);
+    font-size: var(--text-sm);
     text-decoration: none;
-    color: var(--color-text-muted);
-    transition: color 0.2s ease;
+    color: rgba(255, 255, 255, 0.72);
+    transition: color var(--transition-fast);
   }
+
   .footer-legal a:hover,
   .footer-legal a:focus-visible {
-    color: var(--color-link);
+    color: #ffffff;
   }
 
-  /* Copyright */
-  .copyright {
-    font-size: 0.7rem;
-    color: var(--color-text-muted);
-    opacity: 0.7;
+  :global(.site-footer .footer-nav a:link),
+  :global(.site-footer .footer-nav a:visited) {
+    color: #ffffff !important;
   }
 
-  /* Legal disclaimer */
-  .disclaimer {
-    font-size: 0.7rem;
-    color: var(--color-text-muted);
-    opacity: 0.65;
-    max-width: 34rem;
-    line-height: 1.5;
+  :global(.site-footer .footer-nav a:hover),
+  :global(.site-footer .footer-nav a:focus-visible) {
+    color: var(--color-gb-caution) !important;
   }
 
-  /* Motion toggle — centred beneath copyright */
-  .footer-motion-toggle {
+  :global(.site-footer .footer-legal a:link),
+  :global(.site-footer .footer-legal a:visited) {
+    color: rgba(255, 255, 255, 0.72) !important;
+  }
+
+  :global(.site-footer .footer-legal a:hover),
+  :global(.site-footer .footer-legal a:focus-visible) {
+    color: #ffffff !important;
+  }
+
+  .footer-social {
     display: flex;
     justify-content: center;
-    margin-top: var(--space-xs);
+    gap: var(--space-md);
+    flex-wrap: wrap;
+  }
+
+  .footer-social-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: var(--radius-md);
+    color: rgba(255, 255, 255, 0.9);
+    background: rgba(255, 255, 255, 0.08);
+    transition:
+      color var(--transition-fast),
+      background var(--transition-fast);
+  }
+
+  .footer-social-link:hover,
+  .footer-social-link:focus-visible {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.2);
+  }
+
+  .footer-social-link svg {
+    width: 1.3rem;
+    height: 1.3rem;
+  }
+
+  .footer-credentials {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-md);
+    align-items: center;
+    justify-items: center;
+    width: 100%;
+    max-width: 40rem;
+  }
+
+  .footer-logo {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+  }
+
+  .footer-logo img {
+    max-height: 96px;
+    width: auto;
+    object-fit: contain;
+  }
+
+  .copyright {
+    margin: 0;
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.55);
+    text-align: center;
+    padding-top: var(--space-md);
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
   }
 
   @media (min-width: 768px) {
-    .footer-grid {
-      grid-template-columns: auto minmax(0, 1fr) auto;
+    .site-footer {
+      padding-block: 0 var(--space-xl);
+    }
+
+    .footer-stripe {
+      margin-bottom: var(--space-2xl);
+    }
+
+    .footer-main {
+      display: grid;
+      grid-template-columns: minmax(13rem, 1fr) minmax(0, 42rem) minmax(13rem, 1fr);
+      align-items: center;
       gap: var(--space-xl);
     }
 
+    .footer-content {
+      grid-column: 2;
+      justify-self: center;
+    }
+
+    .footer-nav ul {
+      gap: var(--space-sm) var(--space-lg);
+    }
+
+    .footer-credentials {
+      grid-column: 1 / -1;
+      grid-template-columns: minmax(13rem, 1fr) auto minmax(13rem, 1fr);
+      gap: var(--space-lg);
+      max-width: none;
+    }
+
     .footer-logo--left {
-      justify-content: flex-start;
+      grid-column: 1;
+      justify-content: center;
     }
 
     .footer-logo--right {
-      justify-content: flex-end;
+      grid-column: 3;
+      justify-content: center;
+    }
+
+    .footer-social {
+      grid-column: 2;
+      align-self: center;
+      justify-self: center;
+    }
+
+    .footer-social-link {
+      width: 3rem;
+      height: 3rem;
+    }
+
+    .footer-social-link svg {
+      width: 1.45rem;
+      height: 1.45rem;
+    }
+
+    .footer-logo img {
+      max-height: 132px;
     }
   }
 </style>

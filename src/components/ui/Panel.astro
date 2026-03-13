@@ -1,9 +1,9 @@
 ---
 /**
- * Panel — Console-style container component.
+ * Panel — Content container component.
  * PRD 002: Theme and Design Foundation
  *
- * A reusable dark-surface panel with subtle border glow.
+ * A reusable light-surface panel with subtle border accents.
  * Accepts slotted content and an optional heading.
  *
  * @example
@@ -25,7 +25,7 @@ const { heading, headingLevel = 2, class: className = "" } = Astro.props;
 const HeadingTag = `h${headingLevel}` as "h2" | "h3" | "h4";
 ---
 
-<section class:list={["panel", "fade-in-section", className]} role="region" aria-label={heading}>
+<section class:list={["panel", className]} role="region" aria-label={heading}>
   {heading && <HeadingTag class="panel__heading">{heading}</HeadingTag>}
   <div class="panel__body">
     <slot />
@@ -39,9 +39,6 @@ const HeadingTag = `h${headingLevel}` as "h2" | "h3" | "h4";
     border-radius: var(--radius-md);
     box-shadow: var(--shadow-panel);
     overflow: hidden;
-    transition:
-      border-color var(--transition-base),
-      box-shadow var(--transition-base);
   }
 
   .panel__heading {
@@ -49,31 +46,13 @@ const HeadingTag = `h${headingLevel}` as "h2" | "h3" | "h4";
     font-size: var(--text-sm);
     font-weight: var(--weight-semibold);
     letter-spacing: var(--tracking-wider);
-    text-transform: uppercase;
+    text-transform: none;
     color: var(--color-text-muted);
     border-bottom: 1px solid var(--color-border);
     background: var(--color-surface-alt);
-    transition: color var(--transition-base);
   }
 
   .panel__body {
     padding: 1.25rem;
-  }
-
-  /* Subtle glow on hover — atmospheric effect */
-  .panel:hover {
-    border-color: var(--color-hover-border);
-    box-shadow: var(--shadow-hover), var(--shadow-panel);
-  }
-
-  .panel:hover .panel__heading {
-    color: var(--color-text);
-  }
-
-  /* Brighten body text on card hover */
-  .panel:hover .panel__body :global(p),
-  .panel:hover .panel__body :global(dd),
-  .panel:hover .panel__body :global(address) {
-    color: var(--color-text);
   }
 </style>

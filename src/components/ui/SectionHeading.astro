@@ -1,0 +1,14 @@
+---
+interface Props {
+  level?: 2 | 3;
+  class?: string;
+  id?: string;
+}
+
+const { level = 2, class: className = "", id } = Astro.props;
+const Tag = `h${level}` as "h2" | "h3";
+---
+
+<Tag id={id} class:list={["section-heading", className]}>
+  <slot />
+</Tag>

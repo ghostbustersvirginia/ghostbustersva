@@ -1,18 +1,16 @@
 ---
-import StatusPill from "./ui/StatusPill.astro";
-import EventCountdown from "./EventCountdown.astro";
+import EventCardContent from "./EventCardContent.astro";
 import { getResponsiveImageAttrs } from "../lib/images";
-import { formatEventDate, type EventEntry, type EventStatus } from "../lib/events";
+import { type EventEntry } from "../lib/events";
 import { isSafeExternalUrl } from "../lib/links";
 
 interface Props {
   event: EventEntry;
-  status: EventStatus;
   showCountdown?: boolean;
   className?: string;
 }
 
-const { event, status, showCountdown = false, className } = Astro.props;
+const { event, showCountdown = false, className } = Astro.props;
 
 const safeUrl = isSafeExternalUrl(event.data.url) ? event.data.url : undefined;
 const hasImage = Boolean(event.data.image);
@@ -32,61 +30,12 @@ const eventImage = hasImage
   {
     safeUrl ? (
       <a href={safeUrl} target="_blank" rel="noopener noreferrer" class="event-link">
-        {hasImage && (
-          <div class="event-link__image-wrapper">
-            <img
-              src={eventImage!.src}
-              srcset={eventImage!.srcset}
-              sizes={eventImage!.sizes}
-              alt={`Photo for ${event.data.title}`}
-              loading="lazy"
-              decoding="async"
-              width={eventImage!.width}
-              height={eventImage!.height}
-              class="event-link__image"
-            />
-          </div>
-        )}
-        <div class="event-link__body">
-          <div class="event-link__header">
-            <span class="event-link__title">{event.data.title}</span>
-            <StatusPill status={status === "upcoming" ? "active" : "archived"}>
-              {status === "upcoming" ? "Upcoming" : "Past"}
-            </StatusPill>
-          </div>
-          <span class="event-link__meta">
-            <time class="event-link__date" datetime={event.data.date.toISOString().split("T")[0]}>
-              {formatEventDate(event.data.date, event.data.endDate)}
-            </time>
-            {event.data.location && <span class="event-link__location">{event.data.location}</span>}
-          </span>
-          <p class="event-link__summary">{event.data.summary}</p>
-          {showCountdown && event.data.endDate && (
-            <EventCountdown startDate={event.data.date} endDate={event.data.endDate} />
-          )}
-          {event.data.address && (
-            <address class="event-link__address">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="14"
-                height="14"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                aria-hidden="true"
-              >
-                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-                <circle cx="12" cy="10" r="3" />
-              </svg>
-              <span>
-                {event.data.location} &middot; {event.data.address}
-              </span>
-            </address>
-          )}
-        </div>
+        <EventCardContent
+          event={event}
+          showCountdown={showCountdown}
+          hasImage={hasImage}
+          eventImage={eventImage}
+        />
         <svg
           class="event-link__external"
           xmlns="http://www.w3.org/2000/svg"
@@ -109,62 +58,91 @@ const eventImage = hasImage
       </a>
     ) : (
       <div class="event-link">
-        {hasImage && (
-          <div class="event-link__image-wrapper">
-            <img
-              src={eventImage!.src}
-              srcset={eventImage!.srcset}
-              sizes={eventImage!.sizes}
-              alt={`Photo for ${event.data.title}`}
-              loading="lazy"
-              decoding="async"
-              width={eventImage!.width}
-              height={eventImage!.height}
-              class="event-link__image"
-            />
-          </div>
-        )}
-        <div class="event-link__body">
-          <div class="event-link__header">
-            <span class="event-link__title">{event.data.title}</span>
-            <StatusPill status={status === "upcoming" ? "active" : "archived"}>
-              {status === "upcoming" ? "Upcoming" : "Past"}
-            </StatusPill>
-          </div>
-          <span class="event-link__meta">
-            <time class="event-link__date" datetime={event.data.date.toISOString().split("T")[0]}>
-              {formatEventDate(event.data.date, event.data.endDate)}
-            </time>
-            {event.data.location && <span class="event-link__location">{event.data.location}</span>}
-          </span>
-          <p class="event-link__summary">{event.data.summary}</p>
-          {showCountdown && event.data.endDate && (
-            <EventCountdown startDate={event.data.date} endDate={event.data.endDate} />
-          )}
-          {event.data.address && (
-            <address class="event-link__address">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="14"
-                height="14"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                aria-hidden="true"
-              >
-                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-                <circle cx="12" cy="10" r="3" />
-              </svg>
-              <span>
-                {event.data.location} &middot; {event.data.address}
-              </span>
-            </address>
-          )}
-        </div>
+        <EventCardContent
+          event={event}
+          showCountdown={showCountdown}
+          hasImage={hasImage}
+          eventImage={eventImage}
+        />
       </div>
     )
   }
 </li>
+
+<style>
+  .event-item {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    position: relative;
+    transition:
+      border-color var(--transition-base),
+      box-shadow var(--transition-base),
+      transform var(--transition-base);
+  }
+
+  .event-item:hover {
+    border-color: var(--color-hover-border);
+    box-shadow:
+      0 8px 24px rgba(0, 0, 0, 0.10),
+      0 2px 8px rgba(0, 0, 0, 0.05);
+    transform: translateY(-2px);
+  }
+
+  .event-item--homepage-upcoming,
+  .event-item--alt-bg {
+    background: var(--color-surface-alt);
+  }
+
+  /* Live / "Happening now" — subtle highlight */
+  .event-item--live {
+    box-shadow: var(--shadow-hover);
+  }
+
+  .event-item--live:hover {
+    border-color: var(--color-hover-border);
+    box-shadow: var(--shadow-hover);
+  }
+
+  .event-link {
+    display: flex;
+    gap: var(--space-xl);
+    align-items: flex-start;
+    padding: var(--space-xl);
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .event-link__external {
+    position: absolute;
+    top: var(--space-lg);
+    right: var(--space-lg);
+    color: var(--color-text-muted);
+    opacity: 0;
+    transition: opacity var(--transition-fast);
+    flex-shrink: 0;
+  }
+
+  /* Desktop-only: muted text that darkens on hover */
+  @media (min-width: 769px) {
+    .event-item {
+      color: var(--color-text-muted);
+    }
+    .event-item:hover {
+      color: var(--color-text);
+    }
+  }
+
+  .event-item:hover .event-link__external {
+    opacity: 1;
+  }
+
+  @media (max-width: 768px) {
+    .event-link {
+      flex-direction: column;
+      gap: var(--space-lg);
+      padding: var(--space-lg);
+    }
+  }
+</style>

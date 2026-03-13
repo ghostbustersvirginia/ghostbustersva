@@ -70,8 +70,22 @@ const endTimestamp = new Date(endDate.getTime() + 86400000).toISOString();
         if (now >= start) {
           const timer = el.querySelector(".countdown-timer");
           if (timer && !timer.classList.contains("is-live")) {
-            timer.innerHTML = '<span class="countdown-status">\u{1F534} Event In Progress!</span>';
+            timer.innerHTML = '<span class="countdown-status">Happening Now!</span>';
             timer.classList.add("is-live");
+            // Bubble live state to parent event card for accent styling
+            const card = el.closest(".event-item");
+            if (card) {
+              card.classList.add("event-item--live");
+              // Inject slime accent into the countdown timer box
+              if (!timer.querySelector(".card-ooze")) {
+                const img = document.createElement("img");
+                img.src = "/images/slime.png";
+                img.alt = "";
+                img.setAttribute("aria-hidden", "true");
+                img.className = "card-ooze";
+                timer.appendChild(img);
+              }
+            }
           }
           setTimeout(tick, 60_000);
           return;
@@ -94,6 +108,17 @@ const endTimestamp = new Date(endDate.getTime() + 86400000).toISOString();
         if (m) m.textContent = String(mins).padStart(2, "0");
         if (s) s.textContent = String(secs).padStart(2, "0");
 
+        // Inject slime accent into the countdown timer box
+        const timer = el.querySelector(".countdown-timer");
+        if (timer && !timer.querySelector(".card-ooze")) {
+          const img = document.createElement("img");
+          img.src = "/images/slime.png";
+          img.alt = "";
+          img.setAttribute("aria-hidden", "true");
+          img.className = "card-ooze";
+          timer.appendChild(img);
+        }
+
         setTimeout(tick, 1_000);
       }
 
@@ -107,21 +132,50 @@ const endTimestamp = new Date(endDate.getTime() + 86400000).toISOString();
 
 <style>
   .event-countdown {
-    margin-top: var(--space-md);
+    margin-top: var(--space-sm);
     margin-inline: auto;
-    padding: var(--space-md) var(--space-lg);
-    background: rgba(0, 0, 0, 0.35);
-    border: 1px solid var(--color-chip-border);
-    border-radius: var(--radius-sm, 0.375rem);
+    padding: var(--space-sm) var(--space-md);
     text-align: center;
     width: fit-content;
   }
 
+  /* Live state — soft green-tint band */
+  :global(.event-item--live) .event-countdown {
+    position: relative;
+    overflow: visible;
+    width: calc(100% + (var(--space-xl) * 2));
+    margin-left: calc(var(--space-xl) * -1);
+    margin-top: var(--space-md);
+    padding: var(--space-md) var(--space-xl);
+    background: rgba(61, 134, 61, 0.07);
+    border-top: 1px solid rgba(61, 134, 61, 0.2);
+    border-bottom: 1px solid rgba(61, 134, 61, 0.2);
+  }
+
+  @media (max-width: 768px) {
+    :global(.event-item--live) .event-countdown {
+      width: calc(100% + (var(--space-lg) * 2));
+      margin-left: calc(var(--space-lg) * -1);
+      padding: var(--space-md) var(--space-lg);
+    }
+  }
+
   .countdown-timer {
     display: flex;
-    align-items: flex-start;
+    align-items: baseline;
     justify-content: center;
-    gap: 0.4rem;
+    gap: var(--space-xs);
+    position: relative;
+    background: var(--color-surface, #ffffff);
+    border: 1px solid var(--color-border, #d1d5db);
+    border-radius: var(--radius-md, 0.5rem);
+    border-bottom-right-radius: 0;
+    padding: var(--space-lg) var(--space-2xl);
+    box-shadow: var(--shadow-panel, 0 1px 3px rgba(8, 9, 9, 0.06));
+    width: fit-content;
+    margin-inline: auto;
+    overflow: visible;
+    overflow: visible;
   }
 
   .countdown-segment {
@@ -132,40 +186,61 @@ const endTimestamp = new Date(endDate.getTime() + 86400000).toISOString();
   }
 
   .countdown-value {
-    font-family: var(--font-heading, sans-serif);
-    font-size: 1.75rem;
-    font-weight: 700;
-    color: var(--color-text, #fff);
+    font-family: var(--font-display);
+    font-size: var(--text-2xl);
+    font-weight: 600;
+    color: var(--color-text);
     line-height: 1;
   }
 
   .countdown-separator {
-    font-family: var(--font-heading, sans-serif);
-    font-size: 1.75rem;
-    font-weight: 700;
-    color: var(--color-text-muted, #aaa);
+    font-family: var(--font-display);
+    font-size: var(--text-xl);
+    font-weight: 500;
+    color: var(--color-text-muted);
     line-height: 1;
   }
 
   .countdown-label {
-    font-size: 0.65rem;
+    font-size: var(--text-xs);
+    color: var(--color-text-muted);
+    letter-spacing: var(--tracking-wider);
+    margin-top: 0.2rem;
+    font-weight: 500;
+  }
+</style>
+
+<!-- Global styles for dynamically injected elements (innerHTML in <script>) -->
+<style is:global>
+  .countdown-status {
+    display: inline-flex;
+    align-items: center;
+    font-family: var(--font-brand-title, "Elan Bold", "Graduate", sans-serif);
+    font-size: var(--text-xl, 1.25rem);
+    font-weight: var(--weight-bold, 700);
+    color: var(--color-gb-green, #3d863d);
     text-transform: uppercase;
-    color: var(--color-text-muted, #aaa);
-    letter-spacing: 0.05em;
-    margin-top: var(--space-xs);
+    letter-spacing: var(--tracking-wide, 0.025em);
+    padding: 0;
+    line-height: 1.2;
   }
 
-  .countdown-status {
-    font-family: var(--font-heading, sans-serif);
-    font-size: 1.1rem;
-    font-weight: 700;
-    color: var(--color-accent, #c62828);
+  .card-ooze {
+    position: absolute;
+    bottom: 0;
+    right: -3.5px;
+    width: 68px;
+    height: auto;
+    pointer-events: none;
+    z-index: 2;
+    transform: translateY(100%);
+    opacity: 0.75;
   }
 
   .countdown-complete {
-    font-family: var(--font-heading, sans-serif);
-    font-size: 1rem;
-    font-weight: 600;
-    color: var(--color-text-muted, #aaa);
+    font-family: var(--font-body, sans-serif);
+    font-size: var(--text-sm, 0.875rem);
+    font-weight: var(--weight-medium, 500);
+    color: var(--color-text-muted, #4a4f54);
   }
 </style>

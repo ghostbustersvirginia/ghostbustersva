@@ -4,5 +4,12 @@
   "pageIntro": "Meet the team, support local charities, and see the Ecto in person.",
   "upcomingHeading": "Upcoming Events",
   "pastHeading": "Past Events",
-  "emptyText": "No events yet — check back soon!"
+  "emptyText": "No events yet — check back soon!",
+  "showMoreLabel": "Show More",
+  "showLessLabel": "Show Less",
+  "metaTitle": "Events",
+  "metaDescription": "Upcoming and past Ghostbusters Virginia events across the Commonwealth, including conventions, parades, and charity appearances.",
+  "ogTitle": "Events | Ghostbusters Virginia",
+  "ogDescription": "Find where Ghostbusters Virginia will be next and browse our past appearances.",
+  "ogImage": "/images/ghostbusters-virginia-pageant-winner-ecto.jpg"
 }

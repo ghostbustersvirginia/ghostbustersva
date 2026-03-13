@@ -1,0 +1,103 @@
+---
+/**
+ * SwagGrid — Reusable swag product grid with responsive images.
+ * Used on the home page and donate page.
+ */
+import { swagItems } from "../lib/swag";
+import { getResponsiveImageAttrs } from "../lib/images";
+import Button from "./ui/Button.astro";
+
+interface Props {
+  /** Heading text (optional — caller can supply their own heading) */
+  heading?: string;
+  /** Subtitle text below the heading */
+  subtitle?: string;
+  /** CTA button label */
+  ctaLabel?: string;
+  /** CTA button href */
+  ctaHref?: string;
+  /** Button variant */
+  ctaVariant?: "primary" | "secondary" | "secondary-alt";
+}
+
+const {
+  subtitle,
+  ctaLabel = "Visit Our Store",
+  ctaHref = "https://www.teepublic.com/user/ghostbusters-virginia",
+  ctaVariant = "secondary",
+} = Astro.props;
+
+const swagImageAttrs = await Promise.all(
+  swagItems.map((item) =>
+    getResponsiveImageAttrs({
+      src: item.image,
+      widths: [320, 480, 640],
+      sizes: "(max-width: 768px) 50vw, 20vw",
+      width: 640,
+      height: 640,
+      quality: 72,
+    }),
+  ),
+);
+---
+
+{
+  swagItems.length > 0 && (
+    <div class="swag-grid-wrapper">
+      {subtitle && <p class="swag-subtitle">{subtitle}</p>}
+      <div class="swag-grid">
+        {swagItems.map((item, index) => (
+          <a href={item.url} target="_blank" rel="noopener noreferrer" class="swag-item">
+            <img
+              src={swagImageAttrs[index].src}
+              srcset={swagImageAttrs[index].srcset}
+              sizes={swagImageAttrs[index].sizes}
+              alt={item.alt}
+              loading="lazy"
+              decoding="async"
+              width={swagImageAttrs[index].width}
+              height={swagImageAttrs[index].height}
+              class="swag-thumb"
+            />
+            <span class="swag-external-icon" aria-hidden="true">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                <polyline points="15 3 21 3 21 9" />
+                <line x1="10" y1="14" x2="21" y2="3" />
+              </svg>
+            </span>
+            <span class="sr-only"> (opens in new tab)</span>
+          </a>
+        ))}
+      </div>
+      {ctaLabel && ctaHref && (
+        <div class="swag-cta">
+          <Button variant={ctaVariant} href={ctaHref} external>
+            {ctaLabel}
+          </Button>
+        </div>
+      )}
+    </div>
+  )
+}
+
+<style>
+  .swag-grid-wrapper {
+    width: 100%;
+  }
+
+  .swag-subtitle {
+    text-align: center;
+    color: var(--color-text-muted);
+    font-family: var(--font-body);
+    font-size: var(--text-base);
+    line-height: var(--leading-normal);
+    margin-bottom: var(--space-xl);
+  }
+
+  .swag-cta {
+    display: flex;
+    justify-content: center;
+    margin-top: var(--space-xl);
+  }
+</style>

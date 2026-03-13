@@ -1,82 +1,109 @@
 ---
 /**
  * Events page — mission board of upcoming and past events.
- * PRD 006: Events Page Redesign
  */
 import BaseLayout from "../layouts/BaseLayout.astro";
+import Button from "../components/ui/Button.astro";
 import EventCard from "../components/EventCard.astro";
+import PageHeader from "../components/ui/PageHeader.astro";
+import SectionHeading from "../components/ui/SectionHeading.astro";
 import { getCollection } from "astro:content";
 import { splitEventsByStatus } from "../lib/events";
 import { getPageCopy } from "../lib/page-copy";
 
+const copy = await getPageCopy("events");
 const allEvents = await getCollection("events");
-// Date-derived partitions reflect the current build snapshot.
 const { upcoming, past } = splitEventsByStatus(allEvents);
 
-const copy = (await getPageCopy("events")) as {
-  pageTitle?: string;
-  pageIntro?: string;
-  upcomingHeading?: string;
-  pastHeading?: string;
-  emptyText?: string;
-} | null;
+const pageTitle = (copy?.pageTitle as string) || "Events";
+const pageIntro =
+  (copy?.pageIntro as string) ||
+  "Meet the team, support local charities, and see the Ecto in person.";
+const upcomingHeading = (copy?.upcomingHeading as string) || "Upcoming Events";
+const pastHeading = (copy?.pastHeading as string) || "Past Events";
+const emptyText = (copy?.emptyText as string) || "No events yet — check back soon!";
+const showMoreLabel = (copy?.showMoreLabel as string) || "Show More";
+const showLessLabel = (copy?.showLessLabel as string) || "Show Less";
+const metaTitle = (copy?.metaTitle as string) || "Events";
+const metaDescription =
+  (copy?.metaDescription as string) ||
+  "Upcoming and past Ghostbusters Virginia events across the Commonwealth, including conventions, parades, and charity appearances.";
+const ogTitleVal = (copy?.ogTitle as string) || "Events | Ghostbusters Virginia";
+const ogDescriptionVal =
+  (copy?.ogDescription as string) ||
+  "Find where Ghostbusters Virginia will be next and browse our past appearances.";
+const ogImage =
+  (copy?.ogImage as string) || "/images/ghostbusters-virginia-pageant-winner-ecto.jpg";
 ---
 
 <BaseLayout
-  title="Events"
-  description="Upcoming and past Ghostbusters Virginia events across the Commonwealth, including conventions, parades, and charity appearances."
+  title={metaTitle}
+  description={metaDescription}
   canonical="/events"
-  ogTitle="Events | Ghostbusters Virginia"
-  ogDescription="Find where Ghostbusters Virginia will be next and browse our past appearances."
-  ogImage="/images/ghostbusters-virginia-pageant-winner-ecto.jpg"
+  ogTitle={ogTitleVal}
+  ogDescription={ogDescriptionVal}
+  ogImage={ogImage}
 >
-  <section class="container page" aria-labelledby="events-title">
-    <h1 id="events-title" class="page-title">{copy?.pageTitle || "Events"}</h1>
-    <p class="page-intro">
-      {copy?.pageIntro || "Meet the team, support local charities, and see the Ecto in person."}
-    </p>
+  <section class="page" aria-labelledby="events-title">
+    <div class="page-band page-band--white">
+      <div class="container container--mid">
+        <PageHeader id="events-title" title={pageTitle} subtitle={pageIntro} />
+      </div>
+    </div>
 
     {
       upcoming.length > 0 && (
-        <div class="event-section fade-in-section">
-          <h2 class="section-heading">{copy?.upcomingHeading || "Upcoming Events"}</h2>
-          <ul class="event-list" role="list">
-            {upcoming.map((event) => (
-              <EventCard event={event} status="upcoming" showCountdown />
-            ))}
-          </ul>
+        <div class="page-band page-band--alt">
+          <div class="container">
+            <SectionHeading>{upcomingHeading}</SectionHeading>
+            <ul class="event-list" role="list">
+              {upcoming.map((event) => (
+                <EventCard event={event} showCountdown />
+              ))}
+            </ul>
+          </div>
         </div>
       )
     }
 
     {
       past.length > 0 && (
-        <div class="event-section fade-in-section">
-          <h2 class="section-heading">{copy?.pastHeading || "Past Events"}</h2>
-          <ul class="event-list event-list--past" id="past-events-list" role="list">
-            {past.map((event, index) => (
-              <EventCard event={event} status="past" className={index >= 4 ? "past-hidden" : ""} />
-            ))}
-          </ul>
-          {past.length > 4 && (
-            <div class="past-toggle">
-              <button class="toggle-btn" type="button" id="past-show-more">
-                Show More ({past.length - 4} more)
-              </button>
-              <button class="toggle-btn" type="button" id="past-show-less" hidden>
-                Show Less
-              </button>
-            </div>
-          )}
+        <div class="page-band page-band--white">
+          <div class="container">
+            <SectionHeading>{pastHeading}</SectionHeading>
+            <ul class="event-list event-list--past" id="past-events-list" role="list">
+              {past.map((event, index) => (
+                <EventCard event={event} className={`event-item--alt-bg${index >= 4 ? " past-hidden" : ""}`} />
+              ))}
+            </ul>
+            {past.length > 4 && (
+              <div class="past-toggle">
+                <Button variant="secondary" type="button" class="toggle-btn" id="past-show-more">
+                  {showMoreLabel} ({past.length - 4} more)
+                </Button>
+                <Button
+                  variant="secondary"
+                  type="button"
+                  class="toggle-btn"
+                  id="past-show-less"
+                  hidden
+                >
+                  {showLessLabel}
+                </Button>
+              </div>
+            )}
+          </div>
         </div>
       )
     }
 
-    {
-      allEvents.length === 0 && (
-        <p class="empty-state">{copy?.emptyText || "No events yet \u2014 check back soon!"}</p>
-      )
-    }
+    {allEvents.length === 0 && (
+      <div class="page-band page-band--alt">
+        <div class="container container--mid">
+          <p class="empty-state">{emptyText}</p>
+        </div>
+      </div>
+    )}
   </section>
 </BaseLayout>
 
@@ -102,12 +129,10 @@ const copy = (await getPageCopy("events")) as {
 </script>
 
 <style>
-  /* ── Event section layout ── */
   .event-section {
     width: 100%;
   }
 
-  /* ── Event list ── */
   .event-list {
     list-style: none;
     padding: 0;
@@ -116,12 +141,10 @@ const copy = (await getPageCopy("events")) as {
     gap: var(--space-xl);
   }
 
-  /* ── Past events hidden items ── */
   .past-hidden {
     display: none;
   }
 
-  /* ── Past toggle buttons ── */
   .past-toggle {
     display: flex;
     justify-content: center;

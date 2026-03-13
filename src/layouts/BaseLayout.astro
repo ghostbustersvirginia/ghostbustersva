@@ -5,7 +5,6 @@
  */
 import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
-import GhostParticles from "../components/GhostParticles";
 import { siteConfig } from "../config";
 import { getSiteSettings } from "../lib/settings";
 import type { ResponsiveImageAttrs } from "../lib/images";
@@ -22,7 +21,6 @@ interface Props {
   ogImage?: string;
   twitterCard?: "summary" | "summary_large_image";
   robots?: string;
-  showGhostParticles?: boolean;
   /** Pass hero image attrs to preload it in <head> for instant LCP */
   heroImagePreload?: ResponsiveImageAttrs;
 }
@@ -40,7 +38,6 @@ const {
   ogImage = "/images/logo.png",
   twitterCard = "summary_large_image",
   robots = "index,follow",
-  showGhostParticles = false,
   heroImagePreload,
 } = Astro.props;
 const pageTitle = title ? `${title} | ${siteName}` : siteName;
@@ -79,21 +76,6 @@ const resolvedOgImage = new URL(
     <meta name="twitter:description" content={resolvedOgDescription} />
     <meta name="twitter:image" content={resolvedOgImage} />
 
-    <!-- Motion toggle infrastructure — runs before paint to avoid FOUC (PRD 009) -->
-    <script is:inline>
-      (function () {
-        var stored = localStorage.getItem("motion-preference");
-        var osReduce =
-          window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-        // If user has explicitly stored a preference, use it.
-        // Otherwise fall back to OS setting.
-        var motionOff = stored !== null ? stored === "off" : osReduce;
-        if (motionOff) {
-          document.documentElement.setAttribute("data-reduce-motion", "true");
-        }
-      })();
-    </script>
-
     {
       heroImagePreload && (
         <link
@@ -108,27 +90,13 @@ const resolvedOgImage = new URL(
       )
     }
 
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <!-- Preload the heading font to prevent FOUT jump on page titles -->
-    <link
-      rel="preload"
-      as="style"
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Orbitron:wght@500;700&family=Share+Tech+Mono&display=swap"
-    />
-    <link
-      rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Orbitron:wght@500;700&family=Share+Tech+Mono&display=swap"
-    />
+    <!-- Elan Bold display font loaded via @font-face in theme.css -->
   </head>
   <body>
     <!-- Skip to main content for keyboard / screen-reader users -->
     <a class="skip-link" href="#main-content">Skip to main content</a>
 
     <Header />
-
-    <!-- Optional floating ghost particles (homepage only) -->
-    {showGhostParticles && <GhostParticles client:idle />}
 
     <main id="main-content">
       <slot />
@@ -153,13 +121,15 @@ const resolvedOgImage = new URL(
       html,
       body {
         height: 100%;
+        margin: 0;
+        padding: 0;
       }
 
       html {
         font-family: var(--font-body);
         background-color: var(--color-bg);
         color: var(--color-text);
-        line-height: 1.6;
+        line-height: var(--text-body-lh);
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
         text-rendering: optimizeLegibility;
@@ -176,7 +146,7 @@ const resolvedOgImage = new URL(
 
       h1,
       h2 {
-        letter-spacing: var(--tracking-wider);
+        letter-spacing: var(--tracking-heading);
       }
 
       h3,
@@ -190,10 +160,12 @@ const resolvedOgImage = new URL(
         display: flex;
         flex-direction: column;
         min-height: 100vh;
+        background-color: var(--color-bg);
       }
 
       main {
         flex: 1;
+        background-color: var(--color-bg);
       }
 
       a {
@@ -234,98 +206,7 @@ const resolvedOgImage = new URL(
         padding-inline: clamp(1rem, 5vw, 3rem);
       }
 
-      /* ── Site-wide ambient bokeh orbs ── */
-      .ghost-particles-global {
-        position: fixed;
-        inset: 0;
-        pointer-events: none;
-        z-index: 0;
-        overflow: hidden;
-      }
-
-      /* Base particle style (shared) */
-      .ghost-particle-global {
-        position: absolute;
-        border-radius: 50%;
-        will-change: transform, opacity;
-      }
-
-      /* Hero — large atmospheric blobs */
-      .ghost-particle-global.gp-hero {
-        background: radial-gradient(
-          circle,
-          var(--color-hover-border) 0%,
-          var(--color-hover-bg) 40%,
-          transparent 70%
-        );
-      }
-
-      /* Medium — classic bokeh */
-      .ghost-particle-global.gp-medium {
-        background: radial-gradient(
-          circle,
-          var(--color-glow-atmospheric-strong) 0%,
-          var(--color-glow-atmospheric) 40%,
-          transparent 70%
-        );
-      }
-
-      /* Tiny — bright sparkle dots */
-      .ghost-particle-global.gp-tiny {
-        background: radial-gradient(
-          circle,
-          var(--color-accent-atmospheric) 0%,
-          var(--color-hover-border) 50%,
-          transparent 100%
-        );
-      }
-
-      /* ── Corner fog / smoke ── */
-      .corner-fog {
-        position: fixed;
-        bottom: -40px;
-        width: 420px;
-        height: 260px;
-        pointer-events: none;
-        opacity: 0.45;
-        filter: blur(40px);
-        border-radius: 50%;
-        background: radial-gradient(
-          ellipse at center,
-          var(--color-glow-atmospheric) 0%,
-          rgba(0, 200, 100, 0.1) 50%,
-          transparent 80%
-        );
-        animation: fog-drift 14s ease-in-out infinite alternate;
-      }
-
-      .corner-fog--left {
-        left: -100px;
-      }
-
-      .corner-fog--right {
-        right: -100px;
-        animation-delay: -7s;
-        animation-direction: alternate-reverse;
-      }
-
-      @keyframes fog-drift {
-        0% {
-          transform: translateY(0) scale(1);
-          opacity: 0.35;
-        }
-        50% {
-          transform: translateY(-18px) scale(1.12);
-          opacity: 0.5;
-        }
-        100% {
-          transform: translateY(6px) scale(0.95);
-          opacity: 0.3;
-        }
-      }
-
       /* Ensure page content sits above particles */
-      .skip-link,
       header,
       footer {
         position: relative;
@@ -338,159 +219,6 @@ const resolvedOgImage = new URL(
       main {
         position: relative;
       }
-
-      @media (prefers-reduced-motion: reduce) {
-        .ghost-particles-global,
-        .corner-fog {
-          display: none !important;
-        }
-      }
-
-      /* ── Global motion-off state (toggle or OS) ── */
-      html[data-reduce-motion="true"] *,
-      html[data-reduce-motion="true"] *::before,
-      html[data-reduce-motion="true"] *::after {
-        animation-duration: 0.01ms !important;
-        animation-iteration-count: 1 !important;
-        transition-duration: 0.01ms !important;
-        scroll-behavior: auto !important;
-      }
-
-      html[data-reduce-motion="true"] .ghost-particles-global,
-      html[data-reduce-motion="true"] .corner-fog {
-        display: none !important;
-      }
-
-      /* ── Scroll fade-in (PRD 009 — Tier 1) ── */
-      .fade-in-section {
-        opacity: 0;
-        transform: translateY(24px);
-        transition:
-          opacity 400ms ease-out,
-          transform 400ms ease-out;
-      }
-
-      .fade-in-section.is-visible {
-        opacity: 1;
-        transform: translateY(0);
-      }
-
-      /* If motion is off, show everything immediately */
-      html[data-reduce-motion="true"] .fade-in-section {
-        opacity: 1;
-        transform: none;
-      }
     </style>
-
-    <!-- Motion toggle click handler + scroll fade-in observer (PRD 009) -->
-    <script>
-      import { resolveMotionOff } from "../lib/motion";
-
-      // ── Motion toggle handler ──
-      function syncToggleButtons(motionOff: boolean) {
-        document.querySelectorAll<HTMLButtonElement>("[data-motion-toggle]").forEach((btn) => {
-          btn.setAttribute("aria-pressed", motionOff ? "false" : "true");
-        });
-      }
-
-      function initMotionToggle() {
-        const html = document.documentElement;
-        const osReduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-        const stored = localStorage.getItem("motion-preference");
-        let motionOff = resolveMotionOff(stored, osReduce);
-
-        // Ensure attribute is in sync (the inline script in <head> handles initial)
-        if (motionOff) {
-          html.setAttribute("data-reduce-motion", "true");
-        } else {
-          html.removeAttribute("data-reduce-motion");
-        }
-        syncToggleButtons(motionOff);
-
-        // Listen for clicks on any toggle button
-        document.addEventListener("click", (e) => {
-          const btn = (e.target as Element)?.closest?.(
-            "[data-motion-toggle]",
-          ) as HTMLButtonElement | null;
-          if (!btn) return;
-          motionOff = !motionOff;
-          localStorage.setItem("motion-preference", motionOff ? "off" : "on");
-          if (motionOff) {
-            html.setAttribute("data-reduce-motion", "true");
-          } else {
-            html.removeAttribute("data-reduce-motion");
-          }
-          syncToggleButtons(motionOff);
-        });
-
-        // Listen for OS preference changes
-        window.matchMedia("(prefers-reduced-motion: reduce)").addEventListener("change", (e) => {
-          // Only auto-sync if user hasn't stored a manual preference
-          if (localStorage.getItem("motion-preference") !== null) return;
-          motionOff = e.matches;
-          if (motionOff) {
-            html.setAttribute("data-reduce-motion", "true");
-          } else {
-            html.removeAttribute("data-reduce-motion");
-          }
-          syncToggleButtons(motionOff);
-        });
-      }
-
-      // ── Scroll fade-in observer ──
-      function initScrollFadeIn() {
-        const html = document.documentElement;
-        // If motion is off, make everything visible immediately
-        if (html.getAttribute("data-reduce-motion") === "true") {
-          document
-            .querySelectorAll(".fade-in-section")
-            .forEach((el) => el.classList.add("is-visible"));
-          return;
-        }
-
-        const sections = document.querySelectorAll(".fade-in-section");
-
-        // Elements already in the viewport on page load get revealed
-        // immediately (no rAF delay) so the page feels instant and
-        // avoids a visible "flash" of invisible content near the title.
-        sections.forEach((el) => {
-          const rect = el.getBoundingClientRect();
-          if (rect.top < window.innerHeight && rect.bottom > 0) {
-            el.classList.add("is-visible");
-          }
-        });
-
-        // Elements below the fold get the scroll-triggered reveal
-        const observer = new IntersectionObserver(
-          (entries) => {
-            entries.forEach((entry) => {
-              if (entry.isIntersecting) {
-                requestAnimationFrame(() => {
-                  entry.target.classList.add("is-visible");
-                });
-                observer.unobserve(entry.target);
-              }
-            });
-          },
-          { threshold: 0.1 },
-        );
-
-        sections.forEach((el) => {
-          if (!el.classList.contains("is-visible")) {
-            observer.observe(el);
-          }
-        });
-      }
-
-      // Run on initial load
-      initMotionToggle();
-      initScrollFadeIn();
-
-      // Re-run on Astro page transitions (View Transitions)
-      document.addEventListener("astro:page-load", () => {
-        initMotionToggle();
-        initScrollFadeIn();
-      });
-    </script>
   </body>
 </html>

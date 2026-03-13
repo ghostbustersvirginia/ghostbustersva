@@ -1,0 +1,73 @@
+---
+/**
+ * HeroSection — Split-panel hero with solid background.
+ * Static Astro component — no client-side JS needed.
+ *
+ * Layout: two-column on desktop (logo left, copy + CTAs right).
+ * Stacked centered on mobile.
+ * Light background keeps it clean, modern, and nonprofit-friendly.
+ */
+import "./HeroSection.css";
+import Button from "./ui/Button.astro";
+
+interface Props {
+  heroTitle: string;
+  heroTagline: string;
+  primaryCtaLabel: string;
+  primaryCtaHref: string;
+  secondaryCtaLabel: string;
+  secondaryCtaHref: string;
+  heroLogoSrc: string;
+  heroLogoAlt: string;
+}
+
+const {
+  heroTitle,
+  heroTagline,
+  primaryCtaLabel,
+  primaryCtaHref,
+  secondaryCtaLabel,
+  secondaryCtaHref,
+  heroLogoSrc,
+  heroLogoAlt,
+} = Astro.props;
+---
+
+<section class="hero" aria-labelledby="home-hero-title">
+  <div class="hero-inner container">
+    <!-- Left column: logo -->
+    <div class="hero-logo-col">
+      <div class="hero-logo-glow" aria-hidden="true"></div>
+      <img
+        src={heroLogoSrc}
+        alt={heroLogoAlt}
+        width="360"
+        height="360"
+        class="hero-logo"
+        fetchpriority="high"
+        decoding="async"
+      />
+    </div>
+
+    <!-- Right column: copy + CTAs -->
+    <div class="hero-content">
+      <h1 id="home-hero-title" class="hero-title" set:html={heroTitle} />
+
+      <p class="hero-tagline">{heroTagline}</p>
+
+      <div class="hero-cta">
+        <Button variant="primary" class="btn--lg" href={primaryCtaHref}>
+          {primaryCtaLabel}
+        </Button>
+        <Button variant="secondary" class="btn--lg" href={secondaryCtaHref}>
+          {secondaryCtaLabel}
+        </Button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  const logo = document.querySelector(".hero-logo");
+  logo?.addEventListener("animationend", () => logo.classList.add("entrance-done"), { once: true });
+</script>

@@ -1,40 +1,80 @@
 ---
 /**
  * Site header with responsive navigation.
- * Uses a <details> element for mobile menu — no JS required, fully accessible.
- * Logo sits proud above the nav bar, inspired by the original GBV site.
- * Now reads logo, title, and nav items from CMS settings.
+ * Desktop (≥768px): full horizontal nav inline — executive decision, not hamburger
+ *   (see brand-guide.md — hamburger-only was in PRD 015 but violates UX best practices
+ *    for desktop screens where full navigation is the expected pattern).
+ * Mobile (<768px): hamburger <details> menu — no JS required, fully accessible.
+ * Reads logo, title, and nav items from CMS settings.
  */
 import { getSiteSettings } from "../lib/settings";
 
 const settings = await getSiteSettings();
 const currentPath = Astro.url.pathname;
 const navItems = settings.navItems;
+const navTitle = settings.navTitle?.trim() || "Ghostbusters";
+const navSubtitle = settings.navSubtitle?.trim() || "Virginia";
+const logoIndex = navTitle.toLowerCase().indexOf("o");
+const titleBeforeLogo = logoIndex >= 0 ? navTitle.slice(0, logoIndex) : navTitle;
+const titleAfterLogo = logoIndex >= 0 ? navTitle.slice(logoIndex + 1) : "";
+const useLogoAsO = logoIndex >= 0;
 ---
 
 <header class="site-header">
   <div class="container header-inner">
     <a href="/" class="site-logo" aria-label={`${settings.siteName} — home`}>
-      <img src={settings.navLogo} alt="" width="72" height="72" class="logo-img" />
-      <span class="logo-text">
-        <span class="logo-text-main">{settings.navTitle}</span>
-        <span class="logo-text-sub">{settings.navSubtitle}</span>
+      <span class="logo-wordmark" aria-hidden="true">
+        <span class="logo-wordmark-main">
+          {titleBeforeLogo}
+          {
+            useLogoAsO && (
+              <img src={settings.navLogo} alt="" width="44" height="44" class="logo-o" />
+            )
+          }
+          {titleAfterLogo}
+        </span>
+        <span class="logo-wordmark-sub">{navSubtitle}</span>
       </span>
     </a>
 
-    {/* Mobile menu toggle — progressively enhanced, works without JS */}
-    <details class="mobile-nav">
+    {/* Desktop nav — full horizontal, visible on ≥768px */}
+    <nav class="desktop-nav" aria-label="Main navigation">
+      <ul>
+        {
+          navItems.map((link) => (
+            <li>
+              <a
+                href={link.href}
+                class="desktop-nav__link"
+                aria-current={currentPath === link.href ? "page" : undefined}
+                {...(link.external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+              >
+                {link.label}
+                {link.external && <span class="sr-only"> (opens in new tab)</span>}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+
+    {/* Mobile hamburger — visible on <768px only */}
+    <details class="mobile-menu">
       <summary aria-label="Open navigation menu">
-        <span class="hamburger" aria-hidden="true">&#9776;</span>
+        <span class="hamburger" aria-hidden="true">
+          <span class="hamburger-line"></span>
+          <span class="hamburger-line"></span>
+          <span class="hamburger-line"></span>
+        </span>
       </summary>
-      <nav class="nav-links mobile" aria-label="Main navigation">
+      <nav class="mobile-nav-links" aria-label="Main navigation">
         <ul>
           {
             navItems.map((link) => (
               <li>
                 <a
                   href={link.href}
-                  class="nav-active-link"
+                  class="mobile-nav__link"
                   aria-current={currentPath === link.href ? "page" : undefined}
                   {...(link.external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
                 >
@@ -47,266 +87,288 @@ const navItems = settings.navItems;
         </ul>
       </nav>
     </details>
-
-    {/* Desktop nav — hidden on small screens via CSS */}
-    <nav class="nav-links desktop" aria-label="Main navigation">
-      <ul>
-        {
-          navItems.map((link) => (
-            <li>
-              <a
-                href={link.href}
-                class="nav-active-link"
-                aria-current={currentPath === link.href ? "page" : undefined}
-                {...(link.external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
-              >
-                {link.label}
-                {link.external && <span class="sr-only"> (opens in new tab)</span>}
-              </a>
-            </li>
-          ))
-        }
-      </ul>
-    </nav>
   </div>
-
-  {/* Proton-stream divider — contained width, not full bleed */}
-  <div class="container">
-    <div class="header-divider" aria-hidden="true"></div>
+  <div class="header-stripe" aria-hidden="true">
+    <div class="caution-divider"></div>
   </div>
 </header>
 
 <style>
   .site-header {
-    background: var(--color-bg);
-    border-bottom: none;
+    background-color: var(--color-bg);
     position: sticky;
     top: 0;
     z-index: 100;
+    margin: 0;
   }
 
-  /* Proton-stream divider — contained, fades at edges */
-  .header-divider {
-    height: 2px;
-    background: linear-gradient(
-      90deg,
-      transparent 0%,
-      var(--color-glow) 20%,
-      var(--color-divider-structural) 40%,
-      var(--color-action-primary-hover) 50%,
-      var(--color-divider-structural) 60%,
-      var(--color-glow) 80%,
-      transparent 100%
-    );
-    box-shadow:
-      0 0 6px var(--color-glow),
-      0 0 15px var(--color-glow-dim);
-    border-radius: 1px;
+  .header-stripe {
+    line-height: 0;
   }
 
   .header-inner {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding-block: var(--space-sm);
+    padding-block: var(--space-lg);
+    gap: var(--space-xl);
   }
 
-  /* -------------------------------------------------- */
-  /* Logo — sits proud, overlapping the nav bar          */
-  /* -------------------------------------------------- */
   .site-logo {
-    display: flex;
+    display: inline-flex;
     align-items: center;
-    gap: var(--space-md);
     text-decoration: none;
     color: var(--color-text);
     position: relative;
     z-index: 2;
-    transition: transform var(--transition-fast);
+    flex-shrink: 0;
+    transition: opacity var(--transition-fast);
   }
 
-  .logo-img {
-    filter: drop-shadow(0 0 6px var(--color-glow));
-    transition:
-      filter var(--transition-base),
-      transform var(--transition-base);
-    /* Push the logo up so it "breaks out" of the header bar */
-    margin-block: -0.5rem;
+  .site-logo:hover {
+    opacity: 0.85;
   }
 
-  .site-logo:hover .logo-img,
-  .site-logo:focus-visible .logo-img {
-    filter: drop-shadow(0 0 12px var(--color-glow-green))
-      drop-shadow(0 0 20px var(--color-glow-green));
-    transform: scale(1.05);
-  }
-
-  .logo-text {
+  .logo-wordmark {
     display: flex;
     flex-direction: column;
-    line-height: 1.1;
+    line-height: 1;
+    text-transform: uppercase;
+    white-space: nowrap;
   }
 
-  .logo-text-main {
-    font-family: var(--font-heading);
+  .logo-wordmark-main {
+    font-family: var(--font-brand-title, var(--font-display));
     font-weight: var(--weight-bold);
-    font-size: 1.15rem;
-    letter-spacing: var(--tracking-wider);
-    text-transform: uppercase;
+    font-size: 1.9rem;
+    letter-spacing: var(--tracking-heading);
     color: var(--color-text);
-    transition: color var(--transition-fast);
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    gap: 0;
   }
 
-  .logo-text-sub {
-    font-family: var(--font-heading);
-    font-weight: var(--weight-medium);
-    font-size: 0.7rem;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: var(--color-link);
-    transition: color var(--transition-fast);
+  .logo-wordmark-sub {
+    font-family: var(--font-brand-title, var(--font-display));
+    font-weight: var(--weight-bold);
+    font-size: 0.85rem;
+    letter-spacing: 0.22em;
+    color: var(--color-text-muted);
+    line-height: 1;
+    margin-top: 0.15em;
   }
 
-  .site-logo:hover .logo-text-main {
-    color: var(--color-text);
-  }
-  .site-logo:hover .logo-text-sub {
-    color: var(--color-link-hover);
+  .logo-o {
+    width: 1.02em;
+    height: 1.02em;
+    object-fit: contain;
+    margin-inline: 0.02em;
+    transform: translateY(0.03em);
+    flex-shrink: 0;
+    filter: var(--shadow-logo-drop);
   }
 
-  /* -------------------------------------------------- */
-  /* Nav links                                          */
-  /* -------------------------------------------------- */
-  .nav-links ul {
+  .desktop-nav {
+    display: none;
+  }
+
+  .desktop-nav ul {
     list-style: none;
     display: flex;
+    align-items: center;
     gap: var(--space-xs);
   }
 
-  .nav-links a {
+  .desktop-nav__link {
+    display: block;
     text-decoration: none;
-    font-family: var(--font-body);
-    font-size: 0.875rem;
+    font-family: var(--font-heading);
+    font-size: var(--text-base);
     font-weight: var(--weight-medium);
     letter-spacing: var(--tracking-wide);
-    text-transform: uppercase;
+    text-transform: capitalize;
     white-space: nowrap;
     color: var(--color-text-muted);
-    padding: 0.4rem 0.75rem;
-    border-radius: var(--radius-sm);
-    position: relative;
+    padding: var(--space-xs) var(--space-md);
+    border-bottom: 3px solid transparent;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
     transition:
       color var(--transition-fast),
-      background var(--transition-fast);
+      border-color var(--transition-fast);
   }
 
-  /* Hover: red glow underline slides in from left */
-  .nav-links a::after {
-    content: "";
-    position: absolute;
-    bottom: 2px;
-    left: 0.75rem;
-    width: 0;
-    height: 2px;
-    background: var(--color-accent-hover);
-    box-shadow: 0 0 6px var(--color-glow);
-    border-radius: var(--radius-full);
-    transition: width var(--transition-base);
+  .desktop-nav__link:hover,
+  .desktop-nav__link:focus-visible {
+    color: var(--color-accent);
+    border-bottom-color: var(--color-accent);
   }
 
-  .nav-links a:hover,
-  .nav-links a:focus-visible {
-    color: var(--color-text);
-    background: var(--color-nav-hover-bg);
+  .desktop-nav__link[aria-current="page"] {
+    color: var(--color-accent);
+    border-bottom-color: var(--color-accent);
   }
 
-  .nav-links a:hover::after,
-  .nav-links a:focus-visible::after {
-    width: calc(100% - 1.5rem);
-  }
-
-  /* Active page state */
-  .nav-links a[aria-current="page"] {
-    color: var(--color-accent-hover);
-    font-weight: var(--weight-semibold);
-    text-shadow: 0 0 8px var(--color-glow);
-  }
-
-  .nav-links a[aria-current="page"]::after {
-    width: calc(100% - 1.5rem);
-    background: var(--color-nav-active);
-    box-shadow:
-      0 0 6px var(--color-glow),
-      0 0 12px var(--color-glow-red-subtle);
-  }
-
-  /* Desktop nav */
-  .nav-links.desktop {
+  .mobile-menu {
+    position: relative;
     display: none;
   }
+
+  .mobile-menu summary {
+    list-style: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: var(--radius-sm);
+    transition: background var(--transition-fast);
+  }
+
+  .mobile-menu summary:hover {
+    background: var(--color-action-secondary-hover);
+  }
+
+  .mobile-menu summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .hamburger {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    width: 22px;
+  }
+
+  .hamburger-line {
+    display: block;
+    height: 2px;
+    width: 100%;
+    background: var(--color-text);
+    border-radius: 1px;
+    transition: background var(--transition-fast);
+  }
+
+  .mobile-menu[open] .hamburger-line:nth-child(1) {
+    transform: rotate(45deg) translate(4px, 5px);
+  }
+
+  .mobile-menu[open] .hamburger-line:nth-child(2) {
+    opacity: 0;
+  }
+
+  .mobile-menu[open] .hamburger-line:nth-child(3) {
+    transform: rotate(-45deg) translate(4px, -5px);
+  }
+
+  .mobile-nav-links {
+    position: absolute;
+    right: 0;
+    top: calc(100% + var(--space-sm));
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: var(--space-md) var(--space-sm);
+    min-width: 12rem;
+    box-shadow: var(--shadow-nav);
+    z-index: 200;
+    overflow: visible;
+  }
+
+  .mobile-nav-links ul {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+  }
+
+  .mobile-nav__link {
+    display: block;
+    text-decoration: none;
+    font-family: var(--font-heading);
+    font-size: var(--text-base);
+    font-weight: var(--weight-medium);
+    letter-spacing: var(--tracking-wide);
+    text-transform: capitalize;
+    white-space: nowrap;
+    color: var(--color-text-muted);
+    padding: var(--space-sm) var(--space-lg);
+    border-bottom: 3px solid transparent;
+    border-radius: var(--radius-sm);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    transition:
+      color var(--transition-fast),
+      border-color var(--transition-fast);
+  }
+
+  .mobile-nav__link:hover,
+  .mobile-nav__link:focus-visible {
+    color: var(--color-accent);
+    border-bottom-color: var(--color-accent);
+  }
+
+  .mobile-nav__link[aria-current="page"] {
+    color: var(--color-accent);
+    border-bottom-color: var(--color-accent);
+  }
+
+  .mobile-nav__link:focus-visible,
+  .desktop-nav__link:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+
   @media (min-width: 768px) {
-    .nav-links.desktop {
-      display: block;
+    .desktop-nav {
+      display: flex;
+      flex: 1;
+      justify-content: flex-end;
     }
-    .mobile-nav {
+
+    .mobile-menu {
       display: none;
     }
   }
 
-  /* -------------------------------------------------- */
-  /* Mobile nav                                          */
-  /* -------------------------------------------------- */
-  .mobile-nav {
-    position: relative;
-  }
-  .mobile-nav summary {
-    list-style: none;
-    cursor: pointer;
-    font-size: 1.5rem;
-    color: var(--color-text);
-    transition: color var(--transition-fast);
-  }
-  .mobile-nav summary:hover {
-    color: var(--color-accent-hover);
-  }
-  .mobile-nav summary::-webkit-details-marker {
-    display: none;
-  }
-  .mobile-nav .nav-links ul {
-    flex-direction: column;
-    gap: var(--space-xs);
-    position: absolute;
-    right: 0;
-    top: 2.5rem;
-    background: var(--color-surface);
-    border: 1px solid var(--color-glow);
-    border-radius: var(--radius-md);
-    padding: var(--space-md) var(--space-sm);
-    min-width: 11rem;
-    box-shadow:
-      0 4px 20px rgba(0, 0, 0, 0.5),
-      0 0 15px var(--color-glow-red-faint);
-  }
-
-  .mobile-nav .nav-links a {
-    display: block;
-    padding: var(--space-sm) var(--space-lg);
-    border-radius: var(--radius-sm);
-  }
-
-  /* -------------------------------------------------- */
-  /* Responsive adjustments                              */
-  /* -------------------------------------------------- */
   @media (max-width: 767px) {
-    .logo-img {
-      width: 56px;
-      height: 56px;
+    .desktop-nav {
+      display: none;
     }
-    .logo-text-main {
-      font-size: 1rem;
+
+    .mobile-menu {
+      display: block;
     }
-    .logo-text-sub {
-      font-size: 0.6rem;
+
+    .logo-wordmark-main {
+      font-size: 1.2rem;
+      letter-spacing: 0.02em;
+    }
+
+    .logo-wordmark-sub {
+      font-size: 0.65rem;
+      letter-spacing: 0.18em;
+    }
+
+    .logo-wordmark {
+      gap: 0.08em;
+    }
+
+    .logo-o {
+      width: 0.96em;
+      height: 0.96em;
+    }
+  }
+
+  @media (min-width: 768px) and (max-width: 1024px) {
+    .logo-wordmark-main {
+      font-size: 1.65rem;
+    }
+
+    .logo-wordmark-sub {
+      font-size: 0.75rem;
     }
   }
 </style>

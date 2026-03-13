@@ -1,24 +1,18 @@
 {
   "page": "contact",
   "pageTitle": "Contact Us",
-  "pageIntro": "Have a question, want to book us for an event, or just want to say hi? Reach out via the info below or connect with us on social media.",
-  "bookUsText": "Do you have a company function, parade, event opening, charity event, or just looking to bring the supernatural fun to a party? Don't wait another minute and contact your Paranormal Professionals — Ghostbusters, Virginia.",
-  "serviceAreasText": "Our friendly professional team is the only 501(c)(3) non-profit Ghostbusters charity group serving you in:",
-  "regions": [
-    {
-      "title": "Northern Virginia",
-      "areas": ["NOVA / DC Metro", "Fairfax & Loudoun", "Arlington & Alexandria"]
-    },
-    {
-      "title": "Central Virginia",
-      "areas": ["Richmond (804)", "Fredericksburg", "Charlottesville"]
-    },
-    {
-      "title": "Hampton Roads",
-      "areas": ["Virginia Beach (757)", "Norfolk & Chesapeake", "Newport News & Hampton"]
-    }
-  ],
-  "ctaCallout": "You know who to call!",
-  "ctaAside": "(or, in this case, email!)",
-  "footnoteText": "A full contact form is coming soon. For now, please email us directly or reach out on social media."
+  "pageIntro": "Got a ghost problem? A media inquiry? Just want to say hey? We're listening.",
+  "quoteLine": "You know who to call (or in this case, email).",
+  "reachOutHeading": "Reach Out",
+  "reachOutText": "The best way to reach Ghostbusters Virginia is via email. For faster responses, message us on any of our social media channels.",
+  "bookingHeading": "Event Bookings & Appearances",
+  "bookingText": "Interested in having Ghostbusters Virginia appear at your event, convention, or community gathering? We love supporting charitable and community causes across the Commonwealth. Send us a message with the event details — date, location, and what you have in mind — and we'll get back to you as soon as we can.",
+  "bookingImage": "/images/ghostbusters-car.jpg",
+  "bookingImageAlt": "Ghostbusters car on display",
+  "bookingCtaLabel": "Email Us About Your Event",
+  "metaTitle": "Contact",
+  "metaDescription": "Get in touch with Ghostbusters Virginia — reach us via email, social media, or smoke signal.",
+  "ogTitle": "Contact Ghostbusters Virginia",
+  "ogDescription": "Reach Ghostbusters Virginia for event bookings, media inquiries, or just to say hey.",
+  "ogImage": "/images/ghostbusters-virginia-full-team-photo.jpg"
 }
