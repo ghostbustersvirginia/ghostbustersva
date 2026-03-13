@@ -5,7 +5,6 @@ import {
   splitEventsByStatus,
   type EventEntry,
 } from "../src/lib/events";
-import { resolveMotionOff } from "../src/lib/motion";
 import { ensureElementId, setLightboxPreviousFocus } from "../src/lib/lightbox";
 
 function makeEvent(data: Partial<EventEntry["data"]>): EventEntry {
@@ -75,13 +74,7 @@ describe("event status and formatting", () => {
   });
 });
 
-describe("motion and lightbox interaction helpers", () => {
-  it("resolves motion preference from storage and OS state", () => {
-    expect(resolveMotionOff("off", false)).toBe(true);
-    expect(resolveMotionOff("on", true)).toBe(false);
-    expect(resolveMotionOff(null, true)).toBe(true);
-  });
-
+describe("lightbox interaction helpers", () => {
   it("stores opener focus id for lightbox restoration", () => {
     const lightbox = { dataset: {} } as unknown as HTMLElement;
     const opener = { id: "", dataset: {} } as unknown as HTMLElement;
