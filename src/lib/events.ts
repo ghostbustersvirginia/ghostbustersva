@@ -6,17 +6,46 @@ import type { CollectionEntry } from "astro:content";
 export type EventEntry = CollectionEntry<"events">;
 export type EventStatus = "upcoming" | "past";
 
-const DAY_IN_MS = 86_400_000;
+const EVENT_TIME_ZONE = "America/New_York";
 
-function getEventEndInclusive(event: EventEntry): Date {
+function formatDateKeyInTimeZone(date: Date, timeZone: string): string {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(date);
+
+  const year = parts.find((part) => part.type === "year")?.value;
+  const month = parts.find((part) => part.type === "month")?.value;
+  const day = parts.find((part) => part.type === "day")?.value;
+
+  if (!year || !month || !day) {
+    throw new Error("Unable to format date parts for event status");
+  }
+
+  return `${year}-${month}-${day}`;
+}
+
+function formatDateKeyUTC(date: Date): string {
+  const year = date.getUTCFullYear();
+  const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+  const day = String(date.getUTCDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function getEventEndDateKey(event: EventEntry): string {
   const boundary = event.data.endDate ?? event.data.date;
-  return new Date(boundary.getTime() + DAY_IN_MS);
+  return formatDateKeyUTC(boundary);
 }
 
 export function deriveEventStatus(event: EventEntry, now: Date = new Date()): EventStatus {
   if (event.data.status) return event.data.status;
   if (typeof event.data.past === "boolean") return event.data.past ? "past" : "upcoming";
-  return getEventEndInclusive(event) > now ? "upcoming" : "past";
+
+  const eventEndDateKey = getEventEndDateKey(event);
+  const nowDateKey = formatDateKeyInTimeZone(now, EVENT_TIME_ZONE);
+  return nowDateKey <= eventEndDateKey ? "upcoming" : "past";
 }
 
 export function splitEventsByStatus(

@@ -43,12 +43,10 @@ describe("site settings (no dynamic CMS pages)", () => {
     expect(settings.navItems.map((item) => item.href)).toEqual(["/about", "/donate"]);
   });
 
-  it("falls back to static config nav items when CMS settings is empty", async () => {
+  it("throws when CMS settings collection is empty", async () => {
     getCollectionMock.mockResolvedValue([]);
 
-    const settings = await getSiteSettings();
-    expect(settings.navItems.length).toBeGreaterThan(0);
-    expect(settings.navItems[0].label).toBe("About");
+    await expect(getSiteSettings()).rejects.toThrow("[settings] Missing required site settings");
   });
 });
 
@@ -59,28 +57,35 @@ describe("page copy helper", () => {
 
   it("returns matching page copy entry", async () => {
     getCollectionMock.mockResolvedValue([
-      { id: "home", data: { page: "home", heroTitle: "Welcome" } },
+      {
+        id: "home",
+        data: { page: "home", heroTitleText: "Welcome", heroTitleAccent: "Home" },
+      },
       { id: "about", data: { page: "about", pageTitle: "About" } },
     ]);
 
     const copy = await getPageCopy("home");
     expect(copy).not.toBeNull();
-    expect(copy?.heroTitle).toBe("Welcome");
+    expect(copy.heroTitleText).toBe("Welcome");
+    expect(copy.heroTitleAccent).toBe("Home");
   });
 
-  it("returns null for missing page slug", async () => {
+  it("throws for missing page slug", async () => {
     getCollectionMock.mockResolvedValue([
-      { id: "home", data: { page: "home", heroTitle: "Welcome" } },
+      {
+        id: "home",
+        data: { page: "home", heroTitleText: "Welcome", heroTitleAccent: "Home" },
+      },
     ]);
 
-    const copy = await getPageCopy("nonexistent");
-    expect(copy).toBeNull();
+    await expect(getPageCopy("about")).rejects.toThrow(
+      '[page-copy] Missing required entry for page "about"',
+    );
   });
 
-  it("returns null when collection fails to load", async () => {
+  it("throws when collection fails to load", async () => {
     getCollectionMock.mockRejectedValue(new Error("Collection not found"));
 
-    const copy = await getPageCopy("home");
-    expect(copy).toBeNull();
+    await expect(getPageCopy("home")).rejects.toThrow("Collection not found");
   });
 });

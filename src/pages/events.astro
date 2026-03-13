@@ -15,25 +15,23 @@ const copy = await getPageCopy("events");
 const allEvents = await getCollection("events");
 const { upcoming, past } = splitEventsByStatus(allEvents);
 
-const pageTitle = (copy?.pageTitle as string) || "Events";
+const pageTitle = copy.pageTitle || "Events";
 const pageIntro =
-  (copy?.pageIntro as string) ||
-  "Meet the team, support local charities, and see the Ecto in person.";
-const upcomingHeading = (copy?.upcomingHeading as string) || "Upcoming Events";
-const pastHeading = (copy?.pastHeading as string) || "Past Events";
-const emptyText = (copy?.emptyText as string) || "No events yet — check back soon!";
-const showMoreLabel = (copy?.showMoreLabel as string) || "Show More";
-const showLessLabel = (copy?.showLessLabel as string) || "Show Less";
-const metaTitle = (copy?.metaTitle as string) || "Events";
+  copy.pageIntro || "Meet the team, support local charities, and see the Ecto in person.";
+const upcomingHeading = copy.upcomingHeading || "Upcoming Events";
+const pastHeading = copy.pastHeading || "Past Events";
+const emptyText = copy.emptyText || "No events yet — check back soon!";
+const showMoreLabel = copy.showMoreLabel || "Show More";
+const showLessLabel = copy.showLessLabel || "Show Less";
+const metaTitle = copy.metaTitle || "Events";
 const metaDescription =
-  (copy?.metaDescription as string) ||
+  copy.metaDescription ||
   "Upcoming and past Ghostbusters Virginia events across the Commonwealth, including conventions, parades, and charity appearances.";
-const ogTitleVal = (copy?.ogTitle as string) || "Events | Ghostbusters Virginia";
+const ogTitleVal = copy.ogTitle || "Events | Ghostbusters Virginia";
 const ogDescriptionVal =
-  (copy?.ogDescription as string) ||
+  copy.ogDescription ||
   "Find where Ghostbusters Virginia will be next and browse our past appearances.";
-const ogImage =
-  (copy?.ogImage as string) || "/images/ghostbusters-virginia-pageant-winner-ecto.jpg";
+const ogImage = copy.ogImage || "/images/ghostbusters-virginia-pageant-winner-ecto.jpg";
 ---
 
 <BaseLayout
@@ -73,7 +71,10 @@ const ogImage =
             <SectionHeading>{pastHeading}</SectionHeading>
             <ul class="event-list event-list--past" id="past-events-list" role="list">
               {past.map((event, index) => (
-                <EventCard event={event} className={`event-item--alt-bg${index >= 4 ? " past-hidden" : ""}`} />
+                <EventCard
+                  event={event}
+                  className={`event-item--alt-bg${index >= 4 ? " past-hidden" : ""}`}
+                />
               ))}
             </ul>
             {past.length > 4 && (
@@ -97,34 +98,27 @@ const ogImage =
       )
     }
 
-    {allEvents.length === 0 && (
-      <div class="page-band page-band--alt">
-        <div class="container container--mid">
-          <p class="empty-state">{emptyText}</p>
+    {
+      allEvents.length === 0 && (
+        <div class="page-band page-band--alt">
+          <div class="container container--mid">
+            <p class="empty-state">{emptyText}</p>
+          </div>
         </div>
-      </div>
-    )}
+      )
+    }
   </section>
 </BaseLayout>
 
 <script>
-  const showMoreBtn = document.getElementById("past-show-more") as HTMLButtonElement | null;
-  const showLessBtn = document.getElementById("past-show-less") as HTMLButtonElement | null;
-  const hiddenItems = document.querySelectorAll<HTMLElement>("#past-events-list .past-hidden");
+  import { setupShowMoreToggle } from "../lib/show-more";
 
-  showMoreBtn?.addEventListener("click", () => {
-    hiddenItems.forEach((item) => item.classList.remove("past-hidden"));
-    showMoreBtn.hidden = true;
-    showLessBtn!.hidden = false;
-  });
-
-  showLessBtn?.addEventListener("click", () => {
-    hiddenItems.forEach((item) => item.classList.add("past-hidden"));
-    showLessBtn.hidden = true;
-    showMoreBtn!.hidden = false;
-    document
-      .getElementById("past-events-list")
-      ?.scrollIntoView({ behavior: "smooth", block: "start" });
+  setupShowMoreToggle({
+    showMoreId: "past-show-more",
+    showLessId: "past-show-less",
+    hiddenClass: "past-hidden",
+    containerId: "past-events-list",
+    initialVisibleCount: 4,
   });
 </script>
 

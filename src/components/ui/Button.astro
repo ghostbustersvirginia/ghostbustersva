@@ -29,6 +29,8 @@ interface Props {
   hidden?: boolean;
 }
 
+import { getSafeCmsHref } from "../../lib/links";
+
 const {
   variant = "primary",
   href,
@@ -40,13 +42,14 @@ const {
   hidden,
 } = Astro.props;
 
+const safeHref = getSafeCmsHref(href);
 const externalAttrs = external ? { target: "_blank", rel: "noopener noreferrer" } : {};
 ---
 
 {
-  href ? (
+  safeHref ? (
     <a
-      href={href}
+      href={safeHref}
       class:list={["btn", `btn--${variant}`, className]}
       {...externalAttrs}
       aria-disabled={disabled || undefined}

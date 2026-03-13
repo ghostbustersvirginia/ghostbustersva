@@ -21,6 +21,20 @@ const parseGithubRepo = (value: string) => {
 
 const githubRepoConfig = keystaticGithubRepo ? parseGithubRepo(keystaticGithubRepo) : null;
 
+const internalPathValidation = {
+  pattern: {
+    regex: /^\/(?!\/)[^\s]*$/,
+    message: "Use an internal path that begins with / (for example: /about).",
+  },
+};
+
+const cmsHrefValidation = {
+  pattern: {
+    regex: /^(\/(?!\/)[^\s]*|https?:\/\/[^\s]+|mailto:[^\s]+|tel:[^\s]+)$/,
+    message: "Use an internal path (/path) or an allowed URL protocol (https, http, mailto, tel).",
+  },
+};
+
 const storage = githubRepoConfig
   ? {
       kind: "github" as const,
@@ -267,7 +281,16 @@ export default config({
       format: { data: "json" },
       schema: {
         page: fields.text({ label: "Page ID", defaultValue: "home" }),
-        heroTitle: fields.text({ label: "Hero Title", validation: { isRequired: true } }),
+        heroTitleText: fields.text({
+          label: "Hero Title Text",
+          description: "Main heading text before the visual accent.",
+          validation: { isRequired: true },
+        }),
+        heroTitleAccent: fields.text({
+          label: "Hero Title Accent",
+          description: "Accented heading text displayed in highlighted style.",
+          validation: { isRequired: true },
+        }),
         heroTagline: fields.text({
           label: "Hero Tagline",
           multiline: true,
@@ -284,9 +307,15 @@ export default config({
         }),
         heroLogoAlt: fields.text({ label: "Hero Logo Alt Text" }),
         heroPrimaryCtaLabel: fields.text({ label: "Hero Primary CTA Label" }),
-        heroPrimaryCtaHref: fields.text({ label: "Hero Primary CTA URL" }),
+        heroPrimaryCtaHref: fields.text({
+          label: "Hero Primary CTA URL",
+          validation: internalPathValidation,
+        }),
         heroSecondaryCtaLabel: fields.text({ label: "Hero Secondary CTA Label" }),
-        heroSecondaryCtaHref: fields.text({ label: "Hero Secondary CTA URL" }),
+        heroSecondaryCtaHref: fields.text({
+          label: "Hero Secondary CTA URL",
+          validation: internalPathValidation,
+        }),
         heroPurposeItems: fields.array(fields.text({ label: "Purpose Item" }), {
           label: "Hero Purpose Items",
           description: "Key facts displayed below the hero tagline.",
@@ -330,11 +359,17 @@ export default config({
         galleryHeading: fields.text({ label: "Gallery Heading" }),
         gallerySubtitle: fields.text({ label: "Gallery Subtitle", multiline: true }),
         galleryCtaLabel: fields.text({ label: "Gallery CTA Label" }),
-        galleryCtaHref: fields.text({ label: "Gallery CTA URL" }),
+        galleryCtaHref: fields.text({
+          label: "Gallery CTA URL",
+          validation: internalPathValidation,
+        }),
         eventsHeading: fields.text({ label: "Events Heading" }),
         eventsSubtitle: fields.text({ label: "Events Subtitle", multiline: true }),
         eventsCtaLabel: fields.text({ label: "Events CTA Label" }),
-        eventsCtaHref: fields.text({ label: "Events CTA URL" }),
+        eventsCtaHref: fields.text({
+          label: "Events CTA URL",
+          validation: internalPathValidation,
+        }),
         joinHeading: fields.text({ label: "Join Heading" }),
         joinSubtitle: fields.text({ label: "Join Subtitle", multiline: true }),
         joinImage: fields.image({
@@ -346,11 +381,14 @@ export default config({
         joinQuoteLineOne: fields.text({ label: "Join Quote Line 1", multiline: true }),
         joinQuoteLineTwo: fields.text({ label: "Join Quote Line 2", multiline: true }),
         joinCtaLabel: fields.text({ label: "Join CTA Label" }),
-        joinCtaHref: fields.text({ label: "Join CTA URL" }),
+        joinCtaHref: fields.text({
+          label: "Join CTA URL",
+          validation: internalPathValidation,
+        }),
         swagHeading: fields.text({ label: "Swag Heading" }),
         swagSubtitle: fields.text({ label: "Swag Subtitle", multiline: true }),
         swagCtaLabel: fields.text({ label: "Swag CTA Label" }),
-        swagCtaHref: fields.text({ label: "Swag CTA URL" }),
+        swagCtaHref: fields.url({ label: "Swag CTA URL" }),
         metaTitle: fields.text({ label: "Meta Title", description: "Browser tab title." }),
         metaDescription: fields.text({
           label: "Meta Description",
@@ -386,10 +424,10 @@ export default config({
           multiline: true,
           validation: { isRequired: true },
         }),
-        whoWeAreHeading: fields.text({ label: "Who We Are Heading" }),
         whoWeAreBodyOne: fields.text({ label: "Who We Are — Paragraph 1", multiline: true }),
         whoWeAreBodyTwo: fields.text({ label: "Who We Are — Paragraph 2", multiline: true }),
         whoWeAreBodyThree: fields.text({ label: "Who We Are — Paragraph 3", multiline: true }),
+        whoWeAreBodyFour: fields.text({ label: "Who We Are — Paragraph 4", multiline: true }),
         teamImage: fields.image({
           label: "Who We Are Image",
           directory: "public/images",
@@ -449,14 +487,25 @@ export default config({
         }),
         quoteLineOne: fields.text({ label: "Quote Line 1", multiline: true }),
         quoteLineTwo: fields.text({ label: "Quote Line 2", multiline: true }),
+        heroImage: fields.image({
+          label: "How To Apply Image",
+          directory: "public/images",
+          publicPath: "/images/",
+        }),
+        heroImageAlt: fields.text({ label: "How To Apply Image Alt Text" }),
         whatWeLookForHeading: fields.text({ label: "What We Look For Heading" }),
         whatWeLookForText: fields.text({ label: "What We Look For Text", multiline: true }),
+        whatWeLookForImage: fields.image({
+          label: "What We Look For Image",
+          directory: "public/images",
+          publicPath: "/images/",
+        }),
+        whatWeLookForImageAlt: fields.text({ label: "What We Look For Image Alt Text" }),
         requiredGearHeading: fields.text({ label: "Required Gear Heading" }),
         requiredGearItems: fields.array(fields.text({ label: "Required Gear Item" }), {
           label: "Required Gear Items",
           itemLabel: (props) => props.value || "Item",
         }),
-        beltGizmoHeading: fields.text({ label: "Belt Gizmo Heading" }),
         beltGizmoItems: fields.array(fields.text({ label: "Belt Gizmo Item" }), {
           label: "Belt Gizmo Items",
           itemLabel: (props) => props.value || "Item",
@@ -587,8 +636,6 @@ export default config({
           multiline: true,
           validation: { isRequired: true },
         }),
-        quoteLine: fields.text({ label: "Quote Line", multiline: true }),
-        reachOutHeading: fields.text({ label: "Reach Out Section Heading" }),
         reachOutText: fields.text({ label: "Reach Out Text", multiline: true }),
         bookingHeading: fields.text({ label: "Booking Section Heading" }),
         bookingText: fields.text({ label: "Booking Text", multiline: true }),
@@ -642,10 +689,30 @@ export default config({
         swagCtaLabel: fields.text({ label: "Swag CTA Label" }),
         communityHeading: fields.text({ label: "Community Partners Heading" }),
         communityText: fields.text({ label: "Community Partners Text", multiline: true }),
+        communityCtaLabel: fields.text({ label: "Community CTA Label" }),
+        communityCtaHref: fields.text({
+          label: "Community CTA URL",
+          validation: internalPathValidation,
+        }),
+        communityImage: fields.image({
+          label: "Community Partners Image",
+          directory: "public/images",
+          publicPath: "/images/",
+        }),
+        communityImageAlt: fields.text({ label: "Community Partners Image Alt Text" }),
         volunteerHeading: fields.text({ label: "Volunteer Heading" }),
         volunteerText: fields.text({ label: "Volunteer Text", multiline: true }),
         volunteerCtaLabel: fields.text({ label: "Volunteer CTA Label" }),
-        volunteerCtaHref: fields.text({ label: "Volunteer CTA URL" }),
+        volunteerCtaHref: fields.text({
+          label: "Volunteer CTA URL",
+          validation: internalPathValidation,
+        }),
+        volunteerImage: fields.image({
+          label: "Volunteer Image",
+          directory: "public/images",
+          publicPath: "/images/",
+        }),
+        volunteerImageAlt: fields.text({ label: "Volunteer Image Alt Text" }),
         metaTitle: fields.text({ label: "Meta Title", description: "Browser tab title." }),
         metaDescription: fields.text({
           label: "Meta Description",
@@ -800,7 +867,7 @@ export default config({
             href: fields.text({
               label: "URL",
               description: "Link path (e.g. /about) or full URL for external links.",
-              validation: { isRequired: true },
+              validation: { isRequired: true, ...cmsHrefValidation },
             }),
             external: fields.checkbox({
               label: "Opens in New Tab",
@@ -825,6 +892,7 @@ export default config({
           label: "Code of Conduct URL",
           description: "Path or URL for the Code of Conduct link in the footer.",
           defaultValue: "/code-of-conduct",
+          validation: internalPathValidation,
         }),
         codeOfConductLabel: fields.text({
           label: "Code of Conduct Label",

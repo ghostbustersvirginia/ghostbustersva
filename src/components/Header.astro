@@ -8,10 +8,18 @@
  * Reads logo, title, and nav items from CMS settings.
  */
 import { getSiteSettings } from "../lib/settings";
+import { getSafeCmsHref } from "../lib/links";
 
 const settings = await getSiteSettings();
 const currentPath = Astro.url.pathname;
 const navItems = settings.navItems;
+const safeNavItems = navItems
+  .map((link) => {
+    const href = getSafeCmsHref(link.href);
+    if (!href) return null;
+    return { ...link, href };
+  })
+  .filter((link): link is NonNullable<typeof link> => Boolean(link));
 const navTitle = settings.navTitle?.trim() || "Ghostbusters";
 const navSubtitle = settings.navSubtitle?.trim() || "Virginia";
 const logoIndex = navTitle.toLowerCase().indexOf("o");
@@ -41,7 +49,7 @@ const useLogoAsO = logoIndex >= 0;
     <nav class="desktop-nav" aria-label="Main navigation">
       <ul>
         {
-          navItems.map((link) => (
+          safeNavItems.map((link) => (
             <li>
               <a
                 href={link.href}
@@ -70,7 +78,7 @@ const useLogoAsO = logoIndex >= 0;
       <nav class="mobile-nav-links" aria-label="Main navigation">
         <ul>
           {
-            navItems.map((link) => (
+            safeNavItems.map((link) => (
               <li>
                 <a
                   href={link.href}

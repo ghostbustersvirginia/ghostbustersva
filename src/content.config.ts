@@ -7,18 +7,28 @@
  */
 import { defineCollection, z } from "astro:content";
 import { glob } from "astro/loaders";
+import { isApprovedInternalPath, isSafeCmsHref, isSafeExternalUrl } from "./lib/links";
 
 const safeExternalUrl = z
   .string()
   .url()
-  .refine((value) => {
-    try {
-      const parsed = new URL(value);
-      return parsed.protocol === "https:" || parsed.protocol === "http:";
-    } catch {
-      return false;
-    }
-  }, "Event URLs must use http:// or https:// protocols.");
+  .refine((value) => isSafeExternalUrl(value), "URLs must use http:// or https:// protocols.");
+
+const safeInternalPath = z
+  .string()
+  .trim()
+  .refine(
+    (value) => isApprovedInternalPath(value),
+    "Use an internal path beginning with / (for example: /about).",
+  );
+
+const safeCmsHref = z
+  .string()
+  .trim()
+  .refine(
+    (value) => isSafeCmsHref(value),
+    "Use an internal path or an allowed protocol (https, http, mailto, tel).",
+  );
 
 const events = defineCollection({
   type: "content",
@@ -76,14 +86,20 @@ const settings = defineCollection({
   schema: z.object({
     siteName: z.string(),
     siteDescription: z.string(),
-    donateUrl: z.string().optional(),
-    storeUrl: z.string().optional(),
+    donateUrl: z
+      .union([safeExternalUrl, z.literal("")])
+      .optional()
+      .transform((val) => (val === "" ? undefined : val)),
+    storeUrl: z
+      .union([safeExternalUrl, z.literal("")])
+      .optional()
+      .transform((val) => (val === "" ? undefined : val)),
     contactEmail: z.string().optional(),
     socialLinks: z
       .array(
         z.object({
           platform: z.string(),
-          url: z.string().url(),
+          url: safeExternalUrl,
         }),
       )
       .optional()
@@ -97,7 +113,7 @@ const settings = defineCollection({
       .array(
         z.object({
           label: z.string(),
-          href: z.string(),
+          href: safeCmsHref,
           external: z.boolean().optional().default(false),
         }),
       )
@@ -106,7 +122,7 @@ const settings = defineCollection({
 
     // Footer
     footerCopyrightText: z.string().optional(),
-    codeOfConductUrl: z.string().optional(),
+    codeOfConductUrl: safeInternalPath.optional(),
     codeOfConductLabel: z.string().optional(),
     footerLogos: z
       .array(
@@ -155,15 +171,16 @@ const news = defineCollection({
 
 const homePageCopy = z.object({
   page: z.literal("home"),
-  heroTitle: z.string(),
+  heroTitleText: z.string(),
+  heroTitleAccent: z.string(),
   heroTagline: z.string(),
   heroImage: z.string().optional(),
   heroLogoSrc: z.string().optional(),
   heroLogoAlt: z.string().optional(),
   heroPrimaryCtaLabel: z.string().optional(),
-  heroPrimaryCtaHref: z.string().optional(),
+  heroPrimaryCtaHref: safeInternalPath.optional(),
   heroSecondaryCtaLabel: z.string().optional(),
-  heroSecondaryCtaHref: z.string().optional(),
+  heroSecondaryCtaHref: safeInternalPath.optional(),
   heroPurposeItems: z.array(z.string()).optional(),
   missionHeading: z.string().optional(),
   missionSubtitle: z.string().optional(),
@@ -182,11 +199,11 @@ const homePageCopy = z.object({
   galleryHeading: z.string().optional(),
   gallerySubtitle: z.string().optional(),
   galleryCtaLabel: z.string().optional(),
-  galleryCtaHref: z.string().optional(),
+  galleryCtaHref: safeInternalPath.optional(),
   eventsHeading: z.string().optional(),
   eventsSubtitle: z.string().optional(),
   eventsCtaLabel: z.string().optional(),
-  eventsCtaHref: z.string().optional(),
+  eventsCtaHref: safeInternalPath.optional(),
   joinHeading: z.string().optional(),
   joinSubtitle: z.string().optional(),
   joinImage: z.string().optional(),
@@ -194,11 +211,11 @@ const homePageCopy = z.object({
   joinQuoteLineOne: z.string().optional(),
   joinQuoteLineTwo: z.string().optional(),
   joinCtaLabel: z.string().optional(),
-  joinCtaHref: z.string().optional(),
+  joinCtaHref: safeInternalPath.optional(),
   swagHeading: z.string().optional(),
   swagSubtitle: z.string().optional(),
   swagCtaLabel: z.string().optional(),
-  swagCtaHref: z.string().optional(),
+  swagCtaHref: safeExternalUrl.optional(),
   metaTitle: z.string().optional(),
   metaDescription: z.string().optional(),
   ogTitle: z.string().optional(),
@@ -210,10 +227,10 @@ const aboutPageCopy = z.object({
   page: z.literal("about"),
   pageTitle: z.string(),
   pageIntro: z.string(),
-  whoWeAreHeading: z.string().optional(),
   whoWeAreBodyOne: z.string().optional(),
   whoWeAreBodyTwo: z.string().optional(),
   whoWeAreBodyThree: z.string().optional(),
+  whoWeAreBodyFour: z.string().optional(),
   missionHeading: z.string().optional(),
   missionItems: z.array(z.string()).min(1),
   initiativesHeading: z.string().optional(),
@@ -224,7 +241,7 @@ const aboutPageCopy = z.object({
   protonPetsImageAlt: z.string().optional(),
   protonPetsText: z.string().optional(),
   protonPetsLinkLabel: z.string().optional(),
-  protonPetsLinkUrl: z.string().url().optional(),
+  protonPetsLinkUrl: safeExternalUrl.optional(),
   metaTitle: z.string().optional(),
   metaDescription: z.string().optional(),
   ogTitle: z.string().optional(),
@@ -238,16 +255,19 @@ const joinPageCopy = z.object({
   pageIntro: z.string(),
   quoteLineOne: z.string().optional(),
   quoteLineTwo: z.string().optional(),
+  heroImage: z.string().optional(),
+  heroImageAlt: z.string().optional(),
   whatWeLookForHeading: z.string().optional(),
   whatWeLookForText: z.string().optional(),
+  whatWeLookForImage: z.string().optional(),
+  whatWeLookForImageAlt: z.string().optional(),
   requiredGearHeading: z.string().optional(),
   requiredGearItems: z.array(z.string()).min(1),
-  beltGizmoHeading: z.string().optional(),
   beltGizmoItems: z.array(z.string()).min(1),
   howToApplyHeading: z.string().optional(),
   applyText: z.string().optional(),
   applyLinkLabel: z.string().optional(),
-  applyLinkUrl: z.string().url().optional(),
+  applyLinkUrl: safeExternalUrl.optional(),
   notePrefix: z.string().optional(),
   noteText: z.string().optional(),
   metaTitle: z.string().optional(),
@@ -295,8 +315,6 @@ const contactPageCopy = z.object({
   page: z.literal("contact"),
   pageTitle: z.string(),
   pageIntro: z.string(),
-  quoteLine: z.string().optional(),
-  reachOutHeading: z.string().optional(),
   reachOutText: z.string().optional(),
   bookingHeading: z.string().optional(),
   bookingText: z.string().optional(),
@@ -322,10 +340,16 @@ const donatePageCopy = z.object({
   swagCtaLabel: z.string().optional(),
   communityHeading: z.string().optional(),
   communityText: z.string().optional(),
+  communityCtaLabel: z.string().optional(),
+  communityCtaHref: safeInternalPath.optional(),
+  communityImage: z.string().optional(),
+  communityImageAlt: z.string().optional(),
   volunteerHeading: z.string().optional(),
   volunteerText: z.string().optional(),
   volunteerCtaLabel: z.string().optional(),
-  volunteerCtaHref: z.string().optional(),
+  volunteerCtaHref: safeInternalPath.optional(),
+  volunteerImage: z.string().optional(),
+  volunteerImageAlt: z.string().optional(),
   metaTitle: z.string().optional(),
   metaDescription: z.string().optional(),
   ogTitle: z.string().optional(),

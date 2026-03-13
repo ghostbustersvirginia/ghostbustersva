@@ -49,20 +49,19 @@ const defaultSections: CocSection[] = [
   },
 ];
 
-const pageTitle = (copy?.pageTitle as string) || "Code of Conduct";
+const pageTitle = copy.pageTitle || "Code of Conduct";
 const pageIntro =
-  (copy?.pageIntro as string) ||
-  "The standards that keep our franchise strong and our community welcoming.";
-const sections = (copy?.sections as CocSection[] | undefined) || defaultSections;
-const metaTitle = (copy?.metaTitle as string) || "Code of Conduct";
+  copy.pageIntro || "The standards that keep our franchise strong and our community welcoming.";
+const sections = copy.sections || defaultSections;
+const metaTitle = copy.metaTitle || "Code of Conduct";
 const metaDescription =
-  (copy?.metaDescription as string) ||
+  copy.metaDescription ||
   "Ghostbusters Virginia's Code of Conduct — the standards we uphold as a franchise and community.";
-const ogTitleVal = (copy?.ogTitle as string) || "Code of Conduct | Ghostbusters Virginia";
+const ogTitleVal = copy.ogTitle || "Code of Conduct | Ghostbusters Virginia";
 const ogDescriptionVal =
-  (copy?.ogDescription as string) ||
+  copy.ogDescription ||
   "Our commitment to respect, professionalism, and community as Ghostbusters Virginia members.";
-const ogImage = (copy?.ogImage as string) || "";
+const ogImage = copy.ogImage || "";
 ---
 
 <BaseLayout
@@ -84,7 +83,7 @@ const ogImage = (copy?.ogImage as string) || "";
       sections.map((section, index) => (
         <div class:list={["page-band", index % 2 === 0 ? "page-band--alt" : "page-band--white"]}>
           <div class="container container--mid">
-            <SectionHeading level={3}>{section.heading}</SectionHeading>
+            <SectionHeading level={2}>{section.heading}</SectionHeading>
             <p class="prose-text">{section.body}</p>
           </div>
         </div>

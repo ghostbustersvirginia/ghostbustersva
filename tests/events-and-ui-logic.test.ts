@@ -53,6 +53,16 @@ describe("event status and formatting", () => {
     expect(deriveEventStatus(forcedPast, new Date("2026-01-01T00:00:00Z"))).toBe("past");
   });
 
+  it("switches to past at Virginia local midnight after end date", () => {
+    const event = makeEvent({
+      date: new Date("2026-03-11T00:00:00Z"),
+      endDate: new Date("2026-03-12T00:00:00Z"),
+    });
+
+    expect(deriveEventStatus(event, new Date("2026-03-13T03:59:59Z"))).toBe("upcoming");
+    expect(deriveEventStatus(event, new Date("2026-03-13T04:00:00Z"))).toBe("past");
+  });
+
   it("groups and sorts upcoming and past events", () => {
     const events = [
       makeEvent({ title: "Past 1", date: new Date("2025-01-01T00:00:00Z") }),

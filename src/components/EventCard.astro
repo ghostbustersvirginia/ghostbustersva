@@ -17,7 +17,7 @@ const hasImage = Boolean(event.data.image);
 const eventImage = hasImage
   ? await getResponsiveImageAttrs({
       src: event.data.image!,
-      widths: [480, 768, 960],
+      widths: [320, 480, 768, 960],
       sizes: "(max-width: 768px) 100vw, 280px",
       width: 960,
       height: 540,
@@ -85,7 +85,7 @@ const eventImage = hasImage
   .event-item:hover {
     border-color: var(--color-hover-border);
     box-shadow:
-      0 8px 24px rgba(0, 0, 0, 0.10),
+      0 8px 24px rgba(0, 0, 0, 0.1),
       0 2px 8px rgba(0, 0, 0, 0.05);
     transform: translateY(-2px);
   }

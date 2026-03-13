@@ -23,6 +23,7 @@ If rules conflict, follow the highest item in this list and note the conflict in
 - No backend, database, SSR, or API surface unless a PRD explicitly requires it.
 - Astro-first UI: use `.astro` components; avoid client-side JS unless clearly necessary.
 - Do not add React islands or animation libraries without explicit PRD approval.
+- Keystatic exception: keep `@astrojs/react` integrated in `astro.config.mjs` and keep `@astrojs/react` in dependencies, because Keystatic admin (`/keystatic`) requires a React renderer.
 
 ## Design System and Accessibility (March 2026 baseline)
 

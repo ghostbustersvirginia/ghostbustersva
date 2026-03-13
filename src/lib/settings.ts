@@ -56,60 +56,47 @@ const defaultFooterLogos: FooterLogo[] = siteConfig.footerLogos.map((l) => ({
 
 /**
  * Load CMS-managed site settings. Falls back to siteConfig defaults
- * if the settings collection is empty or fails to load.
+ * for optional values, but fails loudly when required settings content is missing.
  */
 export async function getSiteSettings(): Promise<SiteSettings> {
-  try {
-    const entries = await getCollection("settings");
-    const entry = entries[0];
-    if (entry) {
-      const d = entry.data;
-      const coreNavItems: NavItem[] =
-        d.navItems && d.navItems.length > 0
-          ? d.navItems.map((n: { label: string; href: string; external?: boolean }) => ({
-              label: n.label,
-              href: n.href,
-              external: n.external ?? false,
-            }))
-          : defaultNavItems;
+  const entries = await getCollection("settings");
 
-      return {
-        siteName: d.siteName || siteConfig.title,
-        siteDescription: d.siteDescription || siteConfig.description,
-        donateUrl: d.donateUrl ?? "",
-        storeUrl: d.storeUrl ?? "",
-        contactEmail: d.contactEmail ?? "",
-        socialLinks: d.socialLinks ?? [],
-        // Navbar — fall back to static config when CMS array is empty
-        navLogo: d.navLogo || "/images/logo.png",
-        navTitle: d.navTitle || "Ghostbusters",
-        navSubtitle: d.navSubtitle || "Virginia",
-        navItems: coreNavItems,
-        // Footer
-        footerCopyrightText: d.footerCopyrightText || d.footerText || siteConfig.copyright,
-        codeOfConductUrl: d.codeOfConductUrl || "/code-of-conduct",
-        codeOfConductLabel: d.codeOfConductLabel || "Code of Conduct",
-        footerLogos: d.footerLogos && d.footerLogos.length > 0 ? d.footerLogos : defaultFooterLogos,
-      };
-    }
-  } catch {
-    // Fallback silently — CMS data may not be available during build
+  if (entries.length === 0) {
+    throw new Error(
+      "[settings] Missing required site settings entry at src/content/settings/site.json",
+    );
   }
 
+  if (entries.length > 1) {
+    throw new Error(
+      `[settings] Expected exactly one settings entry, found ${entries.length}. Keep only src/content/settings/site.json.`,
+    );
+  }
+
+  const d = entries[0].data;
+  const coreNavItems: NavItem[] =
+    d.navItems && d.navItems.length > 0
+      ? d.navItems.map((n: { label: string; href: string; external?: boolean }) => ({
+          label: n.label,
+          href: n.href,
+          external: n.external ?? false,
+        }))
+      : defaultNavItems;
+
   return {
-    siteName: siteConfig.title,
-    siteDescription: siteConfig.description,
-    donateUrl: "",
-    storeUrl: "",
-    contactEmail: "",
-    socialLinks: [],
-    navLogo: "/images/logo.png",
-    navTitle: "Ghostbusters",
-    navSubtitle: "Virginia",
-    navItems: defaultNavItems,
-    footerCopyrightText: siteConfig.copyright,
-    codeOfConductUrl: "/code-of-conduct",
-    codeOfConductLabel: "Code of Conduct",
-    footerLogos: defaultFooterLogos,
+    siteName: d.siteName || siteConfig.title,
+    siteDescription: d.siteDescription || siteConfig.description,
+    donateUrl: d.donateUrl ?? "",
+    storeUrl: d.storeUrl ?? "",
+    contactEmail: d.contactEmail ?? "",
+    socialLinks: d.socialLinks ?? [],
+    navLogo: d.navLogo || "/images/logo.png",
+    navTitle: d.navTitle || "Ghostbusters",
+    navSubtitle: d.navSubtitle || "Virginia",
+    navItems: coreNavItems,
+    footerCopyrightText: d.footerCopyrightText || d.footerText || siteConfig.copyright,
+    codeOfConductUrl: d.codeOfConductUrl || "/code-of-conduct",
+    codeOfConductLabel: d.codeOfConductLabel || "Code of Conduct",
+    footerLogos: d.footerLogos && d.footerLogos.length > 0 ? d.footerLogos : defaultFooterLogos,
   };
 }

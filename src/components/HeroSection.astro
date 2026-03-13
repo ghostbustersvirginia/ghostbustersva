@@ -9,9 +9,11 @@
  */
 import "./HeroSection.css";
 import Button from "./ui/Button.astro";
+import type { ResponsiveImageAttrs } from "../lib/images";
 
 interface Props {
-  heroTitle: string;
+  heroTitleText: string;
+  heroTitleAccent: string;
   heroTagline: string;
   primaryCtaLabel: string;
   primaryCtaHref: string;
@@ -19,10 +21,12 @@ interface Props {
   secondaryCtaHref: string;
   heroLogoSrc: string;
   heroLogoAlt: string;
+  heroLogoImage?: ResponsiveImageAttrs;
 }
 
 const {
-  heroTitle,
+  heroTitleText,
+  heroTitleAccent,
   heroTagline,
   primaryCtaLabel,
   primaryCtaHref,
@@ -30,6 +34,7 @@ const {
   secondaryCtaHref,
   heroLogoSrc,
   heroLogoAlt,
+  heroLogoImage,
 } = Astro.props;
 ---
 
@@ -39,10 +44,12 @@ const {
     <div class="hero-logo-col">
       <div class="hero-logo-glow" aria-hidden="true"></div>
       <img
-        src={heroLogoSrc}
+        src={heroLogoImage?.src ?? heroLogoSrc}
+        srcset={heroLogoImage?.srcset}
+        sizes={heroLogoImage?.sizes}
         alt={heroLogoAlt}
-        width="360"
-        height="360"
+        width={heroLogoImage?.width ?? 360}
+        height={heroLogoImage?.height ?? 360}
         class="hero-logo"
         fetchpriority="high"
         decoding="async"
@@ -51,7 +58,10 @@ const {
 
     <!-- Right column: copy + CTAs -->
     <div class="hero-content">
-      <h1 id="home-hero-title" class="hero-title" set:html={heroTitle} />
+      <h1 id="home-hero-title" class="hero-title">
+        {heroTitleText}
+        <span class="hero-title-accent">{heroTitleAccent}</span>
+      </h1>
 
       <p class="hero-tagline">{heroTagline}</p>
 

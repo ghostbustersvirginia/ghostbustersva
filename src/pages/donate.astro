@@ -8,60 +8,62 @@ import PageHeader from "../components/ui/PageHeader.astro";
 import SectionHeading from "../components/ui/SectionHeading.astro";
 import SwagGrid from "../components/SwagGrid.astro";
 import { getResponsiveImageAttrs } from "../lib/images";
+import { getSafeCmsHref, isSafeExternalUrl } from "../lib/links";
 import { getSiteSettings } from "../lib/settings";
 import { getPageCopy } from "../lib/page-copy";
 
 const copy = await getPageCopy("donate");
 const settings = await getSiteSettings();
-const donateUrl = settings.donateUrl || "https://www.paypal.com/paypalme/GhostbustersVA";
 const storeUrl = settings.storeUrl || "https://www.teepublic.com/user/ghostbusters-virginia";
+const safeStoreUrl = isSafeExternalUrl(storeUrl)
+  ? storeUrl
+  : "https://www.teepublic.com/user/ghostbusters-virginia";
 
-const pageTitle = (copy?.pageTitle as string) || "Support Our Mission";
+const pageTitle = copy.pageTitle || "Support Our Mission";
 const pageIntro =
-  (copy?.pageIntro as string) ||
+  copy.pageIntro ||
   "Every dollar helps us keep busting ghosts and supporting communities across Virginia.";
-const donationHeading = (copy?.donationHeading as string) || "Make a Donation";
+const donationHeading = copy.donationHeading || "Make a Donation";
 const donationText =
-  (copy?.donationText as string) ||
+  copy.donationText ||
   "Ghostbusters Virginia is a volunteer-run, community-focused franchise. Your generous donations help us fund charitable events, maintain the Ecto, purchase supplies for community outreach, and keep the franchise running strong.";
-const donationCtaLabel = (copy?.donationCtaLabel as string) || "Donate";
-const swagHeading = (copy?.swagHeading as string) || "Get Some Swag";
+const donationCtaLabel = copy.donationCtaLabel || "Donate";
+const swagHeading = copy.swagHeading || "Get Some Swag";
 const swagIntro =
-  (copy?.swagIntro as string) ||
+  copy.swagIntro ||
   "Rep the franchise! Every purchase supports Ghostbusters Virginia. Each item opens our TeePublic store in a new tab.";
-const swagCtaLabel = (copy?.swagCtaLabel as string) || "Visit Our Store";
-const communityHeading = (copy?.communityHeading as string) || "Community Partners";
+const swagCtaLabel = copy.swagCtaLabel || "Visit Our Store";
+const communityHeading = copy.communityHeading || "Community Partners";
 const communityText =
-  (copy?.communityText as string) ||
+  copy.communityText ||
   "Ghostbusters Virginia partners with schools, nonprofits, shelters, and event organizers to bring positive, family-friendly experiences to communities.";
-const volunteerHeading = (copy?.volunteerHeading as string) || "Volunteer With Us";
+const volunteerHeading = copy.volunteerHeading || "Volunteer With Us";
 const volunteerText =
-  (copy?.volunteerText as string) ||
+  copy.volunteerText ||
   "Volunteers help Ghostbusters Virginia deliver welcoming, community-first events that raise awareness and support local causes.";
-const volunteerCtaLabel = (copy?.volunteerCtaLabel as string) || "Join the Team";
-const volunteerCtaHref = (copy?.volunteerCtaHref as string) || "/join";
-const communityCtaLabel = (copy?.communityCtaLabel as string) || "Contact Us";
-const communityCtaHref = (copy?.communityCtaHref as string) || "/contact";
+const volunteerCtaLabel = copy.volunteerCtaLabel || "Join the Team";
+const volunteerCtaHref = copy.volunteerCtaHref || "/join";
+const communityCtaLabel = copy.communityCtaLabel || "Contact Us";
+const communityCtaHref = copy.communityCtaHref || "/contact";
+const safeCommunityCtaHref = getSafeCmsHref(communityCtaHref) || "/contact";
+const safeVolunteerCtaHref = getSafeCmsHref(volunteerCtaHref) || "/join";
 const communityImageSrc =
-  (copy?.communityImage as string) || "/images/ghostbusters-virginia-toys-for-tots-drive.jpg";
+  copy.communityImage || "/images/ghostbusters-virginia-toys-for-tots-drive.jpg";
 const communityImageAlt =
-  (copy?.communityImageAlt as string) ||
-  "Ghostbusters Virginia members at a Toys for Tots charity drive";
+  copy.communityImageAlt || "Ghostbusters Virginia members at a Toys for Tots charity drive";
 const volunteerImageSrc =
-  (copy?.volunteerImage as string) || "/images/ghostbusters-virginia-firefighters-visit.jpg";
+  copy.volunteerImage || "/images/ghostbusters-virginia-firefighters-visit.jpg";
 const volunteerImageAlt =
-  (copy?.volunteerImageAlt as string) ||
-  "Ghostbusters Virginia members visiting a local fire station";
-const metaTitle = (copy?.metaTitle as string) || "Donate";
+  copy.volunteerImageAlt || "Ghostbusters Virginia members visiting a local fire station";
+const metaTitle = copy.metaTitle || "Donate";
 const metaDescription =
-  (copy?.metaDescription as string) ||
+  copy.metaDescription ||
   "Support Ghostbusters Virginia through donations, swag purchases, and community partnerships.";
-const ogTitleVal = (copy?.ogTitle as string) || "Donate | Ghostbusters Virginia";
+const ogTitleVal = copy.ogTitle || "Donate | Ghostbusters Virginia";
 const ogDescriptionVal =
-  (copy?.ogDescription as string) ||
+  copy.ogDescription ||
   "Help fund Ghostbusters Virginia's charitable events and community outreach across the Commonwealth.";
-const ogImage =
-  (copy?.ogImage as string) || "/images/ghostbusters-virginia-toys-for-tots-drive.jpg";
+const ogImage = copy.ogImage || "/images/ghostbusters-virginia-toys-for-tots-drive.jpg";
 
 const communityImage = await getResponsiveImageAttrs({
   src: communityImageSrc,
@@ -111,55 +113,60 @@ const volunteerImage = await getResponsiveImageAttrs({
     <div class="page-band page-band--white">
       <div class="container">
         <SectionHeading id="swag">{swagHeading}</SectionHeading>
-        <SwagGrid subtitle={swagIntro} ctaLabel={swagCtaLabel} ctaHref={storeUrl} ctaVariant="secondary" />
+        <SwagGrid
+          subtitle={swagIntro}
+          ctaLabel={swagCtaLabel}
+          ctaHref={safeStoreUrl}
+          ctaVariant="secondary"
+        />
       </div>
     </div>
 
     <div class="page-band page-band--alt">
-      <div class="container container--mid">
+      <div class="container container--wide">
         <SectionHeading>{communityHeading}</SectionHeading>
-        <img
-          src={communityImage.src}
-          srcset={communityImage.srcset}
-          sizes={communityImage.sizes}
-          alt={communityImageAlt}
-          class="section-image"
-          loading="lazy"
-          decoding="async"
-          width={communityImage.width}
-          height={communityImage.height}
-        />
-        <div class="highlight-card highlight-card--centered">
-          <p class="prose-text">{communityText}</p>
-          <div class="donate-cta">
-            <Button variant="secondary" href={communityCtaHref}>
-              {communityCtaLabel}
-            </Button>
+        <div class="zigzag">
+          <div class="zigzag__media">
+            <img
+              {...communityImage}
+              alt={communityImageAlt}
+              class="zigzag__img"
+              loading="lazy"
+              decoding="async"
+            />
+          </div>
+          <div class="zigzag__text">
+            <p class="prose-text">{communityText}</p>
+            <div class="donate-cta donate-cta--right">
+              <Button variant="secondary" href={safeCommunityCtaHref}>
+                {communityCtaLabel}
+              </Button>
+            </div>
           </div>
         </div>
       </div>
     </div>
 
     <div class="page-band page-band--white">
-      <div class="container container--mid">
+      <div class="container container--wide">
         <SectionHeading>{volunteerHeading}</SectionHeading>
-        <img
-          src={volunteerImage.src}
-          srcset={volunteerImage.srcset}
-          sizes={volunteerImage.sizes}
-          alt={volunteerImageAlt}
-          class="section-image"
-          loading="lazy"
-          decoding="async"
-          width={volunteerImage.width}
-          height={volunteerImage.height}
-        />
-        <div class="highlight-card highlight-card--alt highlight-card--centered">
-          <p class="prose-text">{volunteerText}</p>
-          <div class="donate-cta">
-            <Button variant="secondary-alt" href={volunteerCtaHref}>
-              {volunteerCtaLabel}
-            </Button>
+        <div class="zigzag zigzag--reverse">
+          <div class="zigzag__media">
+            <img
+              {...volunteerImage}
+              alt={volunteerImageAlt}
+              class="zigzag__img"
+              loading="lazy"
+              decoding="async"
+            />
+          </div>
+          <div class="zigzag__text">
+            <p class="prose-text">{volunteerText}</p>
+            <div class="donate-cta">
+              <Button variant="secondary-alt" href={safeVolunteerCtaHref}>
+                {volunteerCtaLabel}
+              </Button>
+            </div>
           </div>
         </div>
       </div>
@@ -168,7 +175,6 @@ const volunteerImage = await getResponsiveImageAttrs({
 </BaseLayout>
 
 <style>
-
   .prose-text {
     color: var(--color-text-muted);
     font-family: var(--font-body);
@@ -202,5 +208,59 @@ const volunteerImage = await getResponsiveImageAttrs({
     margin-top: var(--space-xl);
   }
 
+  .zigzag {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-xl);
+    align-items: start;
+  }
 
+  .zigzag__img {
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+    border-radius: var(--radius-md);
+    display: block;
+  }
+
+  .zigzag__text {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+  }
+
+  .zigzag__text .donate-cta {
+    justify-content: flex-start;
+  }
+
+  .zigzag__text .donate-cta--right {
+    justify-content: flex-end;
+  }
+
+  .container--wide {
+    max-width: 960px;
+    margin-inline: auto;
+    padding-inline: var(--space-xl);
+  }
+
+  @media (min-width: 769px) {
+    .zigzag {
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-3xl);
+    }
+
+    .zigzag--reverse .zigzag__media {
+      order: 2;
+    }
+
+    .zigzag--reverse .zigzag__text {
+      order: 1;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .zigzag__text .donate-cta {
+      justify-content: center;
+    }
+  }
 </style>

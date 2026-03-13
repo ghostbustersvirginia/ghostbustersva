@@ -18,7 +18,7 @@
   },
   "dependencies": {
     "@astrojs/markdoc": "^0.15.10",
-    "@astrojs/react": "^5.0.0",
+    "@astrojs/react": "^4.4.2",
     "@astrojs/sitemap": "^3.6.0",
     "@astrojs/vercel": "^9.0.4",
     "@keystatic/astro": "^5.0.6",

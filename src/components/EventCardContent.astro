@@ -33,11 +33,13 @@ const { event, showCountdown, hasImage, eventImage } = Astro.props;
 <div class="event-link__body">
   <div class="event-link__title-row">
     <span class="event-link__title">{event.data.title}</span>
-    {showCountdown && (
-      <span class="event-link__date-chip">
-        {formatEventDate(event.data.date, event.data.endDate)}
-      </span>
-    )}
+    {
+      showCountdown && (
+        <span class="event-link__date-chip">
+          {formatEventDate(event.data.date, event.data.endDate)}
+        </span>
+      )
+    }
   </div>
   <p class="event-link__summary">{event.data.summary}</p>
   {

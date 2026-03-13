@@ -2,10 +2,9 @@
 import { defineConfig } from "astro/config";
 import sitemap from "@astrojs/sitemap";
 import markdoc from "@astrojs/markdoc";
+import react from "@astrojs/react";
 import keystatic from "@keystatic/astro";
 import vercel from "@astrojs/vercel";
-
-import react from "@astrojs/react";
 
 // https://astro.build/config
 export default defineConfig({
@@ -15,7 +14,7 @@ export default defineConfig({
   // Update to ghostbustersva.com when custom domain is connected.
   site: "https://ghostbustersva.vercel.app",
   adapter: vercel(),
-  integrations: [sitemap(), markdoc(), keystatic(), react()],
+  integrations: [sitemap(), markdoc(), react(), keystatic()],
   security: {
     // Trust forwarded host headers from these domains so Keystatic's
     // OAuth callback URLs resolve correctly on Vercel (not to localhost).

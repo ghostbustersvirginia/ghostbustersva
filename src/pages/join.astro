@@ -7,30 +7,30 @@ import PageHeader from "../components/ui/PageHeader.astro";
 import SectionHeading from "../components/ui/SectionHeading.astro";
 import { getResponsiveImageAttrs } from "../lib/images";
 import { getPageCopy } from "../lib/page-copy";
+import { isSafeExternalUrl } from "../lib/links";
 
 const copy = await getPageCopy("join");
 
-const pageTitle = (copy?.pageTitle as string) || "Join Ghostbusters Virginia";
+const pageTitle = copy.pageTitle || "Join Ghostbusters Virginia";
 const pageIntro =
-  (copy?.pageIntro as string) ||
-  "Think you have what it takes? Here's how to suit up and join our franchise.";
+  copy.pageIntro || "Think you have what it takes? Here's how to suit up and join our franchise.";
 const quoteLineOne =
-  (copy?.quoteLineOne as string) ||
+  copy.quoteLineOne ||
   "Do you believe in UFOs, astral projections, mental telepathy, ESP, clairvoyance, spirit photography, telekinetic movement, full trance mediums, the Loch Ness monster and the theory of Atlantis?";
 const quoteLineTwo =
-  (copy?.quoteLineTwo as string) ||
+  copy.quoteLineTwo ||
   "Ready to get out there and start busting some ghosts? Excellent news rookie, we have openings!";
 const whatWeLookForText =
-  (copy?.whatWeLookForText as string) ||
+  copy.whatWeLookForText ||
   "To apply for membership in Ghostbusters, Virginia we simply ask that you review our Code of Conduct, and have at least one Ghostbusters canon costume. To meet these requirements, a canon costume needs to include the following:";
-const requiredGear = (copy?.requiredGearItems as string[]) || [
+const requiredGear = copy.requiredGearItems || [
   "A flight suit",
   "Black boots",
   "White web belt",
   "Elbow pads",
   "At least one belt gizmo",
 ];
-const beltGizmos = (copy?.beltGizmoItems as string[]) || [
+const beltGizmos = copy.beltGizmoItems || [
   "MT500 Motorola Walkie Talkie",
   "Belt Gizmo (circuit board + daughter board)",
   "Leather belt fobs with clips",
@@ -38,32 +38,33 @@ const beltGizmos = (copy?.beltGizmoItems as string[]) || [
   "PKE Meter",
 ];
 const applyText =
-  (copy?.applyText as string) ||
+  copy.applyText ||
   "Got all your gear and ready to show us you ain't afraid of no ghosts? Message our Facebook page and let us know; you will be provided a link to the membership survey and once complete, you will be notified of results following Membership Liaison Officer verification.";
-const applyLinkUrl = (copy?.applyLinkUrl as string) || "https://www.facebook.com/GhostbustersVA";
-const applyLinkLabel = (copy?.applyLinkLabel as string) || "Facebook page";
-const notePrefix = (copy?.notePrefix as string) || "Please Note:";
+const applyLinkUrl = copy.applyLinkUrl || "https://www.facebook.com/GhostbustersVA";
+const safeApplyLinkUrl = isSafeExternalUrl(applyLinkUrl)
+  ? applyLinkUrl
+  : "https://www.facebook.com/GhostbustersVA";
+const applyLinkLabel = copy.applyLinkLabel || "Facebook page";
+const notePrefix = copy.notePrefix || "Please Note:";
 const noteText =
-  (copy?.noteText as string) ||
+  copy.noteText ||
   "We ask all applicants be able to pass a high-level background check to verify no felonies are on their record; this includes a verification with no results found on the national sex offender registry.";
-const whatWeLookForHeading = (copy?.whatWeLookForHeading as string) || "What We Look For";
-const howToApplyHeading = (copy?.howToApplyHeading as string) || "How to Apply";
-const requiredGearHeading = (copy?.requiredGearHeading as string) || "Required Gear";
-const beltGizmoHeading = (copy?.beltGizmoHeading as string) || "Belt Gizmo Examples";
-const metaTitle = (copy?.metaTitle as string) || "Join";
+const whatWeLookForHeading = copy.whatWeLookForHeading || "What We Look For";
+const howToApplyHeading = copy.howToApplyHeading || "How to Apply";
+const requiredGearHeading = copy.requiredGearHeading || "Required Gear";
+const metaTitle = copy.metaTitle || "Join";
 const metaDescription =
-  (copy?.metaDescription as string) ||
+  copy.metaDescription ||
   "Learn membership requirements and how to join Ghostbusters Virginia as an active community volunteer.";
-const ogTitleVal = (copy?.ogTitle as string) || "Join Ghostbusters Virginia";
+const ogTitleVal = copy.ogTitle || "Join Ghostbusters Virginia";
 const ogDescriptionVal =
-  (copy?.ogDescription as string) ||
+  copy.ogDescription ||
   "Suit up with Ghostbusters Virginia and become part of our statewide nonprofit franchise.";
-const ogImage = (copy?.ogImage as string) || "/images/ghostbusters-virginia-movie-premiere.jpg";
+const ogImage = copy.ogImage || "/images/ghostbusters-virginia-movie-premiere.jpg";
 
-const heroImageSrc =
-  (copy?.heroImage as string) || "/images/ghostbusters-virginia-slimer-stay-puft.jpg";
+const heroImageSrc = copy.heroImage || "/images/ghostbusters-virginia-slimer-stay-puft.jpg";
 const heroImageAlt =
-  (copy?.heroImageAlt as string) ||
+  copy.heroImageAlt ||
   "Slimer and Stay Puft Marshmallow Man figures at a Ghostbusters Virginia event";
 const heroImage = await getResponsiveImageAttrs({
   src: heroImageSrc,
@@ -74,11 +75,9 @@ const heroImage = await getResponsiveImageAttrs({
   quality: 75,
 });
 
-const whatWeLookForImageSrc =
-  (copy?.whatWeLookForImage as string) || "/images/gbv-community-photo.jpg";
+const whatWeLookForImageSrc = copy.whatWeLookForImage || "/images/gbv-community-photo.jpg";
 const whatWeLookForImageAlt =
-  (copy?.whatWeLookForImageAlt as string) ||
-  "Ghostbusters Virginia community members in full gear";
+  copy.whatWeLookForImageAlt || "Ghostbusters Virginia community members in full gear";
 const whatWeLookForImage = await getResponsiveImageAttrs({
   src: whatWeLookForImageSrc,
   widths: [640, 960, 1200],
@@ -119,37 +118,32 @@ const whatWeLookForImage = await getResponsiveImageAttrs({
         <p class="prose-text">{whatWeLookForText}</p>
         <div class="gear-layout">
           <img
-            src={whatWeLookForImage.src}
-            srcset={whatWeLookForImage.srcset}
-            sizes={whatWeLookForImage.sizes}
+            {...whatWeLookForImage}
             alt={whatWeLookForImageAlt}
             class="gear-layout__image"
             loading="lazy"
             decoding="async"
-            width={whatWeLookForImage.width}
-            height={whatWeLookForImage.height}
           />
           <div class="gear-card">
             <h4 class="gear-card__title">
               {requiredGearHeading}
-              <img
-                src="/images/slime.png"
-                alt=""
-                aria-hidden="true"
-                class="gear-card__ooze"
-              />
+              <img src="/images/slime.png" alt="" aria-hidden="true" class="gear-card__ooze" />
             </h4>
             <ul class="check-list" role="list">
-              {requiredGear.map((item) => (
-                <li>
-                  {item}
-                  {item === "At least one belt gizmo" && (
-                    <ul class="sub-list" role="list">
-                      {beltGizmos.map((gizmo) => <li>{gizmo}</li>)}
-                    </ul>
-                  )}
-                </li>
-              ))}
+              {
+                requiredGear.map((item) => (
+                  <li>
+                    {item}
+                    {item === "At least one belt gizmo" && (
+                      <ul class="sub-list" role="list">
+                        {beltGizmos.map((gizmo) => (
+                          <li>{gizmo}</li>
+                        ))}
+                      </ul>
+                    )}
+                  </li>
+                ))
+              }
             </ul>
           </div>
         </div>
@@ -161,22 +155,18 @@ const whatWeLookForImage = await getResponsiveImageAttrs({
         <SectionHeading>{howToApplyHeading}</SectionHeading>
         <p class="prose-text">
           {applyText.split(applyLinkLabel)[0]}
-          <a href={applyLinkUrl} target="_blank" rel="noopener noreferrer">
+          <a href={safeApplyLinkUrl} target="_blank" rel="noopener noreferrer">
             {applyLinkLabel}
             <span class="sr-only"> (opens in new tab)</span>
           </a>
           {applyText.split(applyLinkLabel).slice(1).join(applyLinkLabel)}
         </p>
         <img
-          src={heroImage.src}
-          srcset={heroImage.srcset}
-          sizes={heroImage.sizes}
+          {...heroImage}
           alt={heroImageAlt}
           class="section-image"
           loading="lazy"
           decoding="async"
-          width={heroImage.width}
-          height={heroImage.height}
           style="margin-top: var(--space-xl);"
         />
         <div class="callout">

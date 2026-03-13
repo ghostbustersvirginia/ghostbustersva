@@ -9,6 +9,7 @@ import PageHeader from "../components/ui/PageHeader.astro";
 import SectionHeading from "../components/ui/SectionHeading.astro";
 import { getCollection } from "astro:content";
 import { getResponsiveImageAttrs } from "../lib/images";
+import { isSafeExternalUrl } from "../lib/links";
 import { getPageCopy } from "../lib/page-copy";
 
 const copy = await getPageCopy("media");
@@ -22,6 +23,7 @@ const news = await getCollection("news");
 const sortedNews = [...news].sort(
   (a, b) => new Date(b.data.date).getTime() - new Date(a.data.date).getTime(),
 );
+const safeSortedNews = sortedNews.filter((article) => isSafeExternalUrl(article.data.url));
 
 /* Pre-compute responsive gallery images */
 const galleryImages = await Promise.all(
@@ -37,26 +39,39 @@ const galleryImages = await Promise.all(
   })),
 );
 
-const pageTitle = (copy?.pageTitle as string) || "Media";
+const newsImageAttrs = await Promise.all(
+  safeSortedNews.map(async (article) => {
+    if (!article.data.image) return null;
+    return getResponsiveImageAttrs({
+      src: article.data.image,
+      widths: [320, 480, 640],
+      sizes: "(max-width: 768px) 100vw, 240px",
+      width: 640,
+      height: 360,
+      quality: 72,
+    });
+  }),
+);
+
+const pageTitle = copy.pageTitle || "Media";
 const pageIntro =
-  (copy?.pageIntro as string) ||
-  "Photos, videos, and press coverage of our adventures across Virginia.";
-const galleryHeading = (copy?.galleryHeading as string) || "Gallery";
-const videosHeading = (copy?.videosHeading as string) || "Videos";
-const newsHeading = (copy?.newsHeading as string) || "In The News";
-const showMoreGalleryLabel = (copy?.showMoreGalleryLabel as string) || "Show More";
-const showLessGalleryLabel = (copy?.showLessGalleryLabel as string) || "Show Less";
-const showMoreNewsLabel = (copy?.showMoreNewsLabel as string) || "Show More";
-const showLessNewsLabel = (copy?.showLessNewsLabel as string) || "Show Less";
-const metaTitle = (copy?.metaTitle as string) || "Media";
+  copy.pageIntro || "Photos, videos, and press coverage of our adventures across Virginia.";
+const galleryHeading = copy.galleryHeading || "Gallery";
+const videosHeading = copy.videosHeading || "Videos";
+const newsHeading = copy.newsHeading || "In The News";
+const showMoreGalleryLabel = copy.showMoreGalleryLabel || "Show More";
+const showLessGalleryLabel = copy.showLessGalleryLabel || "Show Less";
+const showMoreNewsLabel = copy.showMoreNewsLabel || "Show More";
+const showLessNewsLabel = copy.showLessNewsLabel || "Show Less";
+const metaTitle = copy.metaTitle || "Media";
 const metaDescription =
-  (copy?.metaDescription as string) ||
+  copy.metaDescription ||
   "Browse the Ghostbusters Virginia photo gallery, watch videos, and read news coverage from across the Commonwealth.";
-const ogTitleVal = (copy?.ogTitle as string) || "Media | Ghostbusters Virginia";
+const ogTitleVal = copy.ogTitle || "Media | Ghostbusters Virginia";
 const ogDescriptionVal =
-  (copy?.ogDescription as string) ||
+  copy.ogDescription ||
   "Photos, videos, and news coverage of Ghostbusters Virginia events and appearances.";
-const ogImage = (copy?.ogImage as string) || "/images/ghostbusters-virginia-full-team-photo.jpg";
+const ogImage = copy.ogImage || "/images/ghostbusters-virginia-full-team-photo.jpg";
 ---
 
 <BaseLayout
@@ -85,17 +100,15 @@ const ogImage = (copy?.ogImage as string) || "/images/ghostbusters-virginia-full
                 <button
                   class={`gallery-thumb${index >= 12 ? " gallery-hidden" : ""}`}
                   type="button"
+                  data-lightbox-group="media-gallery"
                   data-lightbox-src={item.data.image}
                   data-lightbox-alt={item.data.alt}
+                  data-lightbox-caption={item.data.title}
                   aria-label={`View: ${item.data.title}`}
                 >
                   <img
-                    src={item.responsive.src}
-                    srcset={item.responsive.srcset}
-                    sizes={item.responsive.sizes}
+                    {...item.responsive}
                     alt={item.data.alt}
-                    width={item.responsive.width}
-                    height={item.responsive.height}
                     loading={index < 6 ? "eager" : "lazy"}
                     decoding="async"
                   />
@@ -122,7 +135,12 @@ const ogImage = (copy?.ogImage as string) || "/images/ghostbusters-virginia-full
             </div>
             {galleryImages.length > 12 && (
               <div class="show-toggle">
-                <Button variant="secondary-alt" type="button" class="toggle-btn" id="gallery-show-more">
+                <Button
+                  variant="secondary-alt"
+                  type="button"
+                  class="toggle-btn"
+                  id="gallery-show-more"
+                >
                   {showMoreGalleryLabel} ({galleryImages.length - 12} more)
                 </Button>
                 <Button
@@ -175,12 +193,12 @@ const ogImage = (copy?.ogImage as string) || "/images/ghostbusters-virginia-full
 
     {/* ── News ── */}
     {
-      sortedNews.length > 0 && (
+      safeSortedNews.length > 0 && (
         <div class="page-band page-band--alt">
           <div class="container">
             <SectionHeading id="news">{newsHeading}</SectionHeading>
             <ul class="news-list" id="news-grid" role="list">
-              {sortedNews.map((article, index) => (
+              {safeSortedNews.map((article, index) => (
                 <li class={`news-item${index >= 6 ? " news-hidden" : ""}`}>
                   <a
                     href={article.data.url}
@@ -192,7 +210,7 @@ const ogImage = (copy?.ogImage as string) || "/images/ghostbusters-virginia-full
                       <div class="news-link__image-wrapper">
                         <img
                           class="news-link__image"
-                          src={article.data.image}
+                          {...newsImageAttrs[index]!}
                           alt=""
                           loading="lazy"
                           decoding="async"
@@ -248,10 +266,15 @@ const ogImage = (copy?.ogImage as string) || "/images/ghostbusters-virginia-full
                 </li>
               ))}
             </ul>
-            {sortedNews.length > 6 && (
+            {safeSortedNews.length > 6 && (
               <div class="show-toggle">
-                <Button variant="secondary-alt" type="button" class="toggle-btn" id="news-show-more">
-                  {showMoreNewsLabel} ({sortedNews.length - 6} more)
+                <Button
+                  variant="secondary-alt"
+                  type="button"
+                  class="toggle-btn"
+                  id="news-show-more"
+                >
+                  {showMoreNewsLabel} ({safeSortedNews.length - 6} more)
                 </Button>
                 <Button
                   variant="secondary-alt"
@@ -269,7 +292,7 @@ const ogImage = (copy?.ogImage as string) || "/images/ghostbusters-virginia-full
       )
     }
 
-    <Lightbox id="gallery-lightbox" hasNav label="Gallery viewer" />
+    <Lightbox id="gallery-lightbox" hasNav label="Gallery viewer" lightboxGroup="media-gallery" />
   </section>
 </BaseLayout>
 
@@ -283,91 +306,23 @@ const ogImage = (copy?.ogImage as string) || "/images/ghostbusters-virginia-full
   src="https://cdn.jsdelivr.net/npm/lite-youtube-embed@0.3.3/src/lite-yt-embed.min.js"></script>
 
 <script>
-  import { setLightboxPreviousFocus } from "../lib/lightbox";
+  import { setupShowMoreToggle } from "../lib/show-more";
 
-  /* ── Gallery lightbox ── */
-  const lightbox = document.getElementById("gallery-lightbox") as HTMLElement | null;
-  const lbImage = lightbox?.querySelector(".lightbox__image") as HTMLImageElement | null;
-  const lbPrev = lightbox?.querySelector(".lightbox__nav--prev") as HTMLButtonElement | null;
-  const lbNext = lightbox?.querySelector(".lightbox__nav--next") as HTMLButtonElement | null;
-
-  const thumbs = Array.from(document.querySelectorAll<HTMLButtonElement>("[data-lightbox-src]"));
-  let currentIndex = 0;
-
-  function openLightbox(index: number) {
-    if (!lightbox || !lbImage) return;
-    currentIndex = index;
-    const thumb = thumbs[index];
-    lbImage.src = thumb.dataset.lightboxSrc ?? "";
-    lbImage.alt = thumb.dataset.lightboxAlt ?? "";
-    setLightboxPreviousFocus(lightbox, thumb, "gallery-thumb");
-    lightbox.hidden = false;
-    document.body.style.overflow = "hidden";
-    lightbox.querySelector<HTMLButtonElement>(".lightbox__close")?.focus();
-  }
-
-  thumbs.forEach((thumb, i) => {
-    thumb.addEventListener("click", () => openLightbox(i));
+  setupShowMoreToggle({
+    showMoreId: "gallery-show-more",
+    showLessId: "gallery-show-less",
+    hiddenClass: "gallery-hidden",
+    containerId: "gallery-grid",
+    initialVisibleCount: 12,
   });
 
-  lbPrev?.addEventListener("click", () => {
-    openLightbox((currentIndex - 1 + thumbs.length) % thumbs.length);
+  setupShowMoreToggle({
+    showMoreId: "news-show-more",
+    showLessId: "news-show-less",
+    hiddenClass: "news-hidden",
+    containerId: "news-grid",
+    initialVisibleCount: 6,
   });
-
-  lbNext?.addEventListener("click", () => {
-    openLightbox((currentIndex + 1) % thumbs.length);
-  });
-
-  lightbox?.querySelector(".lightbox__close")?.addEventListener("click", () => {
-    if (!lightbox) return;
-    lightbox.hidden = true;
-    document.body.style.overflow = "";
-    const prevId = lightbox.dataset.previousFocus;
-    if (prevId) document.getElementById(prevId)?.focus();
-  });
-
-  lightbox?.addEventListener("keydown", (e: KeyboardEvent) => {
-    if (e.key === "Escape") {
-      lightbox.querySelector<HTMLButtonElement>(".lightbox__close")?.click();
-    } else if (e.key === "ArrowLeft") {
-      lbPrev?.click();
-    } else if (e.key === "ArrowRight") {
-      lbNext?.click();
-    }
-  });
-
-  /* ── Show more / less toggles ── */
-  function setupToggle(
-    showMoreId: string,
-    showLessId: string,
-    hiddenClass: string,
-    containerId: string,
-  ) {
-    const showMore = document.getElementById(showMoreId) as HTMLButtonElement | null;
-    const showLess = document.getElementById(showLessId) as HTMLButtonElement | null;
-    const container = document.getElementById(containerId);
-    if (!showMore || !showLess || !container) return;
-
-    showMore.addEventListener("click", () => {
-      container.querySelectorAll<HTMLElement>(`.${hiddenClass}`).forEach((el) => {
-        el.classList.remove(hiddenClass);
-      });
-      showMore.hidden = true;
-      showLess.hidden = false;
-    });
-
-    showLess.addEventListener("click", () => {
-      container.querySelectorAll<HTMLElement>(`:scope > :nth-child(n+13)`).forEach((el) => {
-        el.classList.add(hiddenClass);
-      });
-      showLess.hidden = true;
-      showMore.hidden = false;
-      container.scrollIntoView({ behavior: "smooth", block: "start" });
-    });
-  }
-
-  setupToggle("gallery-show-more", "gallery-show-less", "gallery-hidden", "gallery-grid");
-  setupToggle("news-show-more", "news-show-less", "news-hidden", "news-grid");
 </script>
 
 <style>

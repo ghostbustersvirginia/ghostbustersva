@@ -1,6 +1,7 @@
 {
   "page": "home",
-  "heroTitle": "Bustin' Means <span class='hero-title-accent'>Doing Good</span>",
+  "heroTitleText": "Bustin' Means",
+  "heroTitleAccent": "Doing Good",
   "heroTagline": "Virginia's only Sony-recognized 501(c)(3) Ghostbusters franchise — uniting fans and serving communities since 2001.",
   "heroImage": "/images/ghostbusters-virginia-street-gathering.jpg",
   "heroPrimaryCtaLabel": "See Events",

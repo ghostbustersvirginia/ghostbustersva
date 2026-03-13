@@ -17,27 +17,23 @@ import { getPageCopy } from "../lib/page-copy";
 
 const copy = await getPageCopy("about");
 
-const pageTitle = (copy?.pageTitle as string) || "About Ghostbusters Virginia";
-const pageIntro =
-  (copy?.pageIntro as string) || "Who we are, where we came from, and why we do what we do.";
+const pageTitle = copy.pageTitle || "About Ghostbusters Virginia";
+const pageIntro = copy.pageIntro || "Who we are, where we came from, and why we do what we do.";
 
 const protonPetsImageSrc =
-  (copy?.protonPetsImage as string) || "/images/news/ghostbusters-virginia-proton-pets-rescue.jpeg";
+  copy.protonPetsImage || "/images/news/ghostbusters-virginia-proton-pets-rescue.jpeg";
 const protonPetsImageAlt =
-  (copy?.protonPetsImageAlt as string) ||
+  copy.protonPetsImageAlt ||
   "Proton Pets \u2014 Ghostbusters Virginia community fundraiser for local pet shelters";
 const protonPetsText =
-  (copy?.protonPetsText as string) ||
+  copy.protonPetsText ||
   "Every April, Ghostbusters Virginia calls on franchises across the globe to join Proton Pets \u2014 a month-long, community-driven fundraiser supporting local pet shelters and pet pantries.";
-const protonPetsLinkLabel = (copy?.protonPetsLinkLabel as string) || "Learn About Proton Pets";
-const protonPetsLinkUrl =
-  (copy?.protonPetsLinkUrl as string) || "https://whoyagonnacall.org/proton-pets";
-const ogImage = (copy?.ogImage as string) || "/images/ghostbusters-virginia-pke-meter-closeup.jpg";
-const teamImageSrc =
-  (copy?.teamImage as string) || "/images/ghostbusters-virginia-full-team-photo.jpg";
+const protonPetsLinkLabel = copy.protonPetsLinkLabel || "Learn About Proton Pets";
+const protonPetsLinkUrl = copy.protonPetsLinkUrl || "https://whoyagonnacall.org/proton-pets";
+const ogImage = copy.ogImage || "/images/ghostbusters-virginia-pke-meter-closeup.jpg";
+const teamImageSrc = copy.teamImage || "/images/ghostbusters-virginia-full-team-photo.jpg";
 const teamImageAlt =
-  (copy?.teamImageAlt as string) ||
-  "The full Ghostbusters Virginia team in uniform at a community event";
+  copy.teamImageAlt || "The full Ghostbusters Virginia team in uniform at a community event";
 
 /* --- Zigzag section images --- */
 /* Landscape thumbnails (4:3 native photos) */
@@ -72,7 +68,8 @@ const divisionsImage = await getResponsiveImageAttrs({
 
 /* Row 3 — landscape: Ecto under the lights (1440×999, ~3:2) */
 const communityImageSrc = "/images/ghostbusters-virginia-ecto-night-lights.jpg";
-const communityImageAlt = "Ghostbusters Virginia members posing with the Ecto vehicle at night with colorful decorative lights";
+const communityImageAlt =
+  "Ghostbusters Virginia members posing with the Ecto vehicle at night with colorful decorative lights";
 const communityImage = await getResponsiveImageAttrs({
   src: communityImageSrc,
   widths: landscapeWidths,
@@ -84,7 +81,8 @@ const communityImage = await getResponsiveImageAttrs({
 
 /* Row 4 — landscape: Police community event (2048×1536, 4:3) */
 const togetherImageSrc = "/images/ghostbusters-virginia-police-community-event.jpg";
-const togetherImageAlt = "Ghostbusters Virginia members at a community event with local first responders";
+const togetherImageAlt =
+  "Ghostbusters Virginia members at a community event with local first responders";
 const togetherImage = await getResponsiveImageAttrs({
   src: togetherImageSrc,
   widths: landscapeWidths,
@@ -103,38 +101,38 @@ const protonPetsImage = await getResponsiveImageAttrs({
   quality: 75,
 });
 
-const metaTitle = (copy?.metaTitle as string) || "About";
+const metaTitle = copy.metaTitle || "About";
 const metaDescription =
-  (copy?.metaDescription as string) ||
+  copy.metaDescription ||
   "Learn the history, mission, and community initiatives of Ghostbusters Virginia since 2001.";
-const ogTitleVal = (copy?.ogTitle as string) || "About Ghostbusters Virginia";
+const ogTitleVal = copy.ogTitle || "About Ghostbusters Virginia";
 const ogDescriptionVal =
-  (copy?.ogDescription as string) ||
+  copy.ogDescription ||
   "Discover who we are, how we serve the community, and why Ghostbusters Virginia exists.";
 
 const whoWeAreBodyOne =
-  (copy?.whoWeAreBodyOne as string) ||
+  copy.whoWeAreBodyOne ||
   "Ghostbusters Virginia (GBVA) was established in 2001 by a lifelong Ghosthead and rather young member of the Ghostbusters community. Since then GBVA has ebbed and flowed with popularity and activity, culminating in 2011 with a spike in popularity that established GBVA as the premier Ghostbusters franchise in the Commonwealth of Virginia.";
 const whoWeAreBodyTwo =
-  (copy?.whoWeAreBodyTwo as string) ||
+  copy.whoWeAreBodyTwo ||
   "Our mission has always been straightforward: celebrate and promote the Ghostbusters franchise, support charitable causes, and create a welcoming space for fans of all ages and backgrounds. We visit children\u2019s hospitals in full gear, appear at parades and conventions, and raise money and awareness for local charities \u2014 all in a safe, fun, and family-friendly way.";
 const whoWeAreBodyThree =
-  (copy?.whoWeAreBodyThree as string) ||
+  copy.whoWeAreBodyThree ||
   "Unlike other states where multiple groups operate independently, GBVA functions as a large umbrella for all Ghostbusters fans in Virginia. Individual groups maintain their own identity while proudly flying the GBVA banner and participating in events like conventions, fundraisers, and build parties. The three primary groups are The Richmond Division, District 757 protecting Southeastern Virginia, and the NOVA Division keeping the northern border of Virginia safe and sound.";
 const whoWeAreBodyFour =
-  (copy?.whoWeAreBodyFour as string) ||
+  copy.whoWeAreBodyFour ||
   "Under the GBVA banner these groups pool their resources and cooperate at a level that makes the whole stronger than its parts. Alongside members from across Virginia \u2014 including the Eastern Shore \u2014 they are what make GBVA such a fantastic franchise, with a future filled with good fun, memories, and lifelong friendships.";
 
-const missionHeading = (copy?.missionHeading as string) || "Our Mission";
-const missionItems = (copy?.missionItems as string[]) || [
+const missionHeading = copy.missionHeading || "Our Mission";
+const missionItems = copy.missionItems || [
   "Celebrate and promote the Ghostbusters franchise across the Commonwealth of Virginia",
   "Support charitable causes and give back to our local communities",
   "Provide a welcoming space for fans of all ages and backgrounds",
   "Unite Virginia\u2019s regional Ghostbusters groups under one banner",
 ];
 
-const initiativesHeading = (copy?.initiativesHeading as string) || "Community Initiatives";
-const initiativeTitle = (copy?.initiativeTitle as string) || "Proton Pets";
+const initiativesHeading = copy.initiativesHeading || "Community Initiatives";
+const initiativeTitle = copy.initiativeTitle || "Proton Pets";
 
 /** Expand icon SVG reused across all four zigzag thumbs */
 const expandIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>`;
@@ -164,20 +162,17 @@ const expandIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="2
             <button
               class="zigzag__thumb"
               type="button"
+              data-lightbox-group="about-gallery"
               data-lightbox-src={teamImageSrc}
               data-lightbox-alt={teamImageAlt}
               aria-label={`View full image: ${teamImageAlt}`}
             >
               <img
-                src={teamImage.src}
-                srcset={teamImage.srcset}
-                sizes={teamImage.sizes}
+                {...teamImage}
                 alt={teamImageAlt}
                 class="zigzag__img"
                 loading="eager"
                 decoding="async"
-                width={teamImage.width}
-                height={teamImage.height}
               />
               <span class="zigzag__overlay" aria-hidden="true">
                 <Fragment set:html={expandIcon} />
@@ -199,20 +194,17 @@ const expandIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="2
             <button
               class="zigzag__thumb"
               type="button"
+              data-lightbox-group="about-gallery"
               data-lightbox-src={divisionsImageSrc}
               data-lightbox-alt={divisionsImageAlt}
               aria-label={`View full image: ${divisionsImageAlt}`}
             >
               <img
-                src={divisionsImage.src}
-                srcset={divisionsImage.srcset}
-                sizes={divisionsImage.sizes}
+                {...divisionsImage}
                 alt={divisionsImageAlt}
                 class="zigzag__img"
                 loading="lazy"
                 decoding="async"
-                width={divisionsImage.width}
-                height={divisionsImage.height}
               />
               <span class="zigzag__overlay" aria-hidden="true">
                 <Fragment set:html={expandIcon} />
@@ -234,20 +226,17 @@ const expandIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="2
             <button
               class="zigzag__thumb"
               type="button"
+              data-lightbox-group="about-gallery"
               data-lightbox-src={communityImageSrc}
               data-lightbox-alt={communityImageAlt}
               aria-label={`View full image: ${communityImageAlt}`}
             >
               <img
-                src={communityImage.src}
-                srcset={communityImage.srcset}
-                sizes={communityImage.sizes}
+                {...communityImage}
                 alt={communityImageAlt}
                 class="zigzag__img"
                 loading="lazy"
                 decoding="async"
-                width={communityImage.width}
-                height={communityImage.height}
               />
               <span class="zigzag__overlay" aria-hidden="true">
                 <Fragment set:html={expandIcon} />
@@ -269,20 +258,17 @@ const expandIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="2
             <button
               class="zigzag__thumb"
               type="button"
+              data-lightbox-group="about-gallery"
               data-lightbox-src={togetherImageSrc}
               data-lightbox-alt={togetherImageAlt}
               aria-label={`View full image: ${togetherImageAlt}`}
             >
               <img
-                src={togetherImage.src}
-                srcset={togetherImage.srcset}
-                sizes={togetherImage.sizes}
+                {...togetherImage}
                 alt={togetherImageAlt}
                 class="zigzag__img"
                 loading="lazy"
                 decoding="async"
-                width={togetherImage.width}
-                height={togetherImage.height}
               />
               <span class="zigzag__overlay" aria-hidden="true">
                 <Fragment set:html={expandIcon} />
@@ -301,9 +287,7 @@ const expandIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="2
       <div class="container container--mid">
         <SectionHeading>{missionHeading}</SectionHeading>
         <ul class="mission-list" role="list">
-          {missionItems.map((item) => (
-            <li class="mission-list__item">{item}</li>
-          ))}
+          {missionItems.map((item) => <li class="mission-list__item">{item}</li>)}
         </ul>
       </div>
     </div>
@@ -314,15 +298,11 @@ const expandIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="2
         <SectionHeading>{initiativesHeading}</SectionHeading>
         <h3 class="initiative-title">{initiativeTitle}</h3>
         <img
-          src={protonPetsImage.src}
-          srcset={protonPetsImage.srcset}
-          sizes={protonPetsImage.sizes}
+          {...protonPetsImage}
           alt={protonPetsImageAlt}
           class="initiative-image"
           loading="lazy"
           decoding="async"
-          width={protonPetsImage.width}
-          height={protonPetsImage.height}
         />
         <p class="prose-text">{protonPetsText}</p>
         <div class="initiative-cta">
@@ -333,35 +313,9 @@ const expandIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="2
       </div>
     </div>
 
-    <Lightbox id="about-lightbox" label="About page image viewer" />
+    <Lightbox id="about-lightbox" label="About page image viewer" lightboxGroup="about-gallery" />
   </section>
 </BaseLayout>
-
-<script>
-  import { setLightboxPreviousFocus } from "../lib/lightbox";
-
-  const lightbox = document.getElementById("about-lightbox") as HTMLElement | null;
-  const lbImage = lightbox?.querySelector(".lightbox__image") as HTMLImageElement | null;
-
-  const thumbs = Array.from(
-    document.querySelectorAll<HTMLButtonElement>(".zigzag__thumb[data-lightbox-src]"),
-  );
-
-  function openAboutLightbox(index: number) {
-    if (!lightbox || !lbImage) return;
-    const thumb = thumbs[index];
-    lbImage.src = thumb.dataset.lightboxSrc ?? "";
-    lbImage.alt = thumb.dataset.lightboxAlt ?? "";
-    setLightboxPreviousFocus(lightbox, thumb, "about-thumb");
-    lightbox.hidden = false;
-    document.body.style.overflow = "hidden";
-    lightbox.querySelector<HTMLButtonElement>(".lightbox__close")?.focus();
-  }
-
-  thumbs.forEach((thumb, i) => {
-    thumb.addEventListener("click", () => openAboutLightbox(i));
-  });
-</script>
 
 <style>
   /* --- Zigzag layout --- */

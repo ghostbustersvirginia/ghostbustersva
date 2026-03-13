@@ -10,6 +10,7 @@ import Lightbox from "../components/ui/Lightbox.astro";
 import { getCollection } from "astro:content";
 import { splitEventsByStatus } from "../lib/events";
 import { getResponsiveImageAttrs } from "../lib/images";
+import { getSafeCmsHref, isSafeExternalUrl } from "../lib/links";
 import SwagGrid from "../components/SwagGrid.astro";
 import { getPageCopy } from "../lib/page-copy";
 
@@ -20,57 +21,67 @@ const { upcoming, past } = splitEventsByStatus(allEvents);
 const galleryItems = await getCollection("gallery");
 
 /* ── CMS-driven copy ── */
-const heroTitle = copy!.heroTitle as string;
-const heroTagline = copy!.heroTagline as string;
-const heroPrimaryCtaLabel = copy!.heroPrimaryCtaLabel as string;
-const heroPrimaryCtaHref = copy!.heroPrimaryCtaHref as string;
-const heroSecondaryCtaLabel = copy!.heroSecondaryCtaLabel as string;
-const heroSecondaryCtaHref = copy!.heroSecondaryCtaHref as string;
-const heroLogoSrc = copy!.heroLogoSrc as string;
-const heroLogoAlt = copy!.heroLogoAlt as string;
-const missionHeading = (copy?.missionHeading as string) || "Who We Are";
+const heroTitleText = String(copy.heroTitleText || "Bustin' Means");
+const heroTitleAccent = String(copy.heroTitleAccent || "Doing Good");
+const heroTagline = String(
+  copy.heroTagline ||
+    "Virginia's only Sony-recognized 501(c)(3) Ghostbusters franchise — uniting fans and serving communities since 2001.",
+);
+const heroPrimaryCtaLabel = String(copy.heroPrimaryCtaLabel || "See Events");
+const heroPrimaryCtaHref = copy.heroPrimaryCtaHref;
+const heroSecondaryCtaLabel = String(copy.heroSecondaryCtaLabel || "Join the Team");
+const heroSecondaryCtaHref = copy.heroSecondaryCtaHref;
+const heroLogoSrc = String(copy.heroLogoSrc || "/images/logo.png");
+const heroLogoAlt = String(copy.heroLogoAlt || "Ghostbusters Virginia logo");
+const missionHeading = copy.missionHeading || "Who We Are";
 const missionSubtitle =
-  (copy?.missionSubtitle as string) ||
+  copy.missionSubtitle ||
   "Ghostbusters Virginia is the only 501(c)3 nonprofit recognized by Sony\u2019s Ghost Corps in the state. Since 2001, we\u2019ve united fans across the Commonwealth to turn our love of Ghostbusters into real community impact.";
 const missionBody =
-  (copy?.missionBody as string) ||
+  copy.missionBody ||
   "We participate in community events all over Virginia to help raise money and awareness for charities, visit children\u2019s hospitals in full Ghostbusters gear, appear at parades and comic conventions, and welcome fans of all ages and backgrounds \u2014 all in a safe, fun, and family friendly manner.";
-const galleryHeading = (copy?.galleryHeading as string) || "Out in the Field";
+const galleryHeading = copy.galleryHeading || "Out in the Field";
 const gallerySubtitle =
-  (copy?.gallerySubtitle as string) ||
+  copy.gallerySubtitle ||
   "From charity fundraisers and hospital visits to comic conventions and community parades.";
-const galleryCtaLabel = (copy?.galleryCtaLabel as string) || "See All Media";
-const galleryCtaHref = (copy?.galleryCtaHref as string) || "/media";
-const eventsHeading = (copy?.eventsHeading as string) || "Events";
+const galleryCtaLabel = copy.galleryCtaLabel || "See All Media";
+const galleryCtaHref = copy.galleryCtaHref || "/media";
+const eventsHeading = copy.eventsHeading || "Events";
 const eventsSubtitle =
-  (copy?.eventsSubtitle as string) ||
+  copy.eventsSubtitle ||
   "Meet the team, support local charities, and see the Ecto in person. Check out where we\u2019ll be next \u2014 we\u2019d love to see you there.";
-const eventsCtaLabel = (copy?.eventsCtaLabel as string) || "See All Events";
-const eventsCtaHref = (copy?.eventsCtaHref as string) || "/events";
-const joinHeading = (copy?.joinHeading as string) || "Join the Team";
+const eventsCtaLabel = copy.eventsCtaLabel || "See All Events";
+const eventsCtaHref = copy.eventsCtaHref || "/events";
+const joinHeading = copy.joinHeading || "Join the Team";
 const joinSubtitle =
-  (copy?.joinSubtitle as string) ||
+  copy.joinSubtitle ||
   "Whether you\u2019re a lifelong Ghosthead or just getting started, there\u2019s a place for you in our franchise. Join a community of fans who build props, attend events, visit hospitals, and raise money for charity \u2014 all while having a blast.";
-const joinImagePath =
-  (copy?.joinImage as string) || "/images/ghostbusters-virginia-movie-premiere.jpg";
+const joinImagePath = copy.joinImage || "/images/ghostbusters-virginia-movie-premiere.jpg";
 const joinImageAlt =
-  (copy?.joinImageAlt as string) ||
+  copy.joinImageAlt ||
   "Three Ghostbusters Virginia members in full uniforms posing at a movie premiere event";
 const joinQuoteLineOne =
-  (copy?.joinQuoteLineOne as string) ||
+  copy.joinQuoteLineOne ||
   "Do you believe in UFOs, astral projections, mental telepathy, ESP, clairvoyance, spirit photography, telekinetic movement, full trance mediums, the Loch Ness monster and the theory of Atlantis?";
 const joinQuoteLineTwo =
-  (copy?.joinQuoteLineTwo as string) ||
+  copy.joinQuoteLineTwo ||
   "Ready to get out there and start busting some ghosts? Excellent news rookie, we have openings!";
-const joinCtaLabel = (copy?.joinCtaLabel as string) || "Join Now";
-const joinCtaHref = (copy?.joinCtaHref as string) || "/join";
-const swagSectionHeading = (copy?.swagHeading as string) || "Support the Mission";
+const joinCtaLabel = copy.joinCtaLabel || "Join Now";
+const joinCtaHref = copy.joinCtaHref || "/join";
+const swagSectionHeading = copy.swagHeading || "Support the Mission";
 const swagSubtitle =
-  (copy?.swagSubtitle as string) ||
+  copy.swagSubtitle ||
   "Every purchase helps fund our charity work, community events, and hospital visits across Virginia. Grab some gear and wear your support \u2014 each item opens our TeePublic store in a new tab!";
-const swagCtaLabel = (copy?.swagCtaLabel as string) || "Visit Our Store";
-const swagCtaHref =
-  (copy?.swagCtaHref as string) || "https://www.teepublic.com/user/ghostbusters-virginia";
+const swagCtaLabel = copy.swagCtaLabel || "Visit Our Store";
+const swagCtaHref = copy.swagCtaHref || "https://www.teepublic.com/user/ghostbusters-virginia";
+const safeHeroPrimaryCtaHref = getSafeCmsHref(heroPrimaryCtaHref) || "/events";
+const safeHeroSecondaryCtaHref = getSafeCmsHref(heroSecondaryCtaHref) || "/join";
+const safeGalleryCtaHref = getSafeCmsHref(galleryCtaHref) || "/media";
+const safeEventsCtaHref = getSafeCmsHref(eventsCtaHref) || "/events";
+const safeJoinCtaHref = getSafeCmsHref(joinCtaHref) || "/join";
+const safeSwagCtaHref = isSafeExternalUrl(swagCtaHref)
+  ? swagCtaHref
+  : "https://www.teepublic.com/user/ghostbusters-virginia";
 
 interface ImpactStat {
   value: string;
@@ -84,20 +95,28 @@ const defaultImpactStats: ImpactStat[] = [
   { value: "50+", label: "Community Events", countTarget: "50", countSuffix: "+" },
   { value: "VA", label: "Statewide Presence" },
 ];
-const impactStats = (copy?.impactStats as ImpactStat[] | undefined) || defaultImpactStats;
-const impactStatsAriaLabel = (copy?.impactStatsAriaLabel as string) || "Our impact";
+const impactStats = copy.impactStats || defaultImpactStats;
+const impactStatsAriaLabel = copy.impactStatsAriaLabel || "Our impact";
 
-const metaTitle = (copy?.metaTitle as string) || "Home";
+const metaTitle = copy.metaTitle || "Home";
 const metaDescription =
-  (copy?.metaDescription as string) ||
+  copy.metaDescription ||
   "Ghostbusters Virginia is a Sony-recognized 501(c)(3) nonprofit bringing fandom and community service together across Virginia.";
-const ogTitleVal = (copy?.ogTitle as string) || "Ghostbusters Virginia";
+const ogTitleVal = copy.ogTitle || "Ghostbusters Virginia";
 const ogDescVal =
-  (copy?.ogDescription as string) ||
+  copy.ogDescription ||
   "See upcoming events, media, and ways to join or support Ghostbusters Virginia.";
-const ogImage = (copy?.ogImage as string) || "/images/ghostbusters-virginia-slimer-stay-puft.jpg";
+const ogImage = copy.ogImage || "/images/ghostbusters-virginia-slimer-stay-puft.jpg";
 
 /* ── Responsive image processing ── */
+const heroLogoImage = await getResponsiveImageAttrs({
+  src: heroLogoSrc,
+  widths: [240, 360, 480, 720],
+  sizes: "(max-width: 768px) 240px, 360px",
+  width: 360,
+  height: 360,
+  quality: 75,
+});
 const joinImage = await getResponsiveImageAttrs({
   src: joinImagePath,
   widths: [640, 960, 1200],
@@ -127,17 +146,20 @@ const galleryImageAttrs = await Promise.all(
   ogTitle={ogTitleVal}
   ogDescription={ogDescVal}
   ogImage={ogImage}
+  heroImagePreload={heroLogoImage}
 >
   <!-- ───── HERO (static Astro component) ───── -->
   <HeroSection
-    heroTitle={heroTitle}
+    heroTitleText={heroTitleText}
+    heroTitleAccent={heroTitleAccent}
     heroTagline={heroTagline}
     primaryCtaLabel={heroPrimaryCtaLabel}
-    primaryCtaHref={heroPrimaryCtaHref}
+    primaryCtaHref={safeHeroPrimaryCtaHref}
     secondaryCtaLabel={heroSecondaryCtaLabel}
-    secondaryCtaHref={heroSecondaryCtaHref}
+    secondaryCtaHref={safeHeroSecondaryCtaHref}
     heroLogoSrc={heroLogoSrc}
     heroLogoAlt={heroLogoAlt}
+    heroLogoImage={heroLogoImage}
   />
 
   <!-- ───── MISSION / IDENTITY ───── -->
@@ -189,23 +211,30 @@ const galleryImageAttrs = await Promise.all(
                       class="gallery-slide"
                       type="button"
                       aria-label={`View full image: ${item.data.title}`}
-                      data-image={item.data.image}
-                      data-alt={item.data.alt}
-                      data-title={item.data.title}
+                      data-lightbox-group="home-gallery"
+                      data-lightbox-src={item.data.image}
+                      data-lightbox-alt={item.data.alt}
+                      data-lightbox-caption={item.data.title}
                     >
                       <img
-                        src={galleryImageAttrs[index].src}
-                        srcset={galleryImageAttrs[index].srcset}
-                        sizes={galleryImageAttrs[index].sizes}
+                        {...galleryImageAttrs[index]}
                         alt={item.data.alt}
                         loading="lazy"
                         decoding="async"
-                        width={galleryImageAttrs[index].width}
-                        height={galleryImageAttrs[index].height}
                         class="gallery-slide__img"
                       />
                       <span class="gallery-slide__overlay" aria-hidden="true">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="24"
+                          height="24"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        >
                           <polyline points="15 3 21 3 21 9" />
                           <polyline points="9 21 3 21 3 15" />
                           <line x1="21" y1="3" x2="14" y2="10" />
@@ -220,7 +249,7 @@ const galleryImageAttrs = await Promise.all(
             </div>
           </div>
           <div class="gallery-cta">
-            <Button variant="secondary-alt" href={galleryCtaHref}>
+            <Button variant="secondary-alt" href={safeGalleryCtaHref}>
               {galleryCtaLabel}
             </Button>
           </div>
@@ -246,7 +275,7 @@ const galleryImageAttrs = await Promise.all(
         }
       </ul>
       <div class="section-cta">
-        <Button variant="secondary" href={eventsCtaHref}>
+        <Button variant="secondary" href={safeEventsCtaHref}>
           {eventsCtaLabel}
         </Button>
       </div>
@@ -263,15 +292,11 @@ const galleryImageAttrs = await Promise.all(
       <div class="join-layout">
         <div class="join-image-wrapper">
           <img
-            src={joinImage.src}
-            srcset={joinImage.srcset}
-            sizes={joinImage.sizes}
+            {...joinImage}
             alt={joinImageAlt}
             class="join-image"
             loading="lazy"
             decoding="async"
-            width={joinImage.width}
-            height={joinImage.height}
           />
         </div>
         <blockquote class="quote-block">
@@ -284,7 +309,7 @@ const galleryImageAttrs = await Promise.all(
         </blockquote>
       </div>
       <div class="section-cta">
-        <Button variant="secondary-alt" href={joinCtaHref}>{joinCtaLabel}</Button>
+        <Button variant="secondary-alt" href={safeJoinCtaHref}>{joinCtaLabel}</Button>
       </div>
     </div>
   </section>
@@ -293,12 +318,12 @@ const galleryImageAttrs = await Promise.all(
   <section class="section hp-section--white swag-section" aria-labelledby="swag-heading">
     <div class="container">
       <h2 id="swag-heading" class="section-heading">{swagSectionHeading}</h2>
-      <SwagGrid subtitle={swagSubtitle} ctaLabel={swagCtaLabel} ctaHref={swagCtaHref} />
+      <SwagGrid subtitle={swagSubtitle} ctaLabel={swagCtaLabel} ctaHref={safeSwagCtaHref} />
     </div>
   </section>
 
   <!-- ── Lightbox overlay ── -->
-  <Lightbox id="home-lightbox" hasNav label="Image viewer" />
+  <Lightbox id="home-lightbox" hasNav label="Image viewer" lightboxGroup="home-gallery" />
 </BaseLayout>
 
 <style>
@@ -510,7 +535,6 @@ const galleryImageAttrs = await Promise.all(
 <script>
   import Splide from "@splidejs/splide";
   import "@splidejs/splide/css";
-  import { setLightboxPreviousFocus } from "../lib/lightbox";
 
   document.addEventListener("DOMContentLoaded", () => {
     const el = document.getElementById("gallery-splide");
@@ -532,64 +556,15 @@ const galleryImageAttrs = await Promise.all(
       },
     }).mount();
 
-    // ── Lightbox (shared component handles close/escape/focus-trap) ──
     const lightbox = document.getElementById("home-lightbox") as HTMLElement;
-    const lightboxImage = document.getElementById("home-lightbox-image") as HTMLImageElement;
-    const lightboxCaption = document.getElementById(
-      "home-lightbox-caption",
-    ) as HTMLParagraphElement;
-    const prevBtn = lightbox?.querySelector(".lightbox__nav--prev") as HTMLButtonElement;
-    const nextBtn = lightbox?.querySelector(".lightbox__nav--next") as HTMLButtonElement;
+    if (!lightbox) return;
 
-    // Build ordered list of gallery images from the slides
-    const slides = Array.from(
-      document.querySelectorAll<HTMLButtonElement>("#gallery-splide .gallery-slide"),
-    );
-    const images = slides.map((s) => ({
-      image: s.dataset.image ?? "",
-      alt: s.dataset.alt ?? "",
-      title: s.dataset.title ?? "",
-    }));
-    let currentIndex = 0;
-
-    function showImage(index: number) {
-      currentIndex = ((index % images.length) + images.length) % images.length;
-      const item = images[currentIndex];
-      lightboxImage.src = item.image;
-      lightboxImage.alt = item.alt;
-      lightboxCaption.textContent = item.title;
-    }
-
-    function openLightbox(index: number, opener?: HTMLElement) {
-      if (!lightbox || !lightboxImage || !lightboxCaption) return;
-      if (opener) {
-        setLightboxPreviousFocus(lightbox, opener, `home-gallery-trigger-${index}`);
-      }
-      showImage(index);
-      lightbox.hidden = false;
-      document.body.style.overflow = "hidden";
+    lightbox.addEventListener("lightbox:open", () => {
       splide.Components.Autoplay?.pause();
-      (lightbox.querySelector(".lightbox__close") as HTMLElement)?.focus();
-    }
+    });
 
-    // Resume autoplay when lightbox closes (shared component dispatches this)
-    lightbox?.addEventListener("lightbox:close", () => {
+    lightbox.addEventListener("lightbox:close", () => {
       splide.Components.Autoplay?.play();
-    });
-
-    // Gallery slide clicks
-    slides.forEach((slide, i) => {
-      slide.addEventListener("click", () => openLightbox(i, slide));
-    });
-
-    // Prev/next nav + arrow keys
-    prevBtn?.addEventListener("click", () => showImage(currentIndex - 1));
-    nextBtn?.addEventListener("click", () => showImage(currentIndex + 1));
-
-    document.addEventListener("keydown", (e) => {
-      if (!lightbox || lightbox.hidden) return;
-      if (e.key === "ArrowLeft") showImage(currentIndex - 1);
-      if (e.key === "ArrowRight") showImage(currentIndex + 1);
     });
   });
 </script>

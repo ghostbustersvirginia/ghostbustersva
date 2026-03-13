@@ -81,7 +81,6 @@ const resolvedOgImage = new URL(
         <link
           rel="preload"
           as="image"
-          type="image/webp"
           href={heroImagePreload.src}
           imagesrcset={heroImagePreload.srcset}
           imagesizes={heroImagePreload.sizes}
@@ -94,15 +93,33 @@ const resolvedOgImage = new URL(
   </head>
   <body>
     <!-- Skip to main content for keyboard / screen-reader users -->
-    <a class="skip-link" href="#main-content">Skip to main content</a>
+    <a class="skip-link" href="#main-content" data-skip-link>Skip to main content</a>
 
     <Header />
 
-    <main id="main-content">
+    <main id="main-content" tabindex="-1">
       <slot />
     </main>
 
     <Footer />
+
+    <script is:inline>
+      const skipLink = document.querySelector("[data-skip-link]");
+      const mainContent = document.getElementById("main-content");
+
+      if (skipLink instanceof HTMLAnchorElement && mainContent instanceof HTMLElement) {
+        skipLink.addEventListener("click", (event) => {
+          event.preventDefault();
+          mainContent.focus();
+
+          if (window.history?.pushState) {
+            window.history.pushState(null, "", "#main-content");
+          } else {
+            window.location.hash = "main-content";
+          }
+        });
+      }
+    </script>
 
     <style is:global>
       /* -------------------------------------------------- */
