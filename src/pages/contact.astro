@@ -4,6 +4,7 @@
  */
 import BaseLayout from "../layouts/BaseLayout.astro";
 import Button from "../components/ui/Button.astro";
+import LEDScrollbar from "../components/LEDScrollbar.astro";
 import PageHeader from "../components/ui/PageHeader.astro";
 import SectionHeading from "../components/ui/SectionHeading.astro";
 import SocialLinks from "../components/ui/SocialLinks.astro";
@@ -17,13 +18,15 @@ const settings = await getSiteSettings();
 
 const socialLinks = (settings.socialLinks ?? []).filter((link) => isSafeExternalUrl(link.url));
 const contactEmail = settings.contactEmail || "info@whoyagonnacall.org";
+const contactPhone = settings.contactPhone || "(804) 482-1217";
+const ledScrollbarText = settings.ledScrollbarText || undefined;
 
 const pageTitle = copy.pageTitle || "Contact Us";
 const pageIntro =
   copy.pageIntro || "Got a ghost problem? A media inquiry? Just want to say hey? We're listening.";
 const reachOutText =
   copy.reachOutText ||
-  "The best way to reach Ghostbusters Virginia is via email. For faster responses, message us on any of our social media channels below.";
+  "The best way to reach Ghostbusters Virginia is via email or phone. For faster responses, message us on any of our social media channels below.";
 const bookingHeading = copy.bookingHeading || "Event Bookings & Appearances";
 const bookingText =
   copy.bookingText ||
@@ -70,17 +73,129 @@ const bookingImage = await getResponsiveImageAttrs({
 
     <div class="page-band page-band--alt">
       <div class="container container--mid">
-        <p class="contact-tagline">
-          You know who to call.<br /><span class="contact-tagline-accent"
-            >(or in this case, email)</span
-          >
-        </p>
+        <p class="contact-tagline">You know who to call.</p>
         <p class="prose-text prose-text--centered">
           {reachOutText}
         </p>
-        <p class="prose-text prose-text--centered">
-          <a href={`mailto:${contactEmail}`} class="email-link">{contactEmail}</a>
-        </p>
+        <div class="contact-methods">
+          <div class="contact-chip-group">
+            <a
+              href={`mailto:${contactEmail}`}
+              class="contact-chip"
+              aria-label={`Email ${contactEmail}`}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+                ><rect width="20" height="16" x="2" y="4" rx="2"></rect><path
+                  d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path></svg
+              >
+              <span>{contactEmail}</span>
+            </a>
+            <button
+              type="button"
+              class="copy-btn"
+              data-copy={contactEmail}
+              aria-label="Copy email address"
+            >
+              <svg
+                class="copy-btn__icon copy-btn__icon--copy"
+                xmlns="http://www.w3.org/2000/svg"
+                width="15"
+                height="15"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+                ><rect width="14" height="14" x="8" y="8" rx="2"></rect><path
+                  d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path></svg
+              >
+              <svg
+                class="copy-btn__icon copy-btn__icon--check"
+                xmlns="http://www.w3.org/2000/svg"
+                width="15"
+                height="15"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg
+              >
+            </button>
+          </div>
+          <div class="contact-chip-group">
+            <a
+              href={`tel:${contactPhone.replace(/[^+\d]/g, "")}`}
+              class="contact-chip"
+              aria-label={`Call ${contactPhone}`}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+                ><path
+                  d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"
+                ></path></svg
+              >
+              <span>{contactPhone}</span>
+            </a>
+            <button
+              type="button"
+              class="copy-btn"
+              data-copy={contactPhone}
+              aria-label="Copy phone number"
+            >
+              <svg
+                class="copy-btn__icon copy-btn__icon--copy"
+                xmlns="http://www.w3.org/2000/svg"
+                width="15"
+                height="15"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+                ><rect width="14" height="14" x="8" y="8" rx="2"></rect><path
+                  d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path></svg
+              >
+              <svg
+                class="copy-btn__icon copy-btn__icon--check"
+                xmlns="http://www.w3.org/2000/svg"
+                width="15"
+                height="15"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg
+              >
+            </button>
+          </div>
+        </div>
 
         {
           socialLinks.length > 0 && (
@@ -91,6 +206,11 @@ const bookingImage = await getResponsiveImageAttrs({
             />
           )
         }
+
+        <div class="led-banner-wrap">
+          <LEDScrollbar text={ledScrollbarText} />
+          <img src="/images/slime.png" alt="" aria-hidden="true" class="led-banner-ooze" />
+        </div>
       </div>
     </div>
 
@@ -134,16 +254,94 @@ const bookingImage = await getResponsiveImageAttrs({
     color: var(--color-link-hover);
   }
 
-  .email-link {
-    color: var(--color-accent);
-    text-decoration: underline;
-    text-underline-offset: 3px;
-    font-weight: var(--weight-medium);
+  .contact-methods {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-sm);
+    margin-top: var(--space-xl);
   }
 
-  .email-link:hover,
-  .email-link:focus-visible {
-    color: var(--color-link-hover);
+  .contact-chip-group {
+    display: flex;
+    align-items: stretch;
+  }
+
+  .contact-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.55rem 1rem;
+    border: 1px solid rgba(61, 134, 61, 0.25);
+    border-radius: var(--radius-md);
+    background: rgba(61, 134, 61, 0.06);
+    color: var(--color-text);
+    font-family: var(--font-body);
+    font-size: var(--text-sm);
+    font-weight: var(--weight-medium);
+    text-decoration: none;
+    transition:
+      border-color var(--transition-base),
+      box-shadow var(--transition-base),
+      background var(--transition-base),
+      color var(--transition-base);
+    cursor: pointer;
+  }
+
+  .contact-chip:hover,
+  .contact-chip:focus-visible {
+    border-color: var(--color-gb-green);
+    color: var(--color-gb-green);
+    background: rgba(61, 134, 61, 0.1);
+    box-shadow: 0 2px 8px rgba(61, 134, 61, 0.15);
+  }
+
+  .contact-chip svg {
+    flex-shrink: 0;
+    color: var(--color-gb-green);
+    transition: color var(--transition-base);
+  }
+
+  .contact-chip-group .contact-chip {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+  }
+
+  .copy-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.55rem 0.65rem;
+    border: 1px solid rgba(61, 134, 61, 0.25);
+    border-left: 0;
+    border-radius: 0 var(--radius-md) var(--radius-md) 0;
+    background: rgba(61, 134, 61, 0.1);
+    color: var(--color-text-muted);
+    cursor: pointer;
+    transition:
+      border-color var(--transition-base),
+      background var(--transition-base),
+      color var(--transition-base);
+  }
+
+  .copy-btn:hover,
+  .copy-btn:focus-visible {
+    border-color: var(--color-gb-green);
+    color: var(--color-gb-green);
+    background: rgba(61, 134, 61, 0.15);
+  }
+
+  .copy-btn__icon--check {
+    display: none;
+  }
+
+  .copy-btn.copied .copy-btn__icon--copy {
+    display: none;
+  }
+
+  .copy-btn.copied .copy-btn__icon--check {
+    display: block;
+    color: var(--color-gb-green);
   }
 
   :global(.social-icons) {
@@ -226,11 +424,23 @@ const bookingImage = await getResponsiveImageAttrs({
     margin-bottom: var(--space-xl);
   }
 
-  .contact-tagline-accent {
-    display: block;
-    font-size: var(--text-xl);
-    color: var(--color-gb-green);
-    margin-top: var(--space-xs);
+  .led-banner-wrap {
+    position: relative;
+    margin-top: var(--space-xl);
+    border-radius: var(--radius-md);
+    overflow: visible;
+  }
+
+  .led-banner-ooze {
+    position: absolute;
+    bottom: 0;
+    right: -3.5px;
+    width: 68px;
+    height: auto;
+    pointer-events: none;
+    z-index: 2;
+    transform: translateY(100%);
+    opacity: 0.75;
   }
 
   .prose-text--centered {
@@ -261,8 +471,29 @@ const bookingImage = await getResponsiveImageAttrs({
     .contact-tagline {
       font-size: var(--text-2xl);
     }
-    .contact-tagline-accent {
-      font-size: var(--text-lg);
-    }
   }
 </style>
+
+<script>
+  document.querySelectorAll<HTMLButtonElement>(".copy-btn").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      const text = btn.dataset.copy;
+      if (!text) return;
+      try {
+        await navigator.clipboard.writeText(text);
+        btn.classList.add("copied");
+        setTimeout(() => btn.classList.remove("copied"), 2000);
+      } catch {
+        // Fallback: select into a temp input
+        const tmp = document.createElement("input");
+        tmp.value = text;
+        document.body.appendChild(tmp);
+        tmp.select();
+        document.execCommand("copy");
+        document.body.removeChild(tmp);
+        btn.classList.add("copied");
+        setTimeout(() => btn.classList.remove("copied"), 2000);
+      }
+    });
+  });
+</script>

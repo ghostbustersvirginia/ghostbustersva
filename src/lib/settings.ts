@@ -28,6 +28,8 @@ export interface SiteSettings {
   donateUrl: string;
   storeUrl: string;
   contactEmail: string;
+  contactPhone: string;
+  ledScrollbarText: string;
   socialLinks: { platform: string; url: string }[];
   // Navbar
   navLogo: string;
@@ -89,6 +91,8 @@ export async function getSiteSettings(): Promise<SiteSettings> {
     donateUrl: d.donateUrl ?? "",
     storeUrl: d.storeUrl ?? "",
     contactEmail: d.contactEmail ?? "",
+    contactPhone: d.contactPhone ?? "",
+    ledScrollbarText: d.ledScrollbarText ?? "",
     socialLinks: d.socialLinks ?? [],
     navLogo: d.navLogo || "/images/logo.png",
     navTitle: d.navTitle || "Ghostbusters",

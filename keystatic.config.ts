@@ -821,6 +821,15 @@ export default config({
           label: "Contact Email",
           description: "Public contact email address.",
         }),
+        contactPhone: fields.text({
+          label: "Contact Phone",
+          description: "Public phone number displayed on the contact page.",
+        }),
+        ledScrollbarText: fields.text({
+          label: "LED Scrollbar Text",
+          description:
+            "Message shown on the scrolling LED sign on the contact page. Keep it short — it repeats on a loop.",
+        }),
         socialLinks: fields.array(
           fields.object({
             platform: fields.text({

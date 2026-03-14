@@ -129,6 +129,23 @@ const socialLinks = [
     </div>
 
     <p class="copyright">{footerCopyright}</p>
+
+    <button type="button" class="reduced-motion-toggle" aria-pressed="false" title="Reduce motion">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="16"
+        height="16"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        aria-hidden="true"
+        ><circle cx="12" cy="12" r="10"></circle><line x1="4" y1="4" x2="20" y2="20"></line></svg
+      >
+      <span class="reduced-motion-toggle__label">Reduce motion</span>
+    </button>
   </div>
 </footer>
 
@@ -364,4 +381,74 @@ const socialLinks = [
       max-height: 132px;
     }
   }
+
+  .reduced-motion-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    margin-top: var(--space-sm);
+    padding: 0.3rem 0.6rem;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: rgba(255, 255, 255, 0.5);
+    font-family: var(--font-body);
+    font-size: 0.7rem;
+    cursor: pointer;
+    transition:
+      color var(--transition-fast),
+      border-color var(--transition-fast);
+    align-self: center;
+    justify-self: center;
+  }
+
+  .reduced-motion-toggle:hover,
+  .reduced-motion-toggle:focus-visible {
+    color: rgba(255, 255, 255, 0.85);
+    border-color: rgba(255, 255, 255, 0.35);
+  }
+
+  .reduced-motion-toggle[aria-pressed="true"] {
+    color: var(--color-gb-caution);
+    border-color: var(--color-gb-caution);
+  }
+
+  .reduced-motion-toggle svg {
+    width: 0.85rem;
+    height: 0.85rem;
+    flex-shrink: 0;
+  }
 </style>
+
+<script>
+  /**
+   * Reduced-motion toggle — stores preference in localStorage and sets
+   * a class on <html> so CSS can respond site-wide.
+   */
+  (function initReducedMotionToggle() {
+    const STORAGE_KEY = "gbva-reduce-motion";
+    const CSS_CLASS = "reduce-motion";
+
+    function apply(enabled: boolean): void {
+      document.documentElement.classList.toggle(CSS_CLASS, enabled);
+      document.querySelectorAll<HTMLButtonElement>(".reduced-motion-toggle").forEach((btn) => {
+        btn.setAttribute("aria-pressed", String(enabled));
+        const label = btn.querySelector(".reduced-motion-toggle__label");
+        if (label) label.textContent = enabled ? "Motion reduced" : "Reduce motion";
+      });
+    }
+
+    // Restore saved preference
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved === "true") apply(true);
+
+    // Listen for clicks
+    document.querySelectorAll<HTMLButtonElement>(".reduced-motion-toggle").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const next = btn.getAttribute("aria-pressed") !== "true";
+        localStorage.setItem(STORAGE_KEY, String(next));
+        apply(next);
+      });
+    });
+  })();
+</script>

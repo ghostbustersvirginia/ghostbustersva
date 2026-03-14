@@ -21,7 +21,7 @@ Build a fast, accessible, content-driven **demo site** for Ghostbusters Virginia
 - Static Astro site + Keystatic CMS.
 - No backend/database/SSR unless a PRD explicitly requires it.
 - Astro-first components; avoid client JS unless clearly necessary.
-- No decorative motion.
+- Be mindful of motion; always respect `prefers-reduced-motion`.
 
 ## Working Rules (Summary)
 

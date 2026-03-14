@@ -28,8 +28,9 @@ If rules conflict, follow the highest item in this list and note the conflict in
 ## Design System and Accessibility (March 2026 baseline)
 
 - Follow existing theme tokens and UI primitives in `src/styles/theme.css` and `src/components/ui/`.
-- No decorative motion; no blinking or moving text.
-- Transitions are allowed **only** on interactive elements (links, buttons, interactive cards).
+- Be mindful of motion — keep animations purposeful and non-distracting.
+- Always respect `prefers-reduced-motion` and the site-wide reduced-motion toggle.
+- Transitions are allowed on interactive elements (links, buttons, interactive cards) and thematic accents (e.g. the LED scrollbar).
 - No all-caps UI text (`text-transform: uppercase` is disallowed outside logo assets).
 - Body text uses dark text tokens (do not use blue/yellow/green/red for body copy).
 - Keep contrast and focus states WCAG 2.2 AA compliant.
@@ -81,7 +82,7 @@ Or run `npm run check` for full validation.
 ## Explicit Do-Not List
 
 - Do not redesign pages, navigation, or information architecture without a PRD.
-- Do not add decorative animation, particle effects, parallax, or motion libraries.
+- Do not add particle effects, parallax, or motion libraries without PRD approval.
 - Do not hardcode colors/spacing/typography where tokens exist.
 - Do not modify schemas, slugs, or reserved routes casually.
 - Do not install packages "just in case".

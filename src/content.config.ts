@@ -95,6 +95,8 @@ const settings = defineCollection({
       .optional()
       .transform((val) => (val === "" ? undefined : val)),
     contactEmail: z.string().optional(),
+    contactPhone: z.string().optional(),
+    ledScrollbarText: z.string().optional(),
     socialLinks: z
       .array(
         z.object({
