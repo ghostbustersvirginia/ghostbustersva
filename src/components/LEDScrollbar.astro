@@ -33,6 +33,8 @@ interface Props {
   pixelSize?: number;
   /** Gap between LED dots in px */
   pixelGap?: number;
+  /** Desktop max width for readability */
+  desktopMaxWidth?: string;
 }
 
 const {
@@ -44,11 +46,13 @@ const {
   ledGlow = "rgba(0, 230, 118, 0.6)",
   pixelSize = 3,
   pixelGap = 1,
+  desktopMaxWidth = "42rem",
 } = Astro.props;
 ---
 
 <div
   class="led-scrollbar"
+  style={`--led-desktop-max-width: ${desktopMaxWidth};`}
   data-led-text={text}
   data-led-pixel-height={String(pixelHeight)}
   data-led-scroll-rate={String(scrollRate)}
@@ -72,9 +76,20 @@ const {
     border-radius: var(--radius-md, 6px);
     border-bottom-right-radius: 0;
     overflow: hidden;
+    box-sizing: border-box;
+    width: 100%;
     padding: 6px 0;
     box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.9);
     position: relative;
+  }
+
+  @media (min-width: 960px) {
+    .led-scrollbar {
+      max-width: min(100%, var(--led-desktop-max-width, 42rem));
+      margin-inline: auto;
+      padding-top: 8px;
+      padding-bottom: 8px;
+    }
   }
 
   .led-viewport {
