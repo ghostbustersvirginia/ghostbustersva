@@ -88,13 +88,12 @@ const {
   }
 
   .led-track.led-track--ready {
-    animation: led-scroll var(--led-duration, 10s) linear infinite;
+    animation: led-scroll var(--led-duration, 10s) steps(var(--led-columns)) infinite;
   }
 
   .led-track img {
     display: block;
     height: auto;
-    image-rendering: pixelated;
   }
 
   @keyframes led-scroll {
@@ -250,6 +249,7 @@ const {
      * ---------------------------------------------------------------- */
     const duration = ledCanvas.width / scrollRate;
     track.style.setProperty("--led-duration", `${duration}s`);
+    track.style.setProperty("--led-columns", sampleW);
     track.classList.add("led-track--ready");
   }
 
