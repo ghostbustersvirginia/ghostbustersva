@@ -20,6 +20,10 @@ const socialLinks = (settings.socialLinks ?? []).filter((link) => isSafeExternal
 const contactEmail = settings.contactEmail || "info@whoyagonnacall.org";
 const contactPhone = settings.contactPhone || "(804) 482-1217";
 const ledScrollbarText = settings.ledScrollbarText || undefined;
+const ledColor = "#ff6b5f";
+const ledGlow = "rgba(255, 107, 95, 0.95)";
+const showLedScrollbar = copy.showLedScrollbar ?? true;
+const ledPlacement = copy.ledPlacement || "after-social";
 
 const pageTitle = copy.pageTitle || "Contact Us";
 const pageIntro =
@@ -207,15 +211,27 @@ const bookingImage = await getResponsiveImageAttrs({
           )
         }
 
-        <div class="led-banner-wrap">
-          <LEDScrollbar text={ledScrollbarText} />
-          <img src="/images/slime.png" alt="" aria-hidden="true" class="led-banner-ooze" />
-        </div>
+        {
+          showLedScrollbar && ledPlacement === "after-social" && (
+            <div class="led-banner-wrap">
+              <LEDScrollbar text={ledScrollbarText} ledColor={ledColor} ledGlow={ledGlow} />
+              <img src="/images/slime.png" alt="" aria-hidden="true" class="led-banner-ooze" />
+            </div>
+          )
+        }
       </div>
     </div>
 
     <div class="page-band page-band--white">
       <div class="container container--mid">
+        {
+          showLedScrollbar && ledPlacement === "before-booking" && (
+            <div class="led-banner-wrap">
+              <LEDScrollbar text={ledScrollbarText} ledColor={ledColor} ledGlow={ledGlow} />
+              <img src="/images/slime.png" alt="" aria-hidden="true" class="led-banner-ooze" />
+            </div>
+          )
+        }
         <SectionHeading>{bookingHeading}</SectionHeading>
         <img
           {...bookingImage}

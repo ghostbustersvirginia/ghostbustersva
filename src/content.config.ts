@@ -318,6 +318,8 @@ const contactPageCopy = z.object({
   pageTitle: z.string(),
   pageIntro: z.string(),
   reachOutText: z.string().optional(),
+  showLedScrollbar: z.boolean().optional(),
+  ledPlacement: z.enum(["after-social", "before-booking"]).optional(),
   bookingHeading: z.string().optional(),
   bookingText: z.string().optional(),
   bookingImage: z.string().optional(),

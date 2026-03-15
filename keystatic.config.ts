@@ -637,6 +637,20 @@ export default config({
           validation: { isRequired: true },
         }),
         reachOutText: fields.text({ label: "Reach Out Text", multiline: true }),
+        showLedScrollbar: fields.checkbox({
+          label: "Show LED Scrollbar",
+          description: "Display the LED marquee on the contact page.",
+          defaultValue: true,
+        }),
+        ledPlacement: fields.select({
+          label: "LED Scrollbar Placement",
+          description: "Choose where the LED marquee appears on the contact page.",
+          options: [
+            { label: "After Social Links", value: "after-social" },
+            { label: "Before Booking Section", value: "before-booking" },
+          ],
+          defaultValue: "after-social",
+        }),
         bookingHeading: fields.text({ label: "Booking Section Heading" }),
         bookingText: fields.text({ label: "Booking Text", multiline: true }),
         bookingImage: fields.image({
