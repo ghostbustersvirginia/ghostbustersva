@@ -249,7 +249,7 @@ const {
      * ---------------------------------------------------------------- */
     const duration = ledCanvas.width / scrollRate;
     track.style.setProperty("--led-duration", `${duration}s`);
-    track.style.setProperty("--led-columns", sampleW);
+    track.style.setProperty("--led-columns", String(sampleW));
     track.classList.add("led-track--ready");
   }
 
