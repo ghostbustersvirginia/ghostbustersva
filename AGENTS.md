@@ -68,9 +68,10 @@ Rendering is fully delegated to the **`readyled`** package (`github:ghostbusters
 
 **How the integration works:**
 
-- The `.astro` frontmatter converts props → `data-led-*` attributes on a bare `<div class="led-scrollbar">`.
-- The `<script>` reads those attributes, writes readyled's **six CSS custom properties** (`--readyled-pixel-size`, `--readyled-pixel-gap`, `--readyled-pixel-color`, `--readyled-pixel-glow`, `--readyled-bg-color`, `--readyled-pixel-off-color`) onto **`document.documentElement`** (readyled always reads from there), then calls `readyLED({ target: el, ... })`.
-- `scrollSpeed` (ms per column) is derived from the `scrollRate` (px/s) prop: `scrollSpeed = (pixelSize + pixelGap) / scrollRate × 1000`.
+- The `.astro` frontmatter writes readyled's **six CSS custom properties** (`--readyled-pixel-size`, `--readyled-pixel-gap`, `--readyled-pixel-color`, `--readyled-pixel-glow`, `--readyled-bg-color`, `--readyled-pixel-off-color`) as **inline `style`** on the `.led-scrollbar` `<div>`. Visual props (`ledColor`, `ledGlow`, `pixelSize`, `pixelGap`) go through CSS, not data attributes.
+- Only four runtime values are passed via `data-*` attributes: `data-led-text`, `data-led-pixel-height`, `data-led-scroll-rate`, `data-led-font`.
+- `pixelSize` and `pixelGap` are **CSS length strings** (e.g. `"3px"`, `"0.1em"`), not numbers — passed directly into the inline style.
+- The `<script>` reads the four data attributes and calls `readyLED({ target: el, text, pixelHeight, font, fallbackFont: "sans-serif", scrollSpeed: scrollRate })`. `scrollRate` (default `40`) is forwarded to readyled's `scrollSpeed` parameter as-is (ms per column).
 - readyled CSS is imported with `@import "readyled/dist/readyled.css"` inside a **`<style is:global>`** block — required because readyled creates `.readyled-sign` / `.readyled-sign-track` DOM nodes dynamically (Astro's scoped CSS would never match them).
 - `prefers-reduced-motion` and `.reduce-motion` guards target `.readyled-sign-track.ready { animation: none }` in the same global block.
 
