@@ -109,13 +109,6 @@ const {
 
   /**
    * Initialise a single LED scrollbar using the readyled library.
-   *
-   * readyled reads visual config (pixel size, gap, colour, glow) from CSS
-   * custom properties on `document.documentElement`, so we set those from the
-   * component's data attributes before calling readyLED().
-   *
-   * scrollSpeed (ms per LED column) is derived from the legacy scrollRate prop
-   * (pixels per second): scrollSpeed = (pixelSize + pixelGap) / scrollRate × 1000
    */
   async function initLEDScrollbar(el: HTMLElement): Promise<void> {
     const text = el.dataset.ledText ?? "";
