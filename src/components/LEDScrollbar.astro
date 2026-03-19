@@ -38,29 +38,39 @@ const {
   font = "Elan Bold",
   ledColor = "#00e676",
   ledGlow = "rgba(0, 230, 118, 0.6)",
-  pixelSize = '3px',
-  pixelGap = '0.1em',
+  pixelSize = "3px",
+  pixelGap = "0.1em",
   desktopMaxWidth = "42rem",
 } = Astro.props;
 ---
 
+<!--
+  Migration note:
+  The prior readyled attempt placed all --readyled-* variables on the
+  component style attribute. That can be confusing in DevTools because the
+  generated readyled nodes read from :root, not this element.
+
+  Working approach:
+  Keep only local layout vars here, and pass readyled config through
+  data attributes so the script can copy them to document.documentElement.
+-->
 <div
   class="led-scrollbar"
-  style={`
-    --led-desktop-max-width: ${desktopMaxWidth};
-    --readyled-pixel-size: ${pixelSize};
-    --readyled-pixel-gap: ${pixelGap};
-    --readyled-pixel-color: ${ledColor};
-    --readyled-pixel-off-color: #121212;
-    --readyled-pixel-glow: ${ledGlow};
-    --readyled-bg-color: #080808;`}
+  style={`--led-desktop-max-width: ${desktopMaxWidth};`}
   data-led-text={text}
   data-led-pixel-height={String(pixelHeight)}
   data-led-scroll-rate={String(scrollRate)}
   data-led-font={font}
+  data-led-pixel-size={pixelSize}
+  data-led-pixel-gap={pixelGap}
+  data-led-pixel-color={ledColor}
+  data-led-pixel-off-color="#121212"
+  data-led-pixel-glow={ledGlow}
+  data-led-bg-color="#080808"
   role="marquee"
   aria-label={text.trim()}
-></div>
+>
+</div>
 
 <!-- Scoped: outer housing only -->
 <style>
@@ -107,6 +117,26 @@ const {
 <script>
   import { readyLED } from "readyled/dist/readyled.js";
 
+  function cssLengthToPx(value: string, el: HTMLElement): number {
+    const trimmed = value.trim().toLowerCase();
+    const numeric = Number.parseFloat(trimmed);
+    if (Number.isNaN(numeric)) return 0;
+
+    if (trimmed.endsWith("px")) return numeric;
+
+    if (trimmed.endsWith("rem")) {
+      const rootFontSize = Number.parseFloat(getComputedStyle(document.documentElement).fontSize);
+      return numeric * (Number.isNaN(rootFontSize) ? 16 : rootFontSize);
+    }
+
+    if (trimmed.endsWith("em")) {
+      const fontSize = Number.parseFloat(getComputedStyle(el).fontSize);
+      return numeric * (Number.isNaN(fontSize) ? 16 : fontSize);
+    }
+
+    return numeric;
+  }
+
   /**
    * Initialise a single LED scrollbar using the readyled library.
    *
@@ -116,26 +146,86 @@ const {
    *
    * scrollSpeed (ms per LED column) is derived from the legacy scrollRate prop
    * (pixels per second): scrollSpeed = (pixelSize + pixelGap) / scrollRate × 1000
+   *
+   * Migration fix summary:
+   * - What failed: passing scrollRate directly to readyLED as scrollSpeed.
+   *   readyLED expects milliseconds per column, not pixels per second.
+   * - What works now: convert using pixel step + requested px/s rate.
    */
   async function initLEDScrollbar(el: HTMLElement): Promise<void> {
+    if (el.dataset.ledInitialized === "true") {
+      return;
+    }
+
     const text = el.dataset.ledText ?? "FAIL";
     const pixelHeight = parseInt(el.dataset.ledPixelHeight ?? "9", 10);
     const scrollRate = parseInt(el.dataset.ledScrollRate ?? "40", 10);
     const font = el.dataset.ledFont ?? "sans-serif";
+    const pixelSize = el.dataset.ledPixelSize ?? "3px";
+    const pixelGap = el.dataset.ledPixelGap ?? "1px";
 
-    await readyLED({
-      target: el,
-      text,
-      pixelHeight,
-      font,
-      fallbackFont: "sans-serif",
-      scrollSpeed: scrollRate,
-    });
+    const pixelColor = el.dataset.ledPixelColor ?? "#00e676";
+    const pixelOffColor = el.dataset.ledPixelOffColor ?? "#121212";
+    const pixelGlow = el.dataset.ledPixelGlow ?? "rgba(0, 230, 118, 0.6)";
+    const bgColor = el.dataset.ledBgColor ?? "#080808";
+
+    // readyled reads these six variables from :root (documentElement), not the
+    // component div. Setting them here ensures the library sees current values.
+    const root = document.documentElement;
+    root.style.setProperty("--readyled-pixel-size", pixelSize);
+    root.style.setProperty("--readyled-pixel-gap", pixelGap);
+    root.style.setProperty("--readyled-pixel-color", pixelColor);
+    root.style.setProperty("--readyled-pixel-off-color", pixelOffColor);
+    root.style.setProperty("--readyled-pixel-glow", pixelGlow);
+    root.style.setProperty("--readyled-bg-color", bgColor);
+
+    // Convert legacy prop semantics (px/second) to readyled semantics
+    // (milliseconds per LED column movement).
+    const pixelStep = cssLengthToPx(pixelSize, el) + cssLengthToPx(pixelGap, el);
+    const safeScrollRate = Number.isFinite(scrollRate) && scrollRate > 0 ? scrollRate : 40;
+    const scrollSpeed = (pixelStep / safeScrollRate) * 1000;
+    const fallbackScrollSpeed = (4 / safeScrollRate) * 1000;
+
+    try {
+      await readyLED({
+        target: el,
+        text,
+        pixelHeight,
+        font,
+        fallbackFont: "sans-serif",
+        scrollSpeed: scrollSpeed > 0 ? scrollSpeed : fallbackScrollSpeed,
+      });
+      el.dataset.ledInitialized = "true";
+    } catch (error) {
+      if (import.meta.env.DEV) {
+        console.error("[LEDScrollbar] readyLED initialization failed", error);
+      }
+    }
   }
 
-  document
-    .querySelectorAll<HTMLElement>(".led-scrollbar")
-    .forEach((el) => {
-      initLEDScrollbar(el);
-    });
+  const ledElements = document.querySelectorAll<HTMLElement>(".led-scrollbar");
+
+  if (ledElements.length > 1 && import.meta.env.DEV) {
+    console.warn(
+      "[LEDScrollbar] Multiple instances detected. Current readyled package reads shared :root CSS vars, so per-instance LED styling is not fully isolated yet.",
+    );
+  }
+
+  ledElements.forEach((el) => {
+    initLEDScrollbar(el);
+  });
+
+  if (import.meta.env.DEV) {
+    const debugKey = "__gbvaReadyLedDebugLogged";
+    const globalState = globalThis as typeof globalThis & {
+      [debugKey]?: boolean;
+    };
+
+    if (!globalState[debugKey]) {
+      console.info(
+        "[LEDScrollbar] Using readyled package renderer (readyled/dist/readyled.js + readyled/dist/readyled.css)",
+      );
+      globalState[debugKey] = true;
+    }
+  }
 </script>
