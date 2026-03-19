@@ -15,7 +15,10 @@ interface Props {
   text?: string;
   /** Number of LED pixel rows — controls vertical resolution */
   pixelHeight?: number;
-  /** Pixels scrolled per second (higher = faster) */
+  /**
+   * Scroll speed in milliseconds per column (lower = faster).
+   * Forwarded to readyled's `scrollSpeed` option.
+   */
   scrollRate?: number;
   /** Font family for text rasterisation */
   font?: string;
@@ -58,7 +61,7 @@ const {
   data-led-pixel-height={String(pixelHeight)}
   data-led-scroll-rate={String(scrollRate)}
   data-led-font={font}
-  role="marquee"
+  role="img"
   aria-label={text.trim()}
 ></div>
 
@@ -129,6 +132,8 @@ const {
   document
     .querySelectorAll<HTMLElement>(".led-scrollbar")
     .forEach((el) => {
-      initLEDScrollbar(el);
+      void initLEDScrollbar(el).catch((error) => {
+        console.error("Failed to initialise LED scrollbar", error);
+      });
     });
 </script>
