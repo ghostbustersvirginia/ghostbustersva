@@ -38,8 +38,8 @@ const {
   font = "Elan Bold",
   ledColor = "#00e676",
   ledGlow = "rgba(0, 230, 118, 0.6)",
-  pixelSize = '3px',
-  pixelGap = '0.1em',
+  pixelSize = "3px",
+  pixelGap = "0.1em",
   desktopMaxWidth = "42rem",
 } = Astro.props;
 ---
@@ -118,7 +118,7 @@ const {
    * (pixels per second): scrollSpeed = (pixelSize + pixelGap) / scrollRate × 1000
    */
   async function initLEDScrollbar(el: HTMLElement): Promise<void> {
-    const text = el.dataset.ledText ?? "FAIL";
+    const text = el.dataset.ledText ?? "";
     const pixelHeight = parseInt(el.dataset.ledPixelHeight ?? "9", 10);
     const scrollRate = parseInt(el.dataset.ledScrollRate ?? "40", 10);
     const font = el.dataset.ledFont ?? "sans-serif";
