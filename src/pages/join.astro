@@ -3,6 +3,8 @@
  * Join page — How to become a member.
  */
 import BaseLayout from "../layouts/BaseLayout.astro";
+import Lightbox from "../components/ui/Lightbox.astro";
+import LightboxImageTrigger from "../components/ui/LightboxImageTrigger.astro";
 import PageHeader from "../components/ui/PageHeader.astro";
 import SectionHeading from "../components/ui/SectionHeading.astro";
 import { getResponsiveImageAttrs } from "../lib/images";
@@ -117,13 +119,21 @@ const whatWeLookForImage = await getResponsiveImageAttrs({
         <SectionHeading>{whatWeLookForHeading}</SectionHeading>
         <p class="prose-text">{whatWeLookForText}</p>
         <div class="gear-layout">
-          <img
-            {...whatWeLookForImage}
+          <LightboxImageTrigger
+            group="join-gallery"
+            src={whatWeLookForImageSrc}
             alt={whatWeLookForImageAlt}
-            class="gear-layout__image"
-            loading="lazy"
-            decoding="async"
-          />
+            buttonClass="page-image-lightbox"
+            overlayClass="page-image-lightbox__overlay"
+          >
+            <img
+              {...whatWeLookForImage}
+              alt={whatWeLookForImageAlt}
+              class="gear-layout__image"
+              loading="lazy"
+              decoding="async"
+            />
+          </LightboxImageTrigger>
           <div class="gear-card">
             <h4 class="gear-card__title">
               {requiredGearHeading}
@@ -161,14 +171,23 @@ const whatWeLookForImage = await getResponsiveImageAttrs({
           </a>
           {applyText.split(applyLinkLabel).slice(1).join(applyLinkLabel)}
         </p>
-        <img
-          {...heroImage}
+        <LightboxImageTrigger
+          group="join-gallery"
+          src={heroImageSrc}
           alt={heroImageAlt}
-          class="section-image"
-          loading="lazy"
-          decoding="async"
-          style="margin-top: var(--space-xl);"
-        />
+          buttonClass="page-image-lightbox"
+          overlayClass="page-image-lightbox__overlay"
+          ariaLabel={`View full image: ${heroImageAlt}`}
+          buttonStyle="margin-top: var(--space-xl);"
+        >
+          <img
+            {...heroImage}
+            alt={heroImageAlt}
+            class="section-image"
+            loading="lazy"
+            decoding="async"
+          />
+        </LightboxImageTrigger>
         <div class="callout">
           <p>
             <strong>{notePrefix}</strong>
@@ -177,6 +196,8 @@ const whatWeLookForImage = await getResponsiveImageAttrs({
         </div>
       </div>
     </div>
+
+    <Lightbox id="join-lightbox" label="Join page image viewer" lightboxGroup="join-gallery" />
   </section>
 </BaseLayout>
 

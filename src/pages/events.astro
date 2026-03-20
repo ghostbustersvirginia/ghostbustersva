@@ -10,17 +10,25 @@ import SectionHeading from "../components/ui/SectionHeading.astro";
 import { getCollection } from "astro:content";
 import { splitEventsByStatus } from "../lib/events";
 import { getPageCopy } from "../lib/page-copy";
+import { getSafeCmsHref } from "../lib/links";
 
 const copy = await getPageCopy("events");
 const allEvents = await getCollection("events");
 const { upcoming, past } = splitEventsByStatus(allEvents);
+const hasUpcoming = upcoming.length > 0;
 
 const pageTitle = copy.pageTitle || "Events";
 const pageIntro =
   copy.pageIntro || "Meet the team, support local charities, and see the Ecto in person.";
 const upcomingHeading = copy.upcomingHeading || "Upcoming Events";
 const pastHeading = copy.pastHeading || "Past Events";
-const emptyText = copy.emptyText || "No events yet — check back soon!";
+const noUpcomingEventsTitle = "No Events Scheduled Yet";
+const noUpcomingEventsBody =
+  copy.emptyText ||
+  "No upcoming or active events are currently scheduled, but take a look at our previous events to see where we’ve been.";
+const noUpcomingEventsContactText =
+  "Want the team at your next event? Reach out and tell us what you have in mind.";
+const noUpcomingEventsContactHref = "/contact";
 const showMoreLabel = copy.showMoreLabel || "Show More";
 const showLessLabel = copy.showLessLabel || "Show Less";
 const metaTitle = copy.metaTitle || "Events";
@@ -32,6 +40,7 @@ const ogDescriptionVal =
   copy.ogDescription ||
   "Find where Ghostbusters Virginia will be next and browse our past appearances.";
 const ogImage = copy.ogImage || "/images/ghostbusters-virginia-pageant-winner-ecto.jpg";
+const safeNoUpcomingEventsContactHref = getSafeCmsHref(noUpcomingEventsContactHref) || "/contact";
 ---
 
 <BaseLayout
@@ -49,24 +58,36 @@ const ogImage = copy.ogImage || "/images/ghostbusters-virginia-pageant-winner-ec
       </div>
     </div>
 
-    {
-      upcoming.length > 0 && (
-        <div class="page-band page-band--alt">
-          <div class="container">
-            <SectionHeading>{upcomingHeading}</SectionHeading>
-            <ul class="event-list" role="list">
-              {upcoming.map((event) => (
-                <EventCard event={event} showCountdown />
-              ))}
-            </ul>
-          </div>
-        </div>
-      )
-    }
+    <div class="page-band page-band--alt">
+      <div class="container">
+        <SectionHeading>{upcomingHeading}</SectionHeading>
+        <ul class="event-list" role="list">
+          {
+            hasUpcoming ? (
+              upcoming.map((event) => <EventCard event={event} showCountdown />)
+            ) : (
+              <li class="event-empty-card">
+                <div class="event-empty-card__content">
+                  <h3 class="event-empty-card__title">{noUpcomingEventsTitle}</h3>
+                  <p class="event-empty-card__text">{noUpcomingEventsBody}</p>
+                  <p class="event-empty-card__text event-empty-card__text--contact">
+                    <a href={safeNoUpcomingEventsContactHref} class="event-empty-card__link">
+                      {noUpcomingEventsContactText}
+                    </a>
+                  </p>
+                </div>
+              </li>
+            )
+          }
+        </ul>
+      </div>
+    </div>
 
     {
       past.length > 0 && (
-        <div class="page-band page-band--white">
+        <div
+          class:list={["page-band", "page-band--white", !hasUpcoming && "page-band--past-compact"]}
+        >
           <div class="container">
             <SectionHeading>{pastHeading}</SectionHeading>
             <ul class="event-list event-list--past" id="past-events-list" role="list">
@@ -98,15 +119,18 @@ const ogImage = copy.ogImage || "/images/ghostbusters-virginia-pageant-winner-ec
       )
     }
 
-    {
-      allEvents.length === 0 && (
-        <div class="page-band page-band--alt">
-          <div class="container container--mid">
-            <p class="empty-state">{emptyText}</p>
-          </div>
+    <div class="page-band page-band--alt">
+      <div class="container container--mid">
+        <div class="event-cta-card">
+          <p class="prose-text event-cta-text">
+            Interested in having Ghostbusters Virginia appear at your event, convention, or
+            community gathering? We love supporting charitable and community causes across the
+            Commonwealth. Contact us today to learn more.
+          </p>
+          <Button href="/contact" variant="primary">Contact Us</Button>
         </div>
-      )
-    }
+      </div>
+    </div>
   </section>
 </BaseLayout>
 
@@ -135,6 +159,49 @@ const ogImage = copy.ogImage || "/images/ghostbusters-virginia-pageant-winner-ec
     gap: var(--space-xl);
   }
 
+  .event-empty-card {
+    list-style: none;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-panel);
+  }
+
+  .event-empty-card__content {
+    padding: var(--space-xl);
+    text-align: center;
+  }
+
+  .event-empty-card__title {
+    margin: 0;
+    font-family: var(--font-brand-title);
+    font-size: clamp(var(--text-xl), 2.4vw, var(--text-2xl));
+    color: var(--color-text);
+  }
+
+  .event-empty-card__text {
+    margin: var(--space-md) 0 0;
+    color: var(--color-text-muted);
+    line-height: var(--leading-loose);
+  }
+
+  .event-empty-card__text--contact {
+    margin-top: var(--space-lg);
+    font-weight: var(--weight-medium);
+  }
+
+  .event-empty-card__link {
+    color: var(--color-accent);
+    text-decoration: none;
+    transition: color var(--transition-fast);
+  }
+
+  .event-empty-card__link:hover,
+  .event-empty-card__link:focus-visible {
+    color: var(--color-gb-green);
+    text-decoration: underline;
+  }
+
   .past-hidden {
     display: none;
   }
@@ -143,5 +210,27 @@ const ogImage = copy.ogImage || "/images/ghostbusters-virginia-pageant-winner-ec
     display: flex;
     justify-content: center;
     margin-top: var(--space-xl);
+  }
+
+  .page-band--past-compact {
+    padding-top: 0;
+  }
+
+  .event-cta-card {
+    max-width: var(--content-width-mid);
+    margin: 0 auto;
+    padding: var(--space-2xl);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-border);
+    background: var(--color-surface);
+    box-shadow: var(--shadow-panel);
+    display: grid;
+    justify-items: center;
+    gap: var(--space-lg);
+    text-align: center;
+  }
+
+  .event-cta-text {
+    margin-bottom: 0;
   }
 </style>

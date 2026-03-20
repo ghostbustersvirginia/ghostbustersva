@@ -4,9 +4,10 @@
  */
 import BaseLayout from "../layouts/BaseLayout.astro";
 import Button from "../components/ui/Button.astro";
+import Lightbox from "../components/ui/Lightbox.astro";
+import LightboxImageTrigger from "../components/ui/LightboxImageTrigger.astro";
 import PageHeader from "../components/ui/PageHeader.astro";
 import SectionHeading from "../components/ui/SectionHeading.astro";
-import SwagGrid from "../components/SwagGrid.astro";
 import { getResponsiveImageAttrs } from "../lib/images";
 import { getSafeCmsHref, isSafeExternalUrl } from "../lib/links";
 import { getSiteSettings } from "../lib/settings";
@@ -14,10 +15,10 @@ import { getPageCopy } from "../lib/page-copy";
 
 const copy = await getPageCopy("donate");
 const settings = await getSiteSettings();
-const storeUrl = settings.storeUrl || "https://www.teepublic.com/user/ghostbusters-virginia";
-const safeStoreUrl = isSafeExternalUrl(storeUrl)
-  ? storeUrl
-  : "https://www.teepublic.com/user/ghostbusters-virginia";
+const defaultDonateUrl =
+  "https://secure2.wish.org/site/TR;jsessionid=00000000.app20002b?team_id=58435&fr_id=7464&pg=team&NONCE_TOKEN=16AE47C509ECB858ECB963CD3D174802";
+const donateUrl = settings.donateUrl || defaultDonateUrl;
+const safeDonateUrl = isSafeExternalUrl(donateUrl) ? donateUrl : defaultDonateUrl;
 
 const pageTitle = copy.pageTitle || "Support Our Mission";
 const pageIntro =
@@ -27,26 +28,59 @@ const donationHeading = copy.donationHeading || "Make a Donation";
 const donationText =
   copy.donationText ||
   "Ghostbusters Virginia is a volunteer-run, community-focused franchise. Your generous donations help us fund charitable events, maintain the Ecto, purchase supplies for community outreach, and keep the franchise running strong.";
-const donationCtaLabel = copy.donationCtaLabel || "Donate";
-const swagHeading = copy.swagHeading || "Get Some Swag";
-const swagIntro =
-  copy.swagIntro ||
-  "Rep the franchise! Every purchase supports Ghostbusters Virginia. Each item opens our TeePublic store in a new tab.";
-const swagCtaLabel = copy.swagCtaLabel || "Visit Our Store";
+const donationCardHeading = copy.donationCardHeading || "Often Donated to Toys for Tots";
+const donationItems = copy.donationItems || [
+  "New, unwrapped toys",
+  "Board games and puzzles",
+  "Action figures and dolls",
+  "Building sets and STEM kits",
+  "Books and educational toys",
+  "Sports balls and outdoor play items",
+];
+const donationCtaLabel = copy.donationCtaLabel || "Donate to Make-A-Wish";
+const donationImageSrc = "/images/ghostbusters-virginia-toys-for-tots-drive.jpg";
+const donationImageAlt = "Ghostbusters Virginia members supporting a Toys for Tots donation drive";
 const communityHeading = copy.communityHeading || "Community Partners";
 const communityText =
   copy.communityText ||
   "Ghostbusters Virginia partners with schools, nonprofits, shelters, and event organizers to bring positive, family-friendly experiences to communities.";
+const communityParagraphs = String(communityText)
+  .split(/\n\s*\n+/)
+  .map((paragraph) => paragraph.trim())
+  .filter(Boolean);
 const volunteerHeading = copy.volunteerHeading || "Volunteer With Us";
 const volunteerText =
   copy.volunteerText ||
   "Volunteers help Ghostbusters Virginia deliver welcoming, community-first events that raise awareness and support local causes.";
+const volunteerParagraphs = String(volunteerText)
+  .split(/\n\s*\n+/)
+  .map((paragraph) => paragraph.trim())
+  .filter(Boolean);
 const volunteerCtaLabel = copy.volunteerCtaLabel || "Join the Team";
 const volunteerCtaHref = copy.volunteerCtaHref || "/join";
+const initiativeHeading = copy.initiativeHeading || "Community Initiatives";
+const initiativeTitle = copy.initiativeTitle || "Proton Pets";
+const initiativeText =
+  copy.initiativeText ||
+  "Proton Pets, spearheaded by Ghostbusters Virginia, is a worldwide initiative supporting pets and animal welfare through pet food drives, outreach, and pantry support in local communities.";
+const initiativeDetailText =
+  copy.initiativeDetailText ||
+  "Pet pantries help families facing financial hardship keep their pets healthy and at home by providing essential food and supplies. This support helps prevent shelter surrenders and protects the bond between pets and the people who love them.";
+const initiativeDescription = `${initiativeText} ${initiativeDetailText}`;
+const initiativeLinkLabel = copy.initiativeLinkLabel || "Learn About Proton Pets";
+const initiativeLinkUrl = copy.initiativeLinkUrl || "https://whoyagonnacall.org/proton-pets";
+const initiativeImageSrc =
+  copy.initiativeImage || "/images/news/ghostbusters-virginia-proton-pets-rescue.jpeg";
+const initiativeImageAlt =
+  copy.initiativeImageAlt ||
+  "Proton Pets — Ghostbusters Virginia community fundraiser for local pet shelters";
 const communityCtaLabel = copy.communityCtaLabel || "Contact Us";
 const communityCtaHref = copy.communityCtaHref || "/contact";
 const safeCommunityCtaHref = getSafeCmsHref(communityCtaHref) || "/contact";
 const safeVolunteerCtaHref = getSafeCmsHref(volunteerCtaHref) || "/join";
+const safeInitiativeLinkUrl = isSafeExternalUrl(initiativeLinkUrl)
+  ? initiativeLinkUrl
+  : "https://whoyagonnacall.org/proton-pets";
 const communityImageSrc =
   copy.communityImage || "/images/ghostbusters-virginia-toys-for-tots-drive.jpg";
 const communityImageAlt =
@@ -58,7 +92,7 @@ const volunteerImageAlt =
 const metaTitle = copy.metaTitle || "Donate";
 const metaDescription =
   copy.metaDescription ||
-  "Support Ghostbusters Virginia through donations, swag purchases, and community partnerships.";
+  "Support Ghostbusters Virginia through donations, community partnerships, and volunteer opportunities.";
 const ogTitleVal = copy.ogTitle || "Donate | Ghostbusters Virginia";
 const ogDescriptionVal =
   copy.ogDescription ||
@@ -75,6 +109,22 @@ const communityImage = await getResponsiveImageAttrs({
 });
 const volunteerImage = await getResponsiveImageAttrs({
   src: volunteerImageSrc,
+  widths: [640, 960, 1200],
+  sizes: "(max-width: 768px) 100vw, 864px",
+  width: 1200,
+  height: 675,
+  quality: 75,
+});
+const donationImage = await getResponsiveImageAttrs({
+  src: donationImageSrc,
+  widths: [640, 960, 1200],
+  sizes: "(max-width: 768px) 100vw, 432px",
+  width: 1200,
+  height: 1200,
+  quality: 75,
+});
+const initiativeImage = await getResponsiveImageAttrs({
+  src: initiativeImageSrc,
   widths: [640, 960, 1200],
   sizes: "(max-width: 768px) 100vw, 864px",
   width: 1200,
@@ -101,42 +151,66 @@ const volunteerImage = await getResponsiveImageAttrs({
     <div class="page-band page-band--alt">
       <div class="container container--mid">
         <SectionHeading>{donationHeading}</SectionHeading>
-        <div class="highlight-card highlight-card--centered">
-          <p class="prose-text">{donationText}</p>
-          <div class="donate-cta">
-            <Button variant="secondary" disabled> {donationCtaLabel} </Button>
+        <p class="prose-text">{donationText}</p>
+        <div class="donation-layout">
+          <LightboxImageTrigger
+            group="donate-gallery"
+            src={donationImageSrc}
+            alt={donationImageAlt}
+            buttonClass="page-image-lightbox"
+            overlayClass="page-image-lightbox__overlay"
+          >
+            <img
+              {...donationImage}
+              alt={donationImageAlt}
+              class="donation-layout__image"
+              loading="lazy"
+              decoding="async"
+            />
+          </LightboxImageTrigger>
+          <div class="donation-card">
+            <h4 class="donation-card__title">
+              {donationCardHeading}
+              <img src="/images/slime.png" alt="" aria-hidden="true" class="donation-card__ooze" />
+            </h4>
+            <ul class="donation-list" role="list">
+              {donationItems.map((item) => <li>{item}</li>)}
+            </ul>
+            <div class="donate-cta donate-cta--card">
+              <Button variant="secondary" href={safeDonateUrl} external>
+                {donationCtaLabel}
+              </Button>
+            </div>
           </div>
         </div>
       </div>
     </div>
 
     <div class="page-band page-band--white">
-      <div class="container">
-        <SectionHeading id="swag">{swagHeading}</SectionHeading>
-        <SwagGrid
-          subtitle={swagIntro}
-          ctaLabel={swagCtaLabel}
-          ctaHref={safeStoreUrl}
-          ctaVariant="secondary"
-        />
-      </div>
-    </div>
-
-    <div class="page-band page-band--alt">
       <div class="container container--wide">
         <SectionHeading>{communityHeading}</SectionHeading>
         <div class="zigzag">
           <div class="zigzag__media">
-            <img
-              {...communityImage}
+            <LightboxImageTrigger
+              group="donate-gallery"
+              src={communityImageSrc}
               alt={communityImageAlt}
-              class="zigzag__img"
-              loading="lazy"
-              decoding="async"
-            />
+              buttonClass="page-image-lightbox"
+              overlayClass="page-image-lightbox__overlay"
+            >
+              <img
+                {...communityImage}
+                alt={communityImageAlt}
+                class="zigzag__img"
+                loading="lazy"
+                decoding="async"
+              />
+            </LightboxImageTrigger>
           </div>
           <div class="zigzag__text">
-            <p class="prose-text">{communityText}</p>
+            <div class="zigzag__copy">
+              {communityParagraphs.map((paragraph) => <p class="prose-text">{paragraph}</p>)}
+            </div>
             <div class="donate-cta donate-cta--right">
               <Button variant="secondary" href={safeCommunityCtaHref}>
                 {communityCtaLabel}
@@ -147,21 +221,31 @@ const volunteerImage = await getResponsiveImageAttrs({
       </div>
     </div>
 
-    <div class="page-band page-band--white">
+    <div class="page-band page-band--alt">
       <div class="container container--wide">
         <SectionHeading>{volunteerHeading}</SectionHeading>
         <div class="zigzag zigzag--reverse">
           <div class="zigzag__media">
-            <img
-              {...volunteerImage}
+            <LightboxImageTrigger
+              group="donate-gallery"
+              src={volunteerImageSrc}
               alt={volunteerImageAlt}
-              class="zigzag__img"
-              loading="lazy"
-              decoding="async"
-            />
+              buttonClass="page-image-lightbox"
+              overlayClass="page-image-lightbox__overlay"
+            >
+              <img
+                {...volunteerImage}
+                alt={volunteerImageAlt}
+                class="zigzag__img"
+                loading="lazy"
+                decoding="async"
+              />
+            </LightboxImageTrigger>
           </div>
           <div class="zigzag__text">
-            <p class="prose-text">{volunteerText}</p>
+            <div class="zigzag__copy">
+              {volunteerParagraphs.map((paragraph) => <p class="prose-text">{paragraph}</p>)}
+            </div>
             <div class="donate-cta">
               <Button variant="secondary-alt" href={safeVolunteerCtaHref}>
                 {volunteerCtaLabel}
@@ -171,6 +255,50 @@ const volunteerImage = await getResponsiveImageAttrs({
         </div>
       </div>
     </div>
+
+    <div class="page-band page-band--white">
+      <div class="container container--wide">
+        <SectionHeading>{initiativeHeading}</SectionHeading>
+        <ul class="initiative-list" role="list">
+          <li class="initiative-item">
+            <article class="initiative-card">
+              <div class="initiative-card__image-wrap">
+                <LightboxImageTrigger
+                  group="donate-gallery"
+                  src={initiativeImageSrc}
+                  alt={initiativeImageAlt}
+                  buttonClass="page-image-lightbox"
+                  overlayClass="page-image-lightbox__overlay"
+                >
+                  <img
+                    {...initiativeImage}
+                    alt={initiativeImageAlt}
+                    class="initiative-card__image"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                </LightboxImageTrigger>
+              </div>
+              <div class="initiative-card__body">
+                <h3 class="initiative-card__title">{initiativeTitle}</h3>
+                <p class="prose-text">{initiativeDescription}</p>
+                <div class="donate-cta donate-cta--initiative">
+                  <Button variant="secondary" href={safeInitiativeLinkUrl} external>
+                    {initiativeLinkLabel}
+                  </Button>
+                </div>
+              </div>
+            </article>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <Lightbox
+      id="donate-lightbox"
+      label="Donate page image viewer"
+      lightboxGroup="donate-gallery"
+    />
   </section>
 </BaseLayout>
 
@@ -182,23 +310,7 @@ const volunteerImage = await getResponsiveImageAttrs({
     line-height: var(--leading-loose);
   }
 
-  .highlight-card {
-    background: var(--color-surface);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
-    padding: var(--space-xl) var(--space-2xl);
-    box-shadow: var(--shadow-panel);
-  }
-
-  .highlight-card--alt {
-    background: var(--color-surface-alt);
-  }
-
-  .highlight-card--centered {
-    text-align: center;
-  }
-
-  .highlight-card .prose-text {
+  .prose-text {
     margin-bottom: 0;
   }
 
@@ -208,11 +320,112 @@ const volunteerImage = await getResponsiveImageAttrs({
     margin-top: var(--space-xl);
   }
 
+  .donation-layout {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-3xl);
+    margin-top: var(--space-xl);
+    align-items: start;
+  }
+
+  .donation-layout__image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: var(--radius-md);
+    display: block;
+  }
+
+  .donation-card {
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-panel);
+  }
+
+  .donation-card__title {
+    font-family: var(--font-display);
+    font-size: var(--text-lg);
+    font-weight: var(--weight-bold);
+    letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
+    color: var(--color-text);
+    margin: 0;
+    padding: var(--space-lg) var(--space-2xl);
+    background: var(--color-bg);
+    border-bottom: 1px solid var(--color-border);
+    position: relative;
+    overflow: visible;
+  }
+
+  .donation-card__ooze {
+    position: absolute;
+    bottom: 0;
+    right: -4px;
+    width: 68px;
+    height: auto;
+    pointer-events: none;
+    z-index: 1;
+    transform: translateY(100%);
+    opacity: 0.75;
+  }
+
+  .donation-list {
+    list-style: none;
+    margin: 0;
+    padding: var(--space-xl) var(--space-2xl);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+  }
+
+  .donation-list li {
+    position: relative;
+    padding-left: 2rem;
+    padding-block: var(--space-xs);
+    font-family: var(--font-body);
+    font-size: var(--text-base);
+    line-height: var(--leading-normal);
+    color: var(--color-text-muted);
+    cursor: default;
+    transition: color var(--transition-base);
+  }
+
+  .donation-list li:hover {
+    color: var(--color-text);
+  }
+
+  .donation-list li::before {
+    content: "\2714";
+    position: absolute;
+    left: 0.25rem;
+    top: var(--space-xs);
+    font-weight: var(--weight-bold);
+    font-size: var(--text-base);
+    color: var(--color-gb-green);
+    display: inline-block;
+    transition: transform var(--transition-base);
+  }
+
+  .donation-list li:hover::before {
+    transform: scale(1.4);
+  }
+
+  .donate-cta--card {
+    margin-top: 0;
+    padding: 0 var(--space-2xl) var(--space-2xl);
+    justify-content: center;
+  }
+
   .zigzag {
     display: grid;
     grid-template-columns: 1fr;
     gap: var(--space-xl);
-    align-items: start;
+    align-items: stretch;
   }
 
   .zigzag__img {
@@ -226,7 +439,16 @@ const volunteerImage = await getResponsiveImageAttrs({
   .zigzag__text {
     display: flex;
     flex-direction: column;
-    justify-content: flex-start;
+    justify-content: space-between;
+  }
+
+  .zigzag__copy {
+    display: grid;
+    gap: var(--space-md);
+  }
+
+  .zigzag__copy .prose-text {
+    margin: 0;
   }
 
   .zigzag__text .donate-cta {
@@ -237,6 +459,74 @@ const volunteerImage = await getResponsiveImageAttrs({
     justify-content: flex-end;
   }
 
+  .initiative-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .initiative-item {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    transition:
+      border-color var(--transition-base),
+      box-shadow var(--transition-base);
+  }
+
+  .initiative-item:hover {
+    border-color: var(--color-hover-border);
+    box-shadow: var(--shadow-hover);
+  }
+
+  .initiative-card {
+    display: flex;
+    gap: var(--space-xl);
+    align-items: flex-start;
+    padding: var(--space-xl);
+  }
+
+  .initiative-card__image-wrap {
+    flex-shrink: 0;
+    width: 360px;
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+  }
+
+  .initiative-card__image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    aspect-ratio: 16 / 10;
+  }
+
+  .initiative-card__body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+    flex: 1;
+  }
+
+  .initiative-card__body .prose-text {
+    margin: 0;
+  }
+
+  .initiative-card__title {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: var(--text-2xl);
+    font-weight: var(--weight-bold);
+    color: var(--color-text);
+    line-height: var(--leading-tight);
+  }
+
+  .donate-cta--initiative {
+    justify-content: flex-end;
+    margin-top: 0;
+  }
+
   .container--wide {
     max-width: 960px;
     margin-inline: auto;
@@ -244,6 +534,10 @@ const volunteerImage = await getResponsiveImageAttrs({
   }
 
   @media (min-width: 769px) {
+    .donation-layout {
+      grid-template-columns: 1fr 1fr;
+    }
+
     .zigzag {
       grid-template-columns: 1fr 1fr;
       gap: var(--space-3xl);
@@ -261,6 +555,22 @@ const volunteerImage = await getResponsiveImageAttrs({
   @media (max-width: 768px) {
     .zigzag__text .donate-cta {
       justify-content: center;
+    }
+
+    .initiative-card {
+      flex-direction: column;
+      gap: var(--space-lg);
+      padding: var(--space-lg);
+    }
+
+    .initiative-card__image-wrap {
+      width: 100%;
+      max-height: 220px;
+    }
+
+    .donate-cta--initiative {
+      justify-content: flex-start;
+      width: 100%;
     }
   }
 </style>

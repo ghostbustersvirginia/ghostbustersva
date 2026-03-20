@@ -26,7 +26,6 @@ export interface SiteSettings {
   siteName: string;
   siteDescription: string;
   donateUrl: string;
-  storeUrl: string;
   contactEmail: string;
   contactPhone: string;
   ledScrollbarText: string;
@@ -89,7 +88,6 @@ export async function getSiteSettings(): Promise<SiteSettings> {
     siteName: d.siteName || siteConfig.title,
     siteDescription: d.siteDescription || siteConfig.description,
     donateUrl: d.donateUrl ?? "",
-    storeUrl: d.storeUrl ?? "",
     contactEmail: d.contactEmail ?? "",
     contactPhone: d.contactPhone ?? "",
     ledScrollbarText: d.ledScrollbarText ?? "",

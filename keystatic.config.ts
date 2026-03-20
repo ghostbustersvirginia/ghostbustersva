@@ -157,7 +157,7 @@ export default config({
       path: "src/content/gallery/*",
       format: { contentField: "body" },
       entryLayout: "form",
-      columns: ["alt", "date"],
+      columns: ["image", "alt", "date"],
       schema: {
         title: fields.slug({
           name: {
@@ -296,30 +296,15 @@ export default config({
           multiline: true,
           validation: { isRequired: true },
         }),
-        heroImage: fields.image({
-          label: "Hero Background Image",
-          directory: "public/images/pages",
-          publicPath: "/images/pages/",
-        }),
         heroLogoSrc: fields.text({
           label: "Hero Logo Path",
           description: "Path to the logo image in the hero section (e.g. /images/logo.png).",
         }),
         heroLogoAlt: fields.text({ label: "Hero Logo Alt Text" }),
-        heroPrimaryCtaLabel: fields.text({ label: "Hero Primary CTA Label" }),
-        heroPrimaryCtaHref: fields.text({
-          label: "Hero Primary CTA URL",
-          validation: internalPathValidation,
-        }),
         heroSecondaryCtaLabel: fields.text({ label: "Hero Secondary CTA Label" }),
         heroSecondaryCtaHref: fields.text({
           label: "Hero Secondary CTA URL",
           validation: internalPathValidation,
-        }),
-        heroPurposeItems: fields.array(fields.text({ label: "Purpose Item" }), {
-          label: "Hero Purpose Items",
-          description: "Key facts displayed below the hero tagline.",
-          itemLabel: (props) => props.value || "Item",
         }),
         missionHeading: fields.text({ label: "Mission Heading" }),
         missionSubtitle: fields.text({ label: "Mission Subtitle", multiline: true }),
@@ -365,6 +350,26 @@ export default config({
         }),
         eventsHeading: fields.text({ label: "Events Heading" }),
         eventsSubtitle: fields.text({ label: "Events Subtitle", multiline: true }),
+        noUpcomingEventsTitle: fields.text({
+          label: "No Events Card Title",
+          description: "Shown on the Home page only when there are no active or upcoming events.",
+        }),
+        noUpcomingEventsBody: fields.text({
+          label: "No Events Card Body",
+          description: "Shown on the Home page only when there are no active or upcoming events.",
+          multiline: true,
+        }),
+        noUpcomingEventsContactText: fields.text({
+          label: "No Events Card Contact Text",
+          description: "Shown on the Home page only when there are no active or upcoming events.",
+          multiline: true,
+        }),
+        noUpcomingEventsContactHref: fields.text({
+          label: "No Events Card Contact URL",
+          description:
+            "Link used in the No Events card; shown only when there are no active or upcoming events.",
+          validation: internalPathValidation,
+        }),
         eventsCtaLabel: fields.text({ label: "Events CTA Label" }),
         eventsCtaHref: fields.text({
           label: "Events CTA URL",
@@ -374,8 +379,8 @@ export default config({
         joinSubtitle: fields.text({ label: "Join Subtitle", multiline: true }),
         joinImage: fields.image({
           label: "Join Section Image",
-          directory: "public/images/pages",
-          publicPath: "/images/pages/",
+          directory: "public/images",
+          publicPath: "/images/",
         }),
         joinImageAlt: fields.text({ label: "Join Section Image Alt" }),
         joinQuoteLineOne: fields.text({ label: "Join Quote Line 1", multiline: true }),
@@ -385,10 +390,7 @@ export default config({
           label: "Join CTA URL",
           validation: internalPathValidation,
         }),
-        swagHeading: fields.text({ label: "Swag Heading" }),
-        swagSubtitle: fields.text({ label: "Swag Subtitle", multiline: true }),
-        swagCtaLabel: fields.text({ label: "Swag CTA Label" }),
-        swagCtaHref: fields.url({ label: "Swag CTA URL" }),
+        supportHeading: fields.text({ label: "Support Section Heading" }),
         metaTitle: fields.text({ label: "Meta Title", description: "Browser tab title." }),
         metaDescription: fields.text({
           label: "Meta Description",
@@ -406,8 +408,8 @@ export default config({
         }),
         ogImage: fields.image({
           label: "Social Share Image",
-          directory: "public/images/pages",
-          publicPath: "/images/pages/",
+          directory: "public/images",
+          publicPath: "/images/",
         }),
       },
     }),
@@ -435,21 +437,16 @@ export default config({
         }),
         teamImageAlt: fields.text({ label: "Who We Are Image Alt Text" }),
         missionHeading: fields.text({ label: "Mission Section Heading" }),
+        missionCardTitle: fields.text({ label: "Mission Card Title" }),
         missionItems: fields.array(fields.text({ label: "Mission Item" }), {
           label: "Mission Items",
           itemLabel: (props) => props.value || "Item",
         }),
-        initiativesHeading: fields.text({ label: "Initiatives Section Heading" }),
-        initiativeTitle: fields.text({ label: "Initiative Title" }),
-        protonPetsImage: fields.image({
-          label: "Proton Pets Image",
-          directory: "public/images/pages",
-          publicPath: "/images/pages/",
+        missionCtaLabel: fields.text({ label: "Mission CTA Label" }),
+        missionCtaHref: fields.text({
+          label: "Mission CTA URL",
+          validation: internalPathValidation,
         }),
-        protonPetsImageAlt: fields.text({ label: "Proton Pets Image Alt Text" }),
-        protonPetsText: fields.text({ label: "Proton Pets Description", multiline: true }),
-        protonPetsLinkLabel: fields.text({ label: "Proton Pets Link Label" }),
-        protonPetsLinkUrl: fields.url({ label: "Proton Pets Link URL" }),
         metaTitle: fields.text({ label: "Meta Title", description: "Browser tab title." }),
         metaDescription: fields.text({
           label: "Meta Description",
@@ -467,8 +464,8 @@ export default config({
         }),
         ogImage: fields.image({
           label: "Social Share Image",
-          directory: "public/images/pages",
-          publicPath: "/images/pages/",
+          directory: "public/images",
+          publicPath: "/images/",
         }),
       },
     }),
@@ -536,8 +533,8 @@ export default config({
         }),
         ogImage: fields.image({
           label: "Social Share Image",
-          directory: "public/images/pages",
-          publicPath: "/images/pages/",
+          directory: "public/images",
+          publicPath: "/images/",
         }),
       },
     }),
@@ -576,8 +573,8 @@ export default config({
         }),
         ogImage: fields.image({
           label: "Social Share Image",
-          directory: "public/images/pages",
-          publicPath: "/images/pages/",
+          directory: "public/images",
+          publicPath: "/images/",
         }),
       },
     }),
@@ -618,8 +615,8 @@ export default config({
         }),
         ogImage: fields.image({
           label: "Social Share Image",
-          directory: "public/images/pages",
-          publicPath: "/images/pages/",
+          directory: "public/images",
+          publicPath: "/images/",
         }),
       },
     }),
@@ -636,7 +633,6 @@ export default config({
           multiline: true,
           validation: { isRequired: true },
         }),
-        reachOutText: fields.text({ label: "Reach Out Text", multiline: true }),
         showLedScrollbar: fields.checkbox({
           label: "Show LED Scrollbar",
           description: "Display the LED marquee on the contact page.",
@@ -652,14 +648,12 @@ export default config({
           defaultValue: "after-social",
         }),
         bookingHeading: fields.text({ label: "Booking Section Heading" }),
-        bookingText: fields.text({ label: "Booking Text", multiline: true }),
         bookingImage: fields.image({
           label: "Booking Section Image",
           directory: "public/images",
           publicPath: "/images/",
         }),
         bookingImageAlt: fields.text({ label: "Booking Image Alt Text" }),
-        bookingCtaLabel: fields.text({ label: "Booking CTA Label" }),
         metaTitle: fields.text({ label: "Meta Title", description: "Browser tab title." }),
         metaDescription: fields.text({
           label: "Meta Description",
@@ -677,8 +671,8 @@ export default config({
         }),
         ogImage: fields.image({
           label: "Social Share Image",
-          directory: "public/images/pages",
-          publicPath: "/images/pages/",
+          directory: "public/images",
+          publicPath: "/images/",
         }),
       },
     }),
@@ -697,10 +691,12 @@ export default config({
         }),
         donationHeading: fields.text({ label: "Donation Section Heading" }),
         donationText: fields.text({ label: "Donation Section Text", multiline: true }),
+        donationCardHeading: fields.text({ label: "Donation Card Heading" }),
+        donationItems: fields.array(fields.text({ label: "Donation Item" }), {
+          label: "Donation Card Items",
+          itemLabel: (props) => props.value || "Item",
+        }),
         donationCtaLabel: fields.text({ label: "Donate CTA Label" }),
-        swagHeading: fields.text({ label: "Swag Section Heading" }),
-        swagIntro: fields.text({ label: "Swag Intro Text", multiline: true }),
-        swagCtaLabel: fields.text({ label: "Swag CTA Label" }),
         communityHeading: fields.text({ label: "Community Partners Heading" }),
         communityText: fields.text({ label: "Community Partners Text", multiline: true }),
         communityCtaLabel: fields.text({ label: "Community CTA Label" }),
@@ -727,6 +723,24 @@ export default config({
           publicPath: "/images/",
         }),
         volunteerImageAlt: fields.text({ label: "Volunteer Image Alt Text" }),
+        initiativeHeading: fields.text({ label: "Community Initiatives Heading" }),
+        initiativeTitle: fields.text({ label: "Initiative Title" }),
+        initiativeText: fields.text({ label: "Initiative Intro Text", multiline: true }),
+        initiativeDetailText: fields.text({
+          label: "Initiative Detail Text",
+          multiline: true,
+        }),
+        initiativeLinkLabel: fields.text({ label: "Initiative CTA Label" }),
+        initiativeLinkUrl: fields.text({
+          label: "Initiative CTA URL",
+          validation: externalHttpsValidation,
+        }),
+        initiativeImage: fields.image({
+          label: "Initiative Image",
+          directory: "public/images",
+          publicPath: "/images/",
+        }),
+        initiativeImageAlt: fields.text({ label: "Initiative Image Alt Text" }),
         metaTitle: fields.text({ label: "Meta Title", description: "Browser tab title." }),
         metaDescription: fields.text({
           label: "Meta Description",
@@ -744,8 +758,8 @@ export default config({
         }),
         ogImage: fields.image({
           label: "Social Share Image",
-          directory: "public/images/pages",
-          publicPath: "/images/pages/",
+          directory: "public/images",
+          publicPath: "/images/",
         }),
       },
     }),
@@ -797,8 +811,8 @@ export default config({
         }),
         ogImage: fields.image({
           label: "Social Share Image",
-          directory: "public/images/pages",
-          publicPath: "/images/pages/",
+          directory: "public/images",
+          publicPath: "/images/",
         }),
       },
     }),
@@ -826,10 +840,6 @@ export default config({
         donateUrl: fields.url({
           label: "Donate URL",
           description: "Link to the donation page or payment processor.",
-        }),
-        storeUrl: fields.url({
-          label: "Store URL",
-          description: "Link to the merchandise store (e.g. TeePublic).",
         }),
         contactEmail: fields.text({
           label: "Contact Email",

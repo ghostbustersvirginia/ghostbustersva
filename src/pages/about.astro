@@ -5,13 +5,14 @@
  *
  * Layout: Zigzag alternating image/text rows with mixed aspect ratios
  * (landscape + portrait) for visual variety. Images open in a lightbox.
- * Followed by a mission callout and community initiatives section.
+ * Followed by a mission callout.
  */
 import BaseLayout from "../layouts/BaseLayout.astro";
 import Button from "../components/ui/Button.astro";
 import Lightbox from "../components/ui/Lightbox.astro";
 import PageHeader from "../components/ui/PageHeader.astro";
 import SectionHeading from "../components/ui/SectionHeading.astro";
+import LightboxImageTrigger from "../components/ui/LightboxImageTrigger.astro";
 import { getResponsiveImageAttrs } from "../lib/images";
 import { getPageCopy } from "../lib/page-copy";
 
@@ -20,16 +21,6 @@ const copy = await getPageCopy("about");
 const pageTitle = copy.pageTitle || "About Ghostbusters Virginia";
 const pageIntro = copy.pageIntro || "Who we are, where we came from, and why we do what we do.";
 
-const protonPetsImageSrc =
-  copy.protonPetsImage || "/images/news/ghostbusters-virginia-proton-pets-rescue.jpeg";
-const protonPetsImageAlt =
-  copy.protonPetsImageAlt ||
-  "Proton Pets \u2014 Ghostbusters Virginia community fundraiser for local pet shelters";
-const protonPetsText =
-  copy.protonPetsText ||
-  "Every April, Ghostbusters Virginia calls on franchises across the globe to join Proton Pets \u2014 a month-long, community-driven fundraiser supporting local pet shelters and pet pantries.";
-const protonPetsLinkLabel = copy.protonPetsLinkLabel || "Learn About Proton Pets";
-const protonPetsLinkUrl = copy.protonPetsLinkUrl || "https://whoyagonnacall.org/proton-pets";
 const ogImage = copy.ogImage || "/images/ghostbusters-virginia-pke-meter-closeup.jpg";
 const teamImageSrc = copy.teamImage || "/images/ghostbusters-virginia-full-team-photo.jpg";
 const teamImageAlt =
@@ -92,19 +83,9 @@ const togetherImage = await getResponsiveImageAttrs({
   quality: 75,
 });
 
-const protonPetsImage = await getResponsiveImageAttrs({
-  src: protonPetsImageSrc,
-  widths: [640, 960, 1200],
-  sizes: "(max-width: 768px) 100vw, 900px",
-  width: 1200,
-  height: 675,
-  quality: 75,
-});
-
 const metaTitle = copy.metaTitle || "About";
 const metaDescription =
-  copy.metaDescription ||
-  "Learn the history, mission, and community initiatives of Ghostbusters Virginia since 2001.";
+  copy.metaDescription || "Learn the history and mission of Ghostbusters Virginia since 2001.";
 const ogTitleVal = copy.ogTitle || "About Ghostbusters Virginia";
 const ogDescriptionVal =
   copy.ogDescription ||
@@ -124,18 +105,15 @@ const whoWeAreBodyFour =
   "Under the GBVA banner these groups pool their resources and cooperate at a level that makes the whole stronger than its parts. Alongside members from across Virginia \u2014 including the Eastern Shore \u2014 they are what make GBVA such a fantastic franchise, with a future filled with good fun, memories, and lifelong friendships.";
 
 const missionHeading = copy.missionHeading || "Our Mission";
+const missionCardTitle = copy.missionCardTitle || "Mission Priorities";
 const missionItems = copy.missionItems || [
   "Celebrate and promote the Ghostbusters franchise across the Commonwealth of Virginia",
   "Support charitable causes and give back to our local communities",
   "Provide a welcoming space for fans of all ages and backgrounds",
   "Unite Virginia\u2019s regional Ghostbusters groups under one banner",
 ];
-
-const initiativesHeading = copy.initiativesHeading || "Community Initiatives";
-const initiativeTitle = copy.initiativeTitle || "Proton Pets";
-
-/** Expand icon SVG reused across all four zigzag thumbs */
-const expandIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>`;
+const missionCtaLabel = copy.missionCtaLabel || "See us in Action";
+const missionCtaHref = copy.missionCtaHref || "/media";
 ---
 
 <BaseLayout
@@ -159,13 +137,12 @@ const expandIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="2
       <div class="container container--wide">
         <div class="zigzag">
           <div class="zigzag__media">
-            <button
-              class="zigzag__thumb"
-              type="button"
-              data-lightbox-group="about-gallery"
-              data-lightbox-src={teamImageSrc}
-              data-lightbox-alt={teamImageAlt}
-              aria-label={`View full image: ${teamImageAlt}`}
+            <LightboxImageTrigger
+              group="about-gallery"
+              src={teamImageSrc}
+              alt={teamImageAlt}
+              buttonClass="zigzag__thumb"
+              overlayClass="zigzag__overlay"
             >
               <img
                 {...teamImage}
@@ -174,10 +151,7 @@ const expandIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="2
                 loading="eager"
                 decoding="async"
               />
-              <span class="zigzag__overlay" aria-hidden="true">
-                <Fragment set:html={expandIcon} />
-              </span>
-            </button>
+            </LightboxImageTrigger>
           </div>
           <div class="zigzag__text">
             <p class="prose-text">{whoWeAreBodyOne}</p>
@@ -191,13 +165,12 @@ const expandIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="2
       <div class="container container--wide">
         <div class="zigzag zigzag--reverse">
           <div class="zigzag__media zigzag__media--portrait">
-            <button
-              class="zigzag__thumb"
-              type="button"
-              data-lightbox-group="about-gallery"
-              data-lightbox-src={divisionsImageSrc}
-              data-lightbox-alt={divisionsImageAlt}
-              aria-label={`View full image: ${divisionsImageAlt}`}
+            <LightboxImageTrigger
+              group="about-gallery"
+              src={divisionsImageSrc}
+              alt={divisionsImageAlt}
+              buttonClass="zigzag__thumb"
+              overlayClass="zigzag__overlay"
             >
               <img
                 {...divisionsImage}
@@ -206,10 +179,7 @@ const expandIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="2
                 loading="lazy"
                 decoding="async"
               />
-              <span class="zigzag__overlay" aria-hidden="true">
-                <Fragment set:html={expandIcon} />
-              </span>
-            </button>
+            </LightboxImageTrigger>
           </div>
           <div class="zigzag__text">
             <p class="prose-text">{whoWeAreBodyTwo}</p>
@@ -223,13 +193,12 @@ const expandIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="2
       <div class="container container--wide">
         <div class="zigzag">
           <div class="zigzag__media">
-            <button
-              class="zigzag__thumb"
-              type="button"
-              data-lightbox-group="about-gallery"
-              data-lightbox-src={communityImageSrc}
-              data-lightbox-alt={communityImageAlt}
-              aria-label={`View full image: ${communityImageAlt}`}
+            <LightboxImageTrigger
+              group="about-gallery"
+              src={communityImageSrc}
+              alt={communityImageAlt}
+              buttonClass="zigzag__thumb"
+              overlayClass="zigzag__overlay"
             >
               <img
                 {...communityImage}
@@ -238,10 +207,7 @@ const expandIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="2
                 loading="lazy"
                 decoding="async"
               />
-              <span class="zigzag__overlay" aria-hidden="true">
-                <Fragment set:html={expandIcon} />
-              </span>
-            </button>
+            </LightboxImageTrigger>
           </div>
           <div class="zigzag__text">
             <p class="prose-text">{whoWeAreBodyThree}</p>
@@ -255,13 +221,12 @@ const expandIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="2
       <div class="container container--wide">
         <div class="zigzag zigzag--reverse">
           <div class="zigzag__media">
-            <button
-              class="zigzag__thumb"
-              type="button"
-              data-lightbox-group="about-gallery"
-              data-lightbox-src={togetherImageSrc}
-              data-lightbox-alt={togetherImageAlt}
-              aria-label={`View full image: ${togetherImageAlt}`}
+            <LightboxImageTrigger
+              group="about-gallery"
+              src={togetherImageSrc}
+              alt={togetherImageAlt}
+              buttonClass="zigzag__thumb"
+              overlayClass="zigzag__overlay"
             >
               <img
                 {...togetherImage}
@@ -270,10 +235,7 @@ const expandIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="2
                 loading="lazy"
                 decoding="async"
               />
-              <span class="zigzag__overlay" aria-hidden="true">
-                <Fragment set:html={expandIcon} />
-              </span>
-            </button>
+            </LightboxImageTrigger>
           </div>
           <div class="zigzag__text">
             <p class="prose-text">{whoWeAreBodyFour}</p>
@@ -286,29 +248,17 @@ const expandIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="2
     <div class="page-band page-band--alt">
       <div class="container container--mid">
         <SectionHeading>{missionHeading}</SectionHeading>
-        <ul class="mission-list" role="list">
-          {missionItems.map((item) => <li class="mission-list__item">{item}</li>)}
-        </ul>
-      </div>
-    </div>
-
-    <!-- Community Initiatives -->
-    <div class="page-band page-band--white">
-      <div class="container container--mid">
-        <SectionHeading>{initiativesHeading}</SectionHeading>
-        <h3 class="initiative-title">{initiativeTitle}</h3>
-        <img
-          {...protonPetsImage}
-          alt={protonPetsImageAlt}
-          class="initiative-image"
-          loading="lazy"
-          decoding="async"
-        />
-        <p class="prose-text">{protonPetsText}</p>
-        <div class="initiative-cta">
-          <Button variant="secondary" href={protonPetsLinkUrl} external>
-            {protonPetsLinkLabel}
-          </Button>
+        <div class="mission-card">
+          <h4 class="mission-card__title">
+            {missionCardTitle}
+            <img src="/images/slime.png" alt="" aria-hidden="true" class="mission-card__ooze" />
+          </h4>
+          <ul class="mission-list" role="list">
+            {missionItems.map((item) => <li class="mission-list__item">{item}</li>)}
+          </ul>
+        </div>
+        <div class="mission-cta">
+          <Button variant="secondary" href={missionCtaHref}>{missionCtaLabel}</Button>
         </div>
       </div>
     </div>
@@ -317,7 +267,7 @@ const expandIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="2
   </section>
 </BaseLayout>
 
-<style>
+<style is:global>
   /* --- Zigzag layout --- */
   .zigzag {
     display: grid;
@@ -433,24 +383,64 @@ const expandIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="2
     line-height: var(--leading-loose);
   }
 
-  /* --- Mission callout --- */
-  .mission-list {
-    list-style: none;
-    padding: 0;
-    margin: 0 auto;
-    max-width: 640px;
+  /* --- Mission card --- */
+  .mission-card {
     display: flex;
     flex-direction: column;
-    gap: var(--space-lg);
+    position: relative;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-panel);
+    max-width: 760px;
+    margin-inline: auto;
+  }
+
+  .mission-card__title {
+    font-family: var(--font-display);
+    font-size: var(--text-lg);
+    font-weight: var(--weight-bold);
+    letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
+    color: var(--color-text);
+    margin: 0;
+    padding: var(--space-lg) var(--space-2xl);
+    background: var(--color-bg);
+    border-bottom: 1px solid var(--color-border);
+    position: relative;
+    overflow: visible;
+  }
+
+  .mission-card__ooze {
+    position: absolute;
+    bottom: 0;
+    right: -4px;
+    width: 68px;
+    height: auto;
+    pointer-events: none;
+    z-index: 1;
+    transform: translateY(100%);
+    opacity: 0.75;
+  }
+
+  .mission-list {
+    list-style: none;
+    padding: var(--space-xl) var(--space-2xl) var(--space-2xl);
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
   }
 
   .mission-list__item {
     position: relative;
-    padding-left: var(--space-2xl);
+    padding-left: 2rem;
+    padding-block: var(--space-xs);
     color: var(--color-text-muted);
     font-family: var(--font-body);
     font-size: var(--text-base);
-    line-height: var(--leading-relaxed);
+    line-height: var(--leading-normal);
     cursor: default;
     transition: color var(--transition-base);
   }
@@ -460,13 +450,13 @@ const expandIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="2
   }
 
   .mission-list__item::before {
-    content: "\2714";
+    content: "✔";
     position: absolute;
-    left: 0;
+    left: 0.25rem;
+    top: var(--space-xs);
     color: var(--color-gb-green);
     font-weight: var(--weight-bold);
-    font-size: var(--text-lg);
-    line-height: var(--leading-relaxed);
+    font-size: var(--text-base);
     display: inline-block;
     transition: transform var(--transition-base);
   }
@@ -475,26 +465,7 @@ const expandIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="2
     transform: scale(1.4);
   }
 
-  /* --- Initiative section --- */
-  .initiative-title {
-    font-family: var(--font-heading);
-    font-size: var(--text-lg);
-    font-weight: var(--weight-semibold);
-    color: var(--color-heading-section);
-    letter-spacing: var(--tracking-wide);
-    text-align: center;
-    margin-bottom: var(--space-lg);
-  }
-
-  .initiative-image {
-    width: 100%;
-    max-height: 320px;
-    object-fit: cover;
-    border-radius: var(--radius-md);
-    margin-bottom: var(--space-lg);
-  }
-
-  .initiative-cta {
+  .mission-cta {
     display: flex;
     justify-content: center;
     margin-top: var(--space-xl);

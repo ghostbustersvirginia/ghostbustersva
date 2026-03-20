@@ -17,6 +17,7 @@ interface Props {
   heroTagline: string;
   primaryCtaLabel: string;
   primaryCtaHref: string;
+  primaryCtaExternal?: boolean;
   secondaryCtaLabel: string;
   secondaryCtaHref: string;
   heroLogoSrc: string;
@@ -30,6 +31,7 @@ const {
   heroTagline,
   primaryCtaLabel,
   primaryCtaHref,
+  primaryCtaExternal = false,
   secondaryCtaLabel,
   secondaryCtaHref,
   heroLogoSrc,
@@ -66,10 +68,15 @@ const {
       <p class="hero-tagline">{heroTagline}</p>
 
       <div class="hero-cta">
-        <Button variant="primary" class="btn--lg" href={primaryCtaHref}>
+        <Button
+          variant="primary"
+          class="btn--lg"
+          href={primaryCtaHref}
+          external={primaryCtaExternal}
+        >
           {primaryCtaLabel}
         </Button>
-        <Button variant="secondary" class="btn--lg" href={secondaryCtaHref}>
+        <Button variant="secondary" class="btn--lg" href={secondaryCtaHref} icon="arrow-right">
           {secondaryCtaLabel}
         </Button>
       </div>

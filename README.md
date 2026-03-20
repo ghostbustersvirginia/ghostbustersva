@@ -20,7 +20,7 @@ Built with [Astro](https://astro.build), TypeScript, and markdown-based content.
 This is a **static website** — think of it like a brochure that gets regenerated whenever we make changes, rather than a live app with a database behind it.
 
 - **Core pages** (Home, About, Events, Media, Join, Contact, Donate) are built from template files and deployed as plain HTML.
-- **CMS Pages** are editor-created markdown pages that automatically become site routes at deploy time.
+- **CMS page copy** is managed through a browser CMS login at `/admin` (fixed page model for home/about/join/events/media/contact/donate/code-of-conduct).
 - **Content** is managed through a browser CMS login at `/admin`.
 - When a developer pushes changes to the `main` branch, the site automatically rebuilds and deploys within minutes.
 - The site rebuilds on a daily schedule so time-sensitive content (like event status) stays current.
@@ -43,15 +43,15 @@ Content still lives in this repository as files (git-based CMS workflow).
 
 ## How Updates Happen
 
-| What                      | How                                             |
-| ------------------------- | ----------------------------------------------- |
-| Add/edit an event         | Use the CMS at `/admin`                         |
-| Add gallery photos        | Use the CMS at `/admin`                         |
-| Change site-wide settings | Use the CMS at `/admin` → Site Settings         |
-| Change core page text     | Edit the `.astro` file in `src/pages/`          |
-| Create a brand-new page   | Use CMS Pages collection (no code changes)      |
-| Change page layout/UX     | Edit the `.astro` file in `src/pages/`          |
-| Deploy                    | Push to `main` — deploy is automatic via Vercel |
+| What                              | How                                                                             |
+| --------------------------------- | ------------------------------------------------------------------------------- |
+| Add/edit an event                 | Use the CMS at `/admin` (Events section)                                        |
+| Add gallery photos                | Use the CMS at `/admin` (Gallery section)                                       |
+| Change site-wide settings         | Use the CMS at `/admin` → Site Settings                                         |
+| Change page copy (text/content)   | Use the CMS at `/admin` → Pages section; files are in `src/content/page-copy/*` |
+| Change page layout/UX (template)  | Edit the `.astro` file in `src/pages/`                                          |
+| Create or edit existing page copy | Use `/admin` → Pages; content is stored under `src/content/page-copy/*`         |
+| Deploy                            | Push to `main` — deploy is automatic via Vercel                                 |
 
 > **If the project moves forward:** We would adopt a feature-branch → pull-request → code-review workflow to keep changes clean and reviewable. For now during the demo phase, changes are committed directly to keep things simple.
 
@@ -71,7 +71,7 @@ Content still lives in this repository as files (git-based CMS workflow).
 
 1. Sign in at `/admin`.
 2. Update events, media, or settings.
-3. Save changes and wait for deploy.
+3. Save changes and wait for deploy (usually a few minutes, not instant).
 4. Check the live site.
 
 For day-to-day team use, this is all you need.
@@ -87,7 +87,7 @@ For day-to-day team use, this is all you need.
 
 ---
 
-## CMS Usage
+## CMS (Content Management System) Usage
 
 The site includes **Keystatic CMS** — a browser-based content editor that lets you create and edit events, gallery entries, and site settings without touching code.
 
@@ -96,28 +96,54 @@ The site includes **Keystatic CMS** — a browser-based content editor that lets
 1. Open `/admin` on the deployed site.
 2. Click **Sign in with GitHub**.
 3. You need **write access** to the `ghostbustersva` repo — ask the project lead if you don't have it.
-4. Use sections in the sidebar for Events, Gallery, Videos, News, CMS Pages, and Site Settings.
+4. Use sections in the sidebar for:
+   - Content: Events, Gallery, Videos, News
+   - Pages: home/about/join/events/media/contact/donate/code-of-conduct (stored in `src/content/page-copy/*`)
+   - Settings: Site Settings
+
+### Before You Save (Important)
+
+- In Git-backed mode, Keystatic saves against a specific Git commit snapshot.
+- If there are unresolved or stale pending edits from another session, save can fail with commit/path mismatch errors.
+- For maintainers using local dev mode, keep a clean working tree before CMS edits: commit, stash, or discard unrelated file changes first.
+- If a save fails, refresh `/admin`, discard pending edits in the editor UI, and retry from a fresh session.
 
 ### What You Can Edit
 
-| Section       | What it controls                                                |
-| ------------- | --------------------------------------------------------------- |
-| Events        | Event listings — title, date, location, summary, images, status |
-| Gallery       | Photo gallery entries — image, title, alt text, date            |
-| Videos        | YouTube videos shown on the Media page                          |
-| News          | Press coverage / news links shown on the Media page             |
-| CMS Pages     | New standalone pages (title, slug, body, optional hero + CTA)   |
-| Site Settings | Site name, description, donate URL, store URL, social links     |
+| Section       | What it controls                                                                                                            |
+| ------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| Events        | Event listings — title, date, location, summary, images, status                                                             |
+| Gallery       | Photo gallery entries — image, title, alt text, date                                                                        |
+| Videos        | YouTube videos shown on the Media page                                                                                      |
+| News          | Press coverage / news links shown on the Media page                                                                         |
+| Pages         | Per-page copy fields for home/about/join/events/media/contact/donate/code-of-conduct (stored in `src/content/page-copy/*`)  |
+| Site Settings | Global values: site name/description, donate URL, contact email/phone, LED scrollbar text, nav/footer content, social links |
 
-### Create a New CMS Page
+### CMS Pages and Page Copy
 
-1. Open **CMS Pages** in `/admin`.
-2. Click **Create**.
-3. Fill in **Title**, **Slug**, and **Page Content**.
-4. Keep slug single-level (example: `volunteer`) and avoid reserved slugs (`about`, `events`, `media`, `contact`, `donate`, `admin`, `keystatic`, `api`, `code-of-conduct`).
-5. Set **Published = true** to make the page routable.
-6. Optional: enable **Show in Navigation** and add **Navigation Label**.
-7. Click **Save** and wait for deploy.
+The current configuration exposes a fixed set of editor-managed page copy entries via `/admin` → Pages. Editors can update the existing home/about/join/events/media/contact/donate/code-of-conduct pages; creating new route pages is not supported in this version.
+
+### Branch Workflow
+
+- **New branch in `/admin`** creates/targets a real Git branch in GitHub for your CMS edits.
+- **After save on that branch**, Vercel will build a preview for that branch.
+- **To merge to `main`**, open GitHub in the browser, create a Pull Request from that branch to `main`, review, and click **Merge**.
+
+### Production vs Branch Saves
+
+- Saving in CMS while targeting **`main`** commits to production source and triggers a production deploy on Vercel.
+- Saving in CMS while targeting a **non-main branch** does **not** change production unless that branch is merged into `main`.
+- Branch work is safe for testing and review, as long as changes stay off `main`.
+- Preview links are typically found in the GitHub Pull Request checks and/or the Vercel dashboard.
+- Keystatic itself is the content editor; preview deployment links are provided by Vercel/GitHub integration.
+
+### Editor SOP (Branch to Main)
+
+1. In `/admin`, choose **New branch** and name it for the change (example: `content-home-hero-copy`).
+2. Make edits and click **Save** in Keystatic.
+3. Open GitHub in your browser and open a Pull Request from that branch to `main`.
+4. Review the Vercel Preview deployment linked on the Pull Request and confirm content/layout looks correct.
+5. Click **Merge** in GitHub; Vercel then deploys `main` to production.
 
 ### Where Content is Stored
 
@@ -129,7 +155,7 @@ All content is stored as files in this repository:
 | Gallery entries | `src/content/gallery/`           | Markdown |
 | Videos          | `src/content/videos/`            | JSON     |
 | News            | `src/content/news/`              | JSON     |
-| CMS pages       | `src/content/pages/`             | Markdown |
+| Page copy       | `src/content/page-copy/`         | JSON     |
 | Site settings   | `src/content/settings/site.json` | JSON     |
 | Images          | `public/images/`                 | JPG/PNG  |
 

@@ -1,20 +1,23 @@
 ---
 /**
- * Home page — hero, gallery, upcoming events, join CTA, swag.
+ * Home page — hero, gallery, upcoming events, join CTA, support.
  */
 import BaseLayout from "../layouts/BaseLayout.astro";
 import Button from "../components/ui/Button.astro";
 import EventCard from "../components/EventCard.astro";
 import HeroSection from "../components/HeroSection.astro";
 import Lightbox from "../components/ui/Lightbox.astro";
+import LightboxImageTrigger from "../components/ui/LightboxImageTrigger.astro";
 import { getCollection } from "astro:content";
 import { splitEventsByStatus } from "../lib/events";
 import { getResponsiveImageAttrs } from "../lib/images";
 import { getSafeCmsHref, isSafeExternalUrl } from "../lib/links";
-import SwagGrid from "../components/SwagGrid.astro";
+import { getSiteSettings } from "../lib/settings";
 import { getPageCopy } from "../lib/page-copy";
 
 const copy = await getPageCopy("home");
+const donateCopy = await getPageCopy("donate");
+const settings = await getSiteSettings();
 
 const allEvents = await getCollection("events");
 const { upcoming, past } = splitEventsByStatus(allEvents);
@@ -27,8 +30,7 @@ const heroTagline = String(
   copy.heroTagline ||
     "Virginia's only Sony-recognized 501(c)(3) Ghostbusters franchise — uniting fans and serving communities since 2001.",
 );
-const heroPrimaryCtaLabel = String(copy.heroPrimaryCtaLabel || "See Events");
-const heroPrimaryCtaHref = copy.heroPrimaryCtaHref;
+const heroPrimaryCtaLabel = "Donate";
 const heroSecondaryCtaLabel = String(copy.heroSecondaryCtaLabel || "Join the Team");
 const heroSecondaryCtaHref = copy.heroSecondaryCtaHref;
 const heroLogoSrc = String(copy.heroLogoSrc || "/images/logo.png");
@@ -50,7 +52,15 @@ const eventsHeading = copy.eventsHeading || "Events";
 const eventsSubtitle =
   copy.eventsSubtitle ||
   "Meet the team, support local charities, and see the Ecto in person. Check out where we\u2019ll be next \u2014 we\u2019d love to see you there.";
-const eventsCtaLabel = copy.eventsCtaLabel || "See All Events";
+const noUpcomingEventsTitle = copy.noUpcomingEventsTitle || "No Events Scheduled Yet";
+const noUpcomingEventsBody =
+  copy.noUpcomingEventsBody ||
+  "No upcoming or active events are currently scheduled, but take a look at our previous events to see where we\u2019ve been.";
+const noUpcomingEventsContactText =
+  copy.noUpcomingEventsContactText ||
+  "Want the team at your next event? Reach out and tell us what you have in mind.";
+const noUpcomingEventsContactHref = copy.noUpcomingEventsContactHref || "/contact";
+const eventsCtaLabel = copy.eventsCtaLabel || "See Past Events";
 const eventsCtaHref = copy.eventsCtaHref || "/events";
 const joinHeading = copy.joinHeading || "Join the Team";
 const joinSubtitle =
@@ -68,20 +78,21 @@ const joinQuoteLineTwo =
   "Ready to get out there and start busting some ghosts? Excellent news rookie, we have openings!";
 const joinCtaLabel = copy.joinCtaLabel || "Join Now";
 const joinCtaHref = copy.joinCtaHref || "/join";
-const swagSectionHeading = copy.swagHeading || "Support the Mission";
-const swagSubtitle =
-  copy.swagSubtitle ||
-  "Every purchase helps fund our charity work, community events, and hospital visits across Virginia. Grab some gear and wear your support \u2014 each item opens our TeePublic store in a new tab!";
-const swagCtaLabel = copy.swagCtaLabel || "Visit Our Store";
-const swagCtaHref = copy.swagCtaHref || "https://www.teepublic.com/user/ghostbusters-virginia";
-const safeHeroPrimaryCtaHref = getSafeCmsHref(heroPrimaryCtaHref) || "/events";
+const supportSectionHeading = copy.supportHeading || "Support the Mission";
+const supportCtaLabel = donateCopy.donationCtaLabel || "Support the Cause";
+const supportCardText =
+  donateCopy.donationText ||
+  "Ghostbusters Virginia is a volunteer-run, community-focused franchise. Your generous donations help us fund charitable events, maintain the Ecto, purchase supplies for community outreach, and keep the franchise running strong.";
+const defaultDonateUrl =
+  "https://secure2.wish.org/site/TR;jsessionid=00000000.app20002b?team_id=58435&fr_id=7464&pg=team&NONCE_TOKEN=16AE47C509ECB858ECB963CD3D174802";
+const donateUrl = settings.donateUrl || defaultDonateUrl;
+const safeHeroPrimaryCtaHref = isSafeExternalUrl(donateUrl) ? donateUrl : defaultDonateUrl;
 const safeHeroSecondaryCtaHref = getSafeCmsHref(heroSecondaryCtaHref) || "/join";
 const safeGalleryCtaHref = getSafeCmsHref(galleryCtaHref) || "/media";
 const safeEventsCtaHref = getSafeCmsHref(eventsCtaHref) || "/events";
+const safeNoUpcomingEventsContactHref = getSafeCmsHref(noUpcomingEventsContactHref) || "/contact";
 const safeJoinCtaHref = getSafeCmsHref(joinCtaHref) || "/join";
-const safeSwagCtaHref = isSafeExternalUrl(swagCtaHref)
-  ? swagCtaHref
-  : "https://www.teepublic.com/user/ghostbusters-virginia";
+const safeSupportCtaHref = safeHeroPrimaryCtaHref;
 
 interface ImpactStat {
   value: string;
@@ -155,6 +166,7 @@ const galleryImageAttrs = await Promise.all(
     heroTagline={heroTagline}
     primaryCtaLabel={heroPrimaryCtaLabel}
     primaryCtaHref={safeHeroPrimaryCtaHref}
+    primaryCtaExternal
     secondaryCtaLabel={heroSecondaryCtaLabel}
     secondaryCtaHref={safeHeroSecondaryCtaHref}
     heroLogoSrc={heroLogoSrc}
@@ -267,11 +279,23 @@ const galleryImageAttrs = await Promise.all(
       <p class="section-subtitle">{eventsSubtitle}</p>
       <ul class="event-list">
         {
-          upcoming.length > 0
-            ? upcoming.map((event) => (
-                <EventCard event={event} showCountdown className="event-item--homepage-upcoming" />
-              ))
-            : past.length > 0 && <EventCard event={past[0]} />
+          upcoming.length > 0 ? (
+            upcoming.map((event) => (
+              <EventCard event={event} showCountdown className="event-item--homepage-upcoming" />
+            ))
+          ) : (
+            <li class="event-empty-card">
+              <div class="event-empty-card__content">
+                <h3 class="event-empty-card__title">{noUpcomingEventsTitle}</h3>
+                <p class="event-empty-card__text">{noUpcomingEventsBody}</p>
+                <p class="event-empty-card__text event-empty-card__text--contact">
+                  <a href={safeNoUpcomingEventsContactHref} class="event-empty-card__link">
+                    {noUpcomingEventsContactText}
+                  </a>
+                </p>
+              </div>
+            </li>
+          )
         }
       </ul>
       <div class="section-cta">
@@ -290,7 +314,15 @@ const galleryImageAttrs = await Promise.all(
         {joinSubtitle}
       </p>
       <div class="join-layout">
-        <div class="join-image-wrapper">
+        <LightboxImageTrigger
+          group="home-join"
+          src={joinImagePath}
+          alt={joinImageAlt}
+          caption={joinHeading}
+          buttonClass="join-image-wrapper"
+          overlayClass="join-image-overlay"
+          ariaLabel="Click to view image larger"
+        >
           <img
             {...joinImage}
             alt={joinImageAlt}
@@ -298,7 +330,7 @@ const galleryImageAttrs = await Promise.all(
             loading="lazy"
             decoding="async"
           />
-        </div>
+        </LightboxImageTrigger>
         <blockquote class="quote-block">
           <p>
             &ldquo;{joinQuoteLineOne}&rdquo;
@@ -314,19 +346,25 @@ const galleryImageAttrs = await Promise.all(
     </div>
   </section>
 
-  <!-- ───── GBVA SWAG ───── -->
-  <section class="section hp-section--white swag-section" aria-labelledby="swag-heading">
+  <!-- ───── SUPPORT THE MISSION ───── -->
+  <section class="section hp-section--white support-section" aria-labelledby="support-heading">
     <div class="container">
-      <h2 id="swag-heading" class="section-heading">{swagSectionHeading}</h2>
-      <SwagGrid subtitle={swagSubtitle} ctaLabel={swagCtaLabel} ctaHref={safeSwagCtaHref} />
+      <h2 id="support-heading" class="section-heading">{supportSectionHeading}</h2>
+      <div class="highlight-card highlight-card--centered">
+        <p class="prose-text">{supportCardText}</p>
+        <div class="section-cta">
+          <Button variant="secondary" href={safeSupportCtaHref} external>{supportCtaLabel}</Button>
+        </div>
+      </div>
     </div>
   </section>
 
   <!-- ── Lightbox overlay ── -->
   <Lightbox id="home-lightbox" hasNav label="Image viewer" lightboxGroup="home-gallery" />
+  <Lightbox id="home-join-lightbox" label="Join image viewer" lightboxGroup="home-join" />
 </BaseLayout>
 
-<style>
+<style is:global>
   /* ── Homepage section spacing ── */
   .section {
     padding-block: var(--space-3xl);
@@ -370,6 +408,29 @@ const galleryImageAttrs = await Promise.all(
     max-width: var(--content-width-mid);
     margin-inline: auto;
     text-align: center;
+  }
+
+  .prose-text {
+    color: var(--color-text-muted);
+    font-family: var(--font-body);
+    font-size: var(--text-base);
+    line-height: var(--leading-loose);
+  }
+
+  .highlight-card {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: var(--space-xl) var(--space-2xl);
+    box-shadow: var(--shadow-panel);
+  }
+
+  .highlight-card--centered {
+    text-align: center;
+  }
+
+  .highlight-card .prose-text {
+    margin-bottom: 0;
   }
 
   /* ── Impact stats row ── */
@@ -438,6 +499,49 @@ const galleryImageAttrs = await Promise.all(
     gap: var(--space-xl);
   }
 
+  .event-empty-card {
+    list-style: none;
+    background: var(--color-surface-alt);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-panel);
+  }
+
+  .event-empty-card__content {
+    padding: var(--space-xl);
+    text-align: center;
+  }
+
+  .event-empty-card__title {
+    margin: 0;
+    font-family: var(--font-brand-title);
+    font-size: clamp(var(--text-xl), 2.4vw, var(--text-2xl));
+    color: var(--color-text);
+  }
+
+  .event-empty-card__text {
+    margin: var(--space-md) 0 0;
+    color: var(--color-text-muted);
+    line-height: var(--leading-loose);
+  }
+
+  .event-empty-card__text--contact {
+    margin-top: var(--space-lg);
+    font-weight: var(--weight-medium);
+  }
+
+  .event-empty-card__link {
+    color: var(--color-accent);
+    text-decoration: none;
+    transition: color var(--transition-fast);
+  }
+
+  .event-empty-card__link:hover,
+  .event-empty-card__link:focus-visible {
+    color: var(--color-gb-green);
+    text-decoration: underline;
+  }
+
   /* ── Join section ── */
   .join-layout {
     display: grid;
@@ -454,15 +558,22 @@ const galleryImageAttrs = await Promise.all(
   }
 
   .join-image-wrapper {
+    position: relative;
     border-radius: var(--radius-md);
     overflow: hidden;
     border: 1px solid var(--color-border);
+    padding: 0;
+    width: 100%;
+    background: none;
+    text-align: left;
+    cursor: pointer;
     transition:
       border-color var(--transition-base),
       box-shadow var(--transition-base);
   }
 
-  .join-image-wrapper:hover {
+  .join-image-wrapper:hover,
+  .join-image-wrapper:focus-visible {
     border-color: var(--color-hover-border);
     box-shadow: var(--shadow-hover);
   }
@@ -472,12 +583,24 @@ const galleryImageAttrs = await Promise.all(
     height: 100%;
     display: block;
     object-fit: cover;
-    filter: brightness(0.85) saturate(0.9);
-    transition: filter 0.4s ease;
   }
 
-  .join-image-wrapper:hover .join-image {
-    filter: brightness(1) saturate(1);
+  .join-image-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.4);
+    color: #fff;
+    opacity: 0;
+    transition: opacity 0.25s ease;
+    pointer-events: none;
+  }
+
+  .join-image-wrapper:hover .join-image-overlay,
+  .join-image-wrapper:focus-visible .join-image-overlay {
+    opacity: 1;
   }
 
   /* ── Full-bleed section backgrounds ── */
