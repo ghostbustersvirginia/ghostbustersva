@@ -85,6 +85,23 @@ For day-to-day team use, this is all you need.
 - [AGENT.md](AGENT.md) — AI project guide
 - [copilot-instructions.md](copilot-instructions.md) — implementation guardrails
 
+### Internal Package: readyled
+
+This project uses an internal package, `readyled` (`github:ghostbustersva/readyled`), to render the LED marquee.
+
+- Purpose: centralize LED sign rendering logic (font readiness, canvas rasterization, LED image generation, and scroll animation).
+- Integration point: `src/components/LEDScrollbar.astro` (Astro wrapper + package bridge).
+- Required assets from package: `readyled/dist/readyled.js` and `readyled/dist/readyled.css`.
+
+If dev server errors with missing `readyled/dist/readyled.css`, install dependencies and restart dev:
+
+```bash
+npm install
+npm run dev
+```
+
+For handoff stability, keep `package-lock.json` committed and avoid changing the `readyled` dependency source unless there is a clear need.
+
 ---
 
 ## CMS (Content Management System) Usage

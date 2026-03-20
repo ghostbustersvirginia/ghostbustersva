@@ -1,27 +1,24 @@
 ---
 /**
  * LEDScrollbar.astro — Ghostbusters-themed scrolling LED dot-matrix marquee.
+ * Rendering is delegated to the `readyled` library (ghostbustersva/readyled).
  *
- * How it works:
- *   1. Rasterises the text onto an off-screen <canvas> using the chosen font.
- *   2. Down-samples the canvas pixels into a boolean grid (ON / OFF).
- *   3. Paints the grid as glowing LED dots onto a second canvas.
- *   4. Exports the result as a PNG data-URL, duplicates it for a seamless loop,
- *      and scrolls with a pure CSS animation (GPU-composited translateX).
+ * readyled handles font-waiting, canvas rasterisation, LED painting, and the
+ * CSS step-animation internally. This component owns only the outer housing
+ * styles and bridges Astro props → readyled via data attributes.
  *
- * Zero setInterval, zero DOM mutation after first paint, zero memory leaks.
  * Respects `prefers-reduced-motion` (shows a static, non-scrolling sign).
- *
- * Original LED-marquee concept by the GBVA dev team.
- * Optimised for Astro integration and web performance by Copilot.
  */
 
 interface Props {
   /** Text to display on the LED sign */
   text?: string;
-  /** Number of pixel rows — controls vertical resolution */
+  /** Number of LED pixel rows — controls vertical resolution */
   pixelHeight?: number;
-  /** Pixels scrolled per second (higher = faster) */
+  /**
+   * Scroll speed in milliseconds per column (lower = faster).
+   * Forwarded to readyled's `scrollSpeed` option.
+   */
   scrollRate?: number;
   /** Font family for text rasterisation */
   font?: string;
@@ -29,10 +26,10 @@ interface Props {
   ledColor?: string;
   /** Glow colour (usually a semi-transparent version of ledColor) */
   ledGlow?: string;
-  /** Diameter of each LED dot in px */
-  pixelSize?: number;
-  /** Gap between LED dots in px */
-  pixelGap?: number;
+  /** Diameter of each LED dot as css length */
+  pixelSize?: string;
+  /** Gap between LED dots as css length */
+  pixelGap?: string;
   /** Desktop max width for readability */
   desktopMaxWidth?: string;
 }
@@ -44,31 +41,31 @@ const {
   font = "Elan Bold",
   ledColor = "#00e676",
   ledGlow = "rgba(0, 230, 118, 0.6)",
-  pixelSize = 3,
-  pixelGap = 1,
+  pixelSize = "3px",
+  pixelGap = "0.1em",
   desktopMaxWidth = "42rem",
 } = Astro.props;
 ---
 
 <div
   class="led-scrollbar"
-  style={`--led-desktop-max-width: ${desktopMaxWidth};`}
+  style={`
+    --led-desktop-max-width: ${desktopMaxWidth};
+    --readyled-pixel-size: ${pixelSize};
+    --readyled-pixel-gap: ${pixelGap};
+    --readyled-pixel-color: ${ledColor};
+    --readyled-pixel-off-color: #121212;
+    --readyled-pixel-glow: ${ledGlow};
+    --readyled-bg-color: #080808;`}
   data-led-text={text}
   data-led-pixel-height={String(pixelHeight)}
   data-led-scroll-rate={String(scrollRate)}
   data-led-font={font}
-  data-led-color={ledColor}
-  data-led-glow={ledGlow}
-  data-led-pixel-size={String(pixelSize)}
-  data-led-pixel-gap={String(pixelGap)}
-  role="marquee"
+  role="img"
   aria-label={text.trim()}
->
-  <div class="led-viewport">
-    <div class="led-track"></div>
-  </div>
-</div>
+></div>
 
+<!-- Scoped: outer housing only -->
 <style>
   .led-scrollbar {
     background: #080808;
@@ -90,185 +87,52 @@ const {
       padding-bottom: 8px;
     }
   }
+</style>
 
-  .led-viewport {
-    overflow: hidden;
-  }
+<!-- Global: readyled CSS + reduced-motion guards for its dynamically-created classes -->
+<style is:global>
+  @import "readyled/dist/readyled.css";
 
-  .led-track {
-    display: flex;
-    width: max-content;
-    will-change: transform;
-  }
-
-  .led-track.led-track--ready {
-    animation: led-scroll var(--led-duration, 10s) steps(var(--led-columns)) infinite;
-  }
-
-  .led-track img {
-    display: block;
-    height: auto;
-  }
-
-  @keyframes led-scroll {
-    from {
-      transform: translateX(0);
-    }
-    to {
-      transform: translateX(-50%);
-    }
-  }
-
-  /* Accessibility: stop animation for users who prefer reduced motion */
+  /* Accessibility: pause scroll for users who prefer reduced motion */
   @media (prefers-reduced-motion: reduce) {
-    .led-track.led-track--ready {
+    .readyled-sign-track.ready {
       animation: none;
     }
   }
 
   /* Also respect the site-wide reduced-motion toggle */
-  :global(.reduce-motion) .led-track.led-track--ready {
+  .reduce-motion .readyled-sign-track.ready {
     animation: none;
   }
 </style>
 
 <script>
+  import { readyLED } from "readyled/dist/readyled.js";
+
   /**
-   * Client-side initialiser for each <LEDScrollbar> instance.
-   * Runs once after custom fonts have loaded.
+   * Initialise a single LED scrollbar using the readyled library.
    */
-  function initLEDScrollbar(el: HTMLElement): void {
+  async function initLEDScrollbar(el: HTMLElement): Promise<void> {
     const text = el.dataset.ledText ?? "";
     const pixelHeight = parseInt(el.dataset.ledPixelHeight ?? "9", 10);
     const scrollRate = parseInt(el.dataset.ledScrollRate ?? "40", 10);
     const font = el.dataset.ledFont ?? "sans-serif";
-    const color = el.dataset.ledColor ?? "#00e676";
-    const glow = el.dataset.ledGlow ?? "rgba(0,230,118,0.6)";
-    const pxSize = parseInt(el.dataset.ledPixelSize ?? "3", 10);
-    const pxGap = parseInt(el.dataset.ledPixelGap ?? "1", 10);
 
-    const track = el.querySelector<HTMLElement>(".led-track");
-    if (!track) return;
-
-    /* ------------------------------------------------------------------
-     * Step 1 — Rasterise text into a boolean pixel grid via <canvas>.
-     *
-     * We render the text at a large font size for accuracy, then
-     * down-sample to the target pixelHeight to build the dot matrix.
-     * ---------------------------------------------------------------- */
-    const fontSize = 96;
-    const tmpCanvas = document.createElement("canvas");
-    const renderW = Math.ceil(fontSize * 1.2 * text.length);
-    tmpCanvas.width = renderW;
-    tmpCanvas.height = fontSize;
-
-    const ctx = tmpCanvas.getContext("2d");
-    if (!ctx) return;
-
-    // White background, black text — we'll sample luminance later
-    ctx.fillStyle = "#fff";
-    ctx.fillRect(0, 0, renderW, fontSize);
-    ctx.fillStyle = "#000";
-    ctx.font = `${fontSize}px "${font}", sans-serif`;
-    ctx.textBaseline = "middle";
-    ctx.fillText(text, 0, fontSize / 2);
-
-    // Use measureText for actual width so we don't waste pixels on whitespace
-    const textW = Math.min(Math.ceil(ctx.measureText(text).width), renderW);
-    const sampleW = Math.ceil((pixelHeight / fontSize) * textW);
-    const src = ctx.getImageData(0, 0, renderW, fontSize).data;
-
-    // Build the boolean grid row-by-row
-    const grid: boolean[][] = [];
-    for (let y = 0; y < pixelHeight; y++) {
-      const row: boolean[] = [];
-      for (let x = 0; x < sampleW; x++) {
-        const sx = Math.floor((x / sampleW) * textW);
-        const sy = Math.floor((y / pixelHeight) * fontSize);
-        const i = (sy * renderW + sx) * 4;
-        // ITU-R BT.601 luminance from RGB
-        const lum = 0.299 * (src[i] ?? 0) + 0.587 * (src[i + 1] ?? 0) + 0.114 * (src[i + 2] ?? 0);
-        row.push(lum < 128);
-      }
-      grid.push(row);
-    }
-
-    /* ------------------------------------------------------------------
-     * Step 2 — Paint the LED visualisation onto a second canvas.
-     *
-     * Each boolean maps to a glowing dot (ON) or a dim dot (OFF),
-     * giving the classic LED-sign look.
-     * ---------------------------------------------------------------- */
-    const step = pxSize + pxGap;
-    const ledCanvas = document.createElement("canvas");
-    ledCanvas.width = sampleW * step;
-    ledCanvas.height = pixelHeight * step;
-
-    const lctx = ledCanvas.getContext("2d");
-    if (!lctx) return;
-
-    // Dark housing background
-    lctx.fillStyle = "#080808";
-    lctx.fillRect(0, 0, ledCanvas.width, ledCanvas.height);
-
-    const half = pxSize / 2;
-    for (let y = 0; y < pixelHeight; y++) {
-      for (let x = 0; x < sampleW; x++) {
-        const cx = x * step + step / 2;
-        const cy = y * step + step / 2;
-
-        lctx.beginPath();
-        lctx.arc(cx, cy, half, 0, Math.PI * 2);
-
-        if (grid[y][x]) {
-          // Lit pixel — colour + glow
-          lctx.fillStyle = color;
-          lctx.shadowColor = glow;
-          lctx.shadowBlur = pxSize * 1.5;
-          lctx.fill();
-          lctx.shadowBlur = 0;
-        } else {
-          // Off pixel — faint dot (visible grid pattern)
-          lctx.fillStyle = "#121212";
-          lctx.fill();
-        }
-      }
-    }
-
-    /* ------------------------------------------------------------------
-     * Step 3 — Export as a PNG image and duplicate for seamless loop.
-     *
-     * Two identical images sit side-by-side. The CSS animation scrolls
-     * from 0 to −50 %, so when the first copy leaves the viewport the
-     * second copy takes its place — seamless infinite scroll.
-     * ---------------------------------------------------------------- */
-    const url = ledCanvas.toDataURL("image/png");
-
-    const img1 = new Image();
-    img1.src = url;
-    img1.alt = "";
-    img1.setAttribute("aria-hidden", "true");
-
-    const img2 = new Image();
-    img2.src = url;
-    img2.alt = "";
-    img2.setAttribute("aria-hidden", "true");
-
-    track.appendChild(img1);
-    track.appendChild(img2);
-
-    /* ------------------------------------------------------------------
-     * Step 4 — Calculate animation duration from content width and
-     * kick off the CSS animation by adding the --ready class.
-     * ---------------------------------------------------------------- */
-    const duration = ledCanvas.width / scrollRate;
-    track.style.setProperty("--led-duration", `${duration}s`);
-    track.style.setProperty("--led-columns", String(sampleW));
-    track.classList.add("led-track--ready");
+    await readyLED({
+      target: el,
+      text,
+      pixelHeight,
+      font,
+      fallbackFont: "sans-serif",
+      scrollSpeed: scrollRate,
+    });
   }
 
-  // Wait for custom fonts (Elan Bold) before rasterising
-  document.fonts.ready.then(() => {
-    document.querySelectorAll<HTMLElement>(".led-scrollbar").forEach(initLEDScrollbar);
-  });
+  document
+    .querySelectorAll<HTMLElement>(".led-scrollbar")
+    .forEach((el) => {
+      void initLEDScrollbar(el).catch((error) => {
+        console.error("Failed to initialise LED scrollbar", error);
+      });
+    });
 </script>
