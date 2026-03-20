@@ -12,6 +12,24 @@ import { getSafeCmsHref } from "../lib/links";
 
 const settings = await getSiteSettings();
 const currentPath = Astro.url.pathname;
+
+const normalizePath = (path: string) => {
+  const trimmed = path.replace(/\/+$/, "");
+  if (!trimmed || trimmed === "") return "/";
+  return trimmed;
+};
+
+const isActivePage = (href: string) => {
+  const current = normalizePath(currentPath);
+  const target = normalizePath(href);
+
+  if (target === "/") {
+    return current === "/";
+  }
+
+  return current === target || current.startsWith(`${target}/`);
+};
+
 const navItems = settings.navItems;
 const safeNavItems = navItems
   .map((link) => {
@@ -54,7 +72,7 @@ const useLogoAsO = logoIndex >= 0;
               <a
                 href={link.href}
                 class="desktop-nav__link"
-                aria-current={currentPath === link.href ? "page" : undefined}
+                aria-current={isActivePage(link.href) ? "page" : undefined}
                 {...(link.external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
               >
                 {link.label}
@@ -83,7 +101,7 @@ const useLogoAsO = logoIndex >= 0;
                 <a
                   href={link.href}
                   class="mobile-nav__link"
-                  aria-current={currentPath === link.href ? "page" : undefined}
+                  aria-current={isActivePage(link.href) ? "page" : undefined}
                   {...(link.external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
                 >
                   {link.label}

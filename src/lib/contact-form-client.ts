@@ -84,53 +84,27 @@ export function initContactForm() {
     syncDateClearButtons();
   };
 
-  if (dateInput) {
-    const startDateParent = dateInput.closest<HTMLElement>(".contact-form__field");
-    const endDateParent = dateEndInput?.closest<HTMLElement>(".contact-form__field");
+  const initializeInquirySelect = () => {
+    const selectedValue = inquirySelect?.value ?? "";
 
-    let endDatePicker: any = null;
+    setEventFieldsVisibility(selectedValue);
 
-    const startDatePicker = flatpickr(dateInput, {
-      dateFormat: "m/d/Y",
-      disableMobile: true,
-      allowInput: true,
-      clickOpens: true,
-      position: "below right",
-      monthSelectorType: "static",
-      minDate: "today",
-      appendTo: document.body,
-      onValueUpdate: () => {
-        syncDateClearButtons();
-      },
-      onChange: (selectedDates) => {
-        const selectedStartDate = selectedDates[0];
-
-        if (selectedStartDate) {
-          announceDate(`Start date set to ${dateInput.value}`);
-        } else {
-          announceDate("Start date cleared");
-        }
-
-        if (!endDatePicker) {
-          return;
-        }
-
-        endDatePicker.set("minDate", selectedStartDate ?? "today");
-
-        if (selectedStartDate && dateEndInput?.value) {
-          const parsedEndDate = endDatePicker.parseDate(dateEndInput.value, "m/d/Y");
-
-          if (parsedEndDate && parsedEndDate < selectedStartDate) {
-            endDatePicker.clear();
-          }
-        }
-
-        syncDateClearButtons();
-      },
+    inquirySelect?.addEventListener("change", (event) => {
+      const value = (event.target as HTMLSelectElement).value;
+      setEventFieldsVisibility(value);
     });
+  };
 
-    if (dateEndInput) {
-      endDatePicker = flatpickr(dateEndInput, {
+  initializeInquirySelect();
+
+  try {
+    if (dateInput) {
+      const startDateParent = dateInput.closest<HTMLElement>(".contact-form__field");
+      const endDateParent = dateEndInput?.closest<HTMLElement>(".contact-form__field");
+
+      let endDatePicker: any = null;
+
+      const startDatePicker = flatpickr(dateInput, {
         dateFormat: "m/d/Y",
         disableMobile: true,
         allowInput: true,
@@ -139,39 +113,121 @@ export function initContactForm() {
         monthSelectorType: "static",
         minDate: "today",
         appendTo: document.body,
+        onOpen: () => {
+          try {
+            if (endDatePicker && typeof endDatePicker.close === "function") {
+              endDatePicker.close();
+            }
+          } catch (err) {
+            /* ignore */
+          }
+        },
         onValueUpdate: () => {
           syncDateClearButtons();
         },
         onChange: (selectedDates) => {
-          const selectedEndDate = selectedDates[0];
+          const selectedStartDate = selectedDates[0];
 
-          if (selectedEndDate) {
-            announceDate(`End date set to ${dateEndInput.value}`);
+          if (selectedStartDate) {
+            announceDate(`Start date set to ${dateInput.value}`);
           } else {
-            announceDate("End date cleared");
+            announceDate("Start date cleared");
+          }
+
+          if (!endDatePicker) {
+            return;
+          }
+
+          endDatePicker.set("minDate", selectedStartDate ?? "today");
+
+          if (selectedStartDate && dateEndInput?.value) {
+            const parsedEndDate = endDatePicker.parseDate(dateEndInput.value, "m/d/Y");
+
+            if (parsedEndDate && parsedEndDate < selectedStartDate) {
+              endDatePicker.clear();
+            }
           }
 
           syncDateClearButtons();
         },
       });
 
-      const selectedStartDate = startDatePicker.selectedDates[0];
+      if (dateEndInput) {
+        endDatePicker = flatpickr(dateEndInput, {
+          dateFormat: "m/d/Y",
+          disableMobile: true,
+          allowInput: true,
+          clickOpens: true,
+          position: "below right",
+          monthSelectorType: "static",
+          minDate: "today",
+          appendTo: document.body,
+          onOpen: () => {
+            try {
+              if (startDatePicker && typeof startDatePicker.close === "function") {
+                startDatePicker.close();
+              }
+            } catch (err) {
+              /* ignore */
+            }
+          },
+          onValueUpdate: () => {
+            syncDateClearButtons();
+          },
+          onChange: (selectedDates) => {
+            const selectedEndDate = selectedDates[0];
 
-      if (selectedStartDate) {
-        endDatePicker.set("minDate", selectedStartDate);
+            if (selectedEndDate) {
+              announceDate(`End date set to ${dateEndInput.value}`);
+            } else {
+              announceDate("End date cleared");
+            }
+
+            syncDateClearButtons();
+          },
+        });
+
+        const selectedStartDate = startDatePicker.selectedDates[0];
+
+        if (selectedStartDate) {
+          endDatePicker.set("minDate", selectedStartDate);
+        }
+
+        dateEndInput.addEventListener("focus", () => {
+          endDatePicker?.open();
+        });
       }
 
-      dateEndInput.addEventListener("focus", () => {
-        endDatePicker?.open();
+      dateInput.addEventListener("focus", () => {
+        startDatePicker.open();
       });
-    }
 
-    dateInput.addEventListener("focus", () => {
-      startDatePicker.open();
-    });
+      // Close pickers when clicking outside inputs/calendars
+      const clickOutsideHandler = (ev: Event) => {
+        try {
+          const target = ev.target as Node;
+          const calendars = Array.from(document.querySelectorAll(".flatpickr-calendar")) as Element[];
+          const clickedInCalendar = calendars.some((c) => c.contains(target));
+          const clickedInInput = (dateInput && (dateInput === target || dateInput.contains && dateInput.contains(target))) ||
+            (dateEndInput && (dateEndInput === target || dateEndInput.contains && dateEndInput.contains(target)));
+
+          if (!clickedInCalendar && !clickedInInput) {
+            try { (startDatePicker as any)?.close?.(); } catch (e) { /* ignore */ }
+            try { (endDatePicker as any)?.close?.(); } catch (e) { /* ignore */ }
+          }
+        } catch (err) {
+          /* ignore */
+        }
+      };
+
+      document.addEventListener("click", clickOutsideHandler);
+    }
+  } catch (err) {
+    console.warn("flatpickr init failed:", err);
   }
 
-  dateClearButtons.forEach((button) => {
+  try {
+    dateClearButtons.forEach((button) => {
     const wrapper = button.closest<HTMLElement>(".contact-form__date-input-wrap");
     const input = wrapper?.querySelector<HTMLInputElement>("input");
 
@@ -187,35 +243,26 @@ export function initContactForm() {
       const pickerInstance = (input as HTMLInputElement & { _flatpickr?: { clear: () => void } })
         ._flatpickr;
 
-      if (pickerInstance) {
-        pickerInstance.clear();
-      } else {
-        input.value = "";
-      }
+        if (pickerInstance) {
+          pickerInstance.clear();
+        } else {
+          input.value = "";
+        }
 
-      input.dispatchEvent(new Event("input", { bubbles: true }));
-      syncDateClearButtons();
+        input.dispatchEvent(new Event("input", { bubbles: true }));
+        syncDateClearButtons();
+      });
+
+      input.addEventListener("input", syncForInput);
+      input.addEventListener("change", syncForInput);
+      syncForInput();
     });
 
-    input.addEventListener("input", syncForInput);
-    input.addEventListener("change", syncForInput);
-    syncForInput();
-  });
+    syncDateClearButtons();
+  } catch (err) {
+    console.warn("date clear button init failed:", err);
+  }
 
-  syncDateClearButtons();
-
-  const initializeInquirySelect = () => {
-    const selectedValue = inquirySelect?.value ?? "";
-
-    setEventFieldsVisibility(selectedValue);
-
-    inquirySelect?.addEventListener("change", (event) => {
-      const value = (event.target as HTMLSelectElement).value;
-      setEventFieldsVisibility(value);
-    });
-  };
-
-  initializeInquirySelect();
 }
 
 initContactForm();
