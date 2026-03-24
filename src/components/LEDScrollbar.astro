@@ -91,7 +91,7 @@ const {
 
 <!-- Global: readyled CSS + reduced-motion guards for its dynamically-created classes -->
 <style is:global>
-  @import "readyled/dist/readyled.css";
+  @import "@ghostbustersva/readyled/dist/readyled.css";
 
   /* Accessibility: pause scroll for users who prefer reduced motion */
   @media (prefers-reduced-motion: reduce) {
@@ -107,7 +107,7 @@ const {
 </style>
 
 <script>
-  import { readyLED } from "readyled/dist/readyled.js";
+  import { readyLED } from "@ghostbustersva/readyled/dist/readyled.js";
 
   /**
    * Initialise a single LED scrollbar using the readyled library.
@@ -124,6 +124,7 @@ const {
       pixelHeight,
       font,
       fallbackFont: "sans-serif",
+      renderFontSize: 96,
       scrollSpeed: scrollRate,
     });
   }
