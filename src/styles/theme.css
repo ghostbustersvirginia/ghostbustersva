@@ -384,10 +384,10 @@ html.reduce-motion *::after {
 .caution-divider {
   position: relative;
   z-index: 1;
-  height: 28px;
+  height: 24px;
   /* Black rail lines top & bottom, diagonal stripes between */
-  border-top: 3px solid var(--color-gb-caution-ink);
-  border-bottom: 3px solid var(--color-gb-caution-ink);
+  border-top: 0.1em solid var(--color-gb-caution-ink);
+  border-bottom: 0.1em solid var(--color-gb-caution-ink);
   background: repeating-linear-gradient(
     -55deg,
     var(--color-gb-caution) 0px,
@@ -401,8 +401,8 @@ html.reduce-motion *::after {
 
 @media (max-width: 640px) {
   .caution-divider {
-    height: 22px;
-    border-width: 2px;
+    height: 20px;
+    border-width: 0.08em;
     background: repeating-linear-gradient(
       -55deg,
       var(--color-gb-caution) 0px,
