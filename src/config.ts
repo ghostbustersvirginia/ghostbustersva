@@ -23,11 +23,11 @@ export const siteConfig = {
   footerLogos: [
     {
       src: "/images/sony-ghost-corps-franchise-letter.png",
-      alt: "Ghost Corps Franchise Logo",
+      alt: "Ghost Corps Certified Franchise",
     },
     {
       src: "/images/irs-501c3-determination-letter.png",
-      alt: "IRS 501(c)(3) determination letter",
+      alt: "IRS 501(c)(3) non-profit organization",
     },
   ],
 } as const;
