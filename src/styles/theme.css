@@ -40,6 +40,7 @@
   --color-gb-green: #3d863d;
   --color-gb-caution: #e5bd00;
   --color-gb-caution-ink: #080909;
+  --color-gb-chrome: #ccc;
 
   /* Subtle tints (decorative only) */
   --color-glow: rgba(0, 0, 255, 0.1);

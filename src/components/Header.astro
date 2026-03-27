@@ -51,6 +51,7 @@ const useLogoAsO = logoIndex >= 0;
 ---
 
 <header class="site-header">
+  <div class="header-trim"></div>
   <div class="container header-inner">
     <a href="/" class="site-logo" aria-label={`${settings.siteName} — home`}>
       <span class="logo-wordmark" aria-hidden="true">
@@ -206,6 +207,11 @@ const useLogoAsO = logoIndex >= 0;
 
 <style>
   .site-header {
+    --trim-height: 10px;
+
+    --font-logo-wordmark-ratio: 0.4;
+    --font-logo-wordmark-size: 8dvw;
+
     background-color: var(--color-bg);
     position: sticky;
     top: 0;
@@ -216,6 +222,16 @@ const useLogoAsO = logoIndex >= 0;
   .header-stripe {
     line-height: 0;
   }
+
+  //.header-trim {
+  //  line-height: 0;
+  //  height: var(--trim-height);
+  //  background-color: color-mix(in oklab, var(--color-gb-red) 90%, black);
+  //  border-width: 0 0 calc(var(--trim-height) * 0.3) 0;
+  //  border-style: solid;
+  //  border-color: var(--color-gb-chrome);
+  //  margin-bottom: calc(var(--trim-height) * 0.3);
+  //}
 
   .header-inner {
     display: flex;
@@ -251,7 +267,7 @@ const useLogoAsO = logoIndex >= 0;
   .logo-wordmark-main {
     font-family: var(--font-brand-title, var(--font-display));
     font-weight: var(--weight-bold);
-    font-size: 3rem;
+    font-size: calc(var(--font-logo-wordmark-size) * var(--font-logo-wordmark-ratio));
     letter-spacing: var(--tracking-heading);
     color: var(--color-text);
     line-height: 1;
@@ -262,10 +278,10 @@ const useLogoAsO = logoIndex >= 0;
 
   .logo-wordmark-sub {
     font-family: var(--font-brand-title, var(--font-display));
-    font-weight: 760;
-    font-size: 0.66em;
-    letter-spacing: 0.08em;
-    color: var(--color-text);
+    font-weight: var(--weight-bold);
+    font-size: calc(var(--font-logo-wordmark-size) * var(--font-logo-wordmark-ratio) * 0.6);
+    letter-spacing: calc(var(--font-logo-wordmark-size) * var(--font-logo-wordmark-ratio) * 0.16);
+    color: var(--color-text-muted);
     line-height: 1;
     margin-left: 0.32ch;
   }
@@ -674,6 +690,9 @@ const useLogoAsO = logoIndex >= 0;
   }
 
   @media (max-width: 350px) {
+    .site-header {
+      --font-logo-wordmark-ratio: 1;
+    }
     .desktop-nav {
       display: none;
     }
@@ -683,13 +702,9 @@ const useLogoAsO = logoIndex >= 0;
     }
 
     .logo-wordmark-main {
-      font-size: 1.65rem;
-      letter-spacing: 0.02em;
     }
 
     .logo-wordmark-sub {
-      font-size: 0.85rem;
-      letter-spacing: 0.18em;
     }
 
     .logo-wordmark {
@@ -698,6 +713,9 @@ const useLogoAsO = logoIndex >= 0;
   }
 
   @media (min-width: 351px) and (max-width: 767px) {
+    .site-header {
+      --font-logo-wordmark-ratio: 1;
+    }
     .desktop-nav {
       display: none;
     }
@@ -707,13 +725,9 @@ const useLogoAsO = logoIndex >= 0;
     }
 
     .logo-wordmark-main {
-      font-size: 1.9rem;
-      letter-spacing: 0.02em;
     }
 
     .logo-wordmark-sub {
-      font-size: 1rem;
-      letter-spacing: 0.18em;
     }
 
     .logo-wordmark {
