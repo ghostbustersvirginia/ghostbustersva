@@ -1,7 +1,7 @@
 import { useAppearanceRequest } from "./AppearanceRequestContext";
 
 export default function NavButtons() {
-  const { isFirst, isLast, submitting, goBack, goNext, copy } = useAppearanceRequest();
+  const { isFirst, isLast, submitting, goBack, goNext, handleSubmit, copy } = useAppearanceRequest();
 
   return (
     <div className={["arf__nav", isFirst ? "arf__nav--end" : ""].filter(Boolean).join(" ")}>
@@ -12,10 +12,11 @@ export default function NavButtons() {
       )}
       {isLast ? (
         <button
-          type="submit"
+          type="button"
           className="btn btn--primary"
           disabled={submitting}
           aria-busy={submitting}
+          onClick={handleSubmit}
         >
           {submitting ? copy.navSubmitting : copy.navSubmit}
         </button>
@@ -27,6 +28,3 @@ export default function NavButtons() {
     </div>
   );
 }
-
-
-

@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect } from "react";
-import type { ReactNode, FormEvent } from "react";
+import type { ReactNode } from "react";
 import type { FormCopy, FormData } from "./types";
 import { SESSION_KEY, FORMSPREE_URL, TOTAL_STEPS, DEFAULT_FORM_DATA } from "./constants";
 import { validateStep, buildPayload, loadFromSession, saveToSession, clearSession } from "./helpers";
@@ -21,7 +21,7 @@ interface AppearanceRequestContextValue {
   update: (field: keyof FormData, value: string) => void;
   goNext: () => void;
   goBack: () => void;
-  handleSubmit: (e: FormEvent) => Promise<void>;
+  handleSubmit: () => Promise<void>;
 }
 
 // ------------------------------------------------------------------ //
@@ -94,8 +94,7 @@ export function AppearanceRequestProvider({
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async () => {
     if (!validate()) return;
 
     setSubmitting(true);

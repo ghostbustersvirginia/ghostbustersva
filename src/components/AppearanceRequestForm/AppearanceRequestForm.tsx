@@ -58,7 +58,7 @@ function SuccessMessage() {
 // ------------------------------------------------------------------ //
 
 function FormContent() {
-  const { step, submitted, submitError, handleSubmit, isLast, copy } = useAppearanceRequest();
+  const { step, submitted, submitError, copy } = useAppearanceRequest();
 
   const stepTitles: string[] = [
     copy.step0Title,
@@ -78,7 +78,7 @@ function FormContent() {
   return (
     <div className="arf">
       <StepProgress step={step} totalSteps={TOTAL_STEPS} stepTitles={stepTitles} />
-      <form noValidate onSubmit={isLast ? handleSubmit : (e) => e.preventDefault()}>
+      <form noValidate onSubmit={(e) => e.preventDefault()}>
         <StepComponent />
         {submitError && (
           <div className="arf__submit-error" role="alert">
