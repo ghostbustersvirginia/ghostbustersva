@@ -4,7 +4,10 @@
  */
 import BaseLayout from "../layouts/BaseLayout.astro";
 import PageHeader from "../components/ui/PageHeader.astro";
-import AppearanceRequestForm from "../components/AppearanceRequestForm.tsx";
+import AppearanceRequestForm from "../components/AppearanceRequestForm/AppearanceRequestForm.tsx";
+import { getPageCopy } from "../lib/page-copy";
+
+const formCopy = await getPageCopy("appearance-request-form");
 ---
 
 <BaseLayout
@@ -28,7 +31,7 @@ import AppearanceRequestForm from "../components/AppearanceRequestForm.tsx";
 
     <div class="page-band page-band--alt">
       <div class="container container--mid">
-        <AppearanceRequestForm client:load />
+        <AppearanceRequestForm copy={formCopy} client:load />
       </div>
     </div>
   </section>
