@@ -6,6 +6,13 @@ import react from "@astrojs/react";
 import keystatic from "@keystatic/astro";
 import vercel from "@astrojs/vercel";
 
+const domains = [
+  { hostname: "ghostbustersva.vercel.app", protocol: "https" },
+  { hostname: "ghostbustersva.com", protocol: "https" },
+  { hostname: "gbva-web.jonathancook.site", protocol: "https" }
+];
+const hosts = domains.map(d => d.hostname);
+
 // https://astro.build/config
 export default defineConfig({
   // Pages are pre-rendered (static) by default.
@@ -18,9 +25,11 @@ export default defineConfig({
   security: {
     // Trust forwarded host headers from these domains so Keystatic's
     // OAuth callback URLs resolve correctly on Vercel (not to localhost).
-    allowedDomains: [
-      { hostname: "ghostbustersva.vercel.app", protocol: "https" },
-      { hostname: "ghostbustersva.com", protocol: "https" },
-    ],
+    allowedDomains: domains,
+  },
+  vite: {
+    server: {
+      allowedHosts: hosts,
+    }
   },
 });
