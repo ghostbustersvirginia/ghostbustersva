@@ -9,6 +9,7 @@
 
 .arf {
   width: 100%;
+    margin-top: var(--space-lg);
 }
 
 /* ------------------------------------------------------------------ */
@@ -16,7 +17,7 @@
 /* ------------------------------------------------------------------ */
 
 .arf__progress {
-  margin-block-end: var(--space-3xl);
+  margin-block-end: var(--space-lg);
 }
 
 .arf__step-track {

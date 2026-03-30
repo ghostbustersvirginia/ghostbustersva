@@ -2,8 +2,9 @@
 /**
  * Request an Appearance — multi-step form for booking Ghostbusters Virginia.
  */
+
+import SectionHeading from "../components/ui/SectionHeading.astro";
 import BaseLayout from "../layouts/BaseLayout.astro";
-import PageHeader from "../components/ui/PageHeader.astro";
 import AppearanceRequestForm from "../components/AppearanceRequestForm/AppearanceRequestForm.tsx";
 import { getPageCopy } from "../lib/page-copy";
 
@@ -21,16 +22,12 @@ const formCopy = await getPageCopy("appearance-request-form");
   <section class="page" aria-labelledby="request-title">
     <div class="page-band page-band--white">
       <div class="container container--mid">
-        <PageHeader
-          id="request-title"
-          title="Request an Appearance"
-          subtitle="Planning an event and want Ghostbusters Virginia to be part of it? Fill out the form below and we'll be in touch. Required fields are marked with an asterisk (*)."
-        />
-      </div>
-    </div>
-
-    <div class="page-band page-band--alt">
-      <div class="container container--mid">
+        <SectionHeading id="request-section-heading" level={2}>
+          Request an Appearance
+        </SectionHeading>
+        <p class="page-intro">
+          Planning an event and want Ghostbusters Virginia to be part of it? Fill out the form below and we'll be in touch. Required fields are marked with an asterisk (*).
+        </p>
         <AppearanceRequestForm copy={formCopy} client:load />
       </div>
     </div>
