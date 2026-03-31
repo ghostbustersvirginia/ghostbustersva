@@ -24,6 +24,9 @@ import ZenerGame from "../components/ZenerGame";
 
   /* ---- Container / layout ---- */
   .zener-game {
+    --zener-card-width: clamp(120px, 25vmin, 180px);
+    --zener-card-height: clamp(177px, 36.83vmin, 265px);
+
     position: relative;
     min-height: calc(100vh - 120px);
     display: flex;
@@ -65,7 +68,7 @@ import ZenerGame from "../components/ZenerGame";
 
   /* ---- Screen shake ---- */
   .zener-game--shake {
-    animation: zener-shake 0.5s ease;
+    animation: zener-shake 1.5s ease;
   }
 
   @keyframes zener-shake {
@@ -147,16 +150,16 @@ import ZenerGame from "../components/ZenerGame";
   /* ---- Stacked deck (idle decoration) ---- */
   .zener-deck-stack {
     position: relative;
-    width: clamp(120px, 25vmin, 180px);
-    height: clamp(168px, 35vmin, 252px);
+    width: var(--zener-card-width);
+    height: var(--zener-card-height);
   }
 
   .zener-deck-card {
     position: absolute;
     inset: 0;
     border-radius: var(--radius-md);
-    background: var(--color-accent);
-    border: 2px solid var(--color-accent-hover);
+    background: #fff url("/images/zener-test/card-back2.png") center / cover no-repeat;
+    border: 2px solid var(--color-text-muted);
     box-shadow: var(--shadow-panel);
   }
 
@@ -173,11 +176,11 @@ import ZenerGame from "../components/ZenerGame";
 
   .zener-shuffle__card {
     position: absolute;
-    width: clamp(100px, 20vmin, 140px);
-    height: clamp(140px, 28vmin, 196px);
+    width: var(--zener-card-width);
+    height: var(--zener-card-height);
     border-radius: var(--radius-md);
-    background: var(--color-accent);
-    border: 2px solid var(--color-accent-hover);
+    background: #fff url("/images/zener-test/card-back2.png") center / cover no-repeat;
+    border: 2px solid var(--color-text-muted);
     box-shadow: var(--shadow-panel);
     animation: zener-shuffle-fan 0.9s ease forwards;
   }
@@ -232,7 +235,6 @@ import ZenerGame from "../components/ZenerGame";
     align-items: center;
     gap: var(--space-xl);
     width: 100%;
-    max-width: 640px;
   }
 
   /* ---- Card ---- */
@@ -242,8 +244,8 @@ import ZenerGame from "../components/ZenerGame";
 
   .zener-card {
     position: relative;
-    width: clamp(120px, 25vmin, 180px);
-    height: clamp(168px, 35vmin, 252px);
+    width: var(--zener-card-width);
+    height: var(--zener-card-height);
     transform-style: preserve-3d;
     transition: transform 0.6s ease;
     cursor: default;
@@ -302,7 +304,7 @@ import ZenerGame from "../components/ZenerGame";
   }
 
   .zener-card__face--back {
-    background: var(--color-accent);
+    background: #fff url("/images/zener-test/card-back2.png") center / cover no-repeat;
     color: var(--color-text-inverse);
   }
 
@@ -312,11 +314,7 @@ import ZenerGame from "../components/ZenerGame";
   }
 
   .zener-card__back-label {
-    font-family: var(--font-display);
-    font-size: clamp(2rem, 8vmin, 4rem);
-    color: rgba(255, 255, 255, 0.4);
-    pointer-events: none;
-    user-select: none;
+    display: none;
   }
 
   .zener-card__revealed {
@@ -335,14 +333,12 @@ import ZenerGame from "../components/ZenerGame";
     display: flex;
     align-items: center;
     justify-content: center;
-    width: clamp(48px, 12vmin, 80px);
-    height: clamp(48px, 12vmin, 80px);
     color: var(--color-text);
   }
 
   .zener-card__symbol svg {
-    width: 100%;
-    height: 100%;
+    width: calc(var(--zener-card-width) * 0.75) !important;
+    height: auto;
   }
 
   /* ---- Result badge (✓ / ✗) ---- */
@@ -484,8 +480,8 @@ import ZenerGame from "../components/ZenerGame";
     display: flex;
     align-items: center;
     justify-content: center;
-    width: clamp(28px, 6vmin, 40px);
-    height: clamp(28px, 6vmin, 40px);
+    width: calc(var(--zener-card-width) * 0.5);
+    height: calc(var(--zener-card-height) * 0.5);
   }
 
   .zener-symbol-icon svg {

@@ -1,11 +1,15 @@
 /**
  * ZenerGame — Interactive Zener card ESP test game.
  * PRD 001: Zener Card Deck
+ * PRD 002: Zener Game Sounds
  *
  * 25-card deck (5 symbols × 5). User predicts each card's symbol;
  * score is based on the inverse probability of a correct guess.
- * Incorrect answers shake the screen + play a shock sound.
- * Correct answers flash the screen + play a bell sound.
+ * Incorrect answers shake the screen + play a random shock sound, followed
+ * by a random "wrong" quip 0.7–1.5 s later.
+ * Correct answers flash the screen.
+ * While waiting for a prediction, a random "before" prompt plays 2–5 s after
+ * the card appears.
  * Background darkens 5% per wrong answer, up to 50% at 10 wrong.
  */
 
@@ -76,50 +80,70 @@ const SYMBOL_LABELS: Record<ZenerSymbol, string> = {
 };
 
 /* ------------------------------------------------------------------ */
-/* Web Audio helpers                                                    */
+/* Sound files                                                          */
 /* ------------------------------------------------------------------ */
 
-function playBell(ctx: AudioContext): void {
-  const osc = ctx.createOscillator();
-  const gain = ctx.createGain();
-  osc.connect(gain);
-  gain.connect(ctx.destination);
-  osc.type = "sine";
-  osc.frequency.setValueAtTime(880, ctx.currentTime);
-  osc.frequency.exponentialRampToValueAtTime(440, ctx.currentTime + 0.8);
-  gain.gain.setValueAtTime(0.5, ctx.currentTime);
-  gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.9);
-  osc.start(ctx.currentTime);
-  osc.stop(ctx.currentTime + 0.9);
+const SHOCK_FILES = ["/sounds/shock/shock-1.mp3", "/sounds/shock/shock-2.mp3"];
+
+const BEFORE_FILES = [
+  "/sounds/before/clear-your-head.mp3",
+  "/sounds/before/tell-me-what-you-think-it-is.mp3",
+  "/sounds/before/think-hard.mp3",
+  "/sounds/before/what-is-it.mp3",
+  "/sounds/before/whats-this-one.mp3",
+];
+
+const WRONG_FILES = [
+  "/sounds/wrong/good-guess.mp3",
+  "/sounds/wrong/isnt-your-lucky-day.mp3",
+  "/sounds/wrong/wrong-1.mp3",
+  "/sounds/wrong/wrong-2.mp3",
+];
+
+/* ------------------------------------------------------------------ */
+/* SoundQueue — shuffle bag: no repeats until exhausted,               */
+/*              never plays the same sound twice in a row.             */
+/* ------------------------------------------------------------------ */
+
+class SoundQueue {
+  private files: string[];
+  private queue: string[] = [];
+  private lastPlayed: string | null = null;
+
+  constructor(files: string[]) {
+    this.files = files;
+    this.refill();
+  }
+
+  private refill(): void {
+    const shuffled = [...this.files];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    // Ensure the new head is never the same as the last played
+    if (shuffled.length > 1 && shuffled[0] === this.lastPlayed) {
+      [shuffled[0], shuffled[1]] = [shuffled[1], shuffled[0]];
+    }
+    this.queue = shuffled;
+  }
+
+  next(): string {
+    if (this.queue.length === 0) this.refill();
+    const sound = this.queue.shift()!;
+    this.lastPlayed = sound;
+    return sound;
+  }
 }
 
-function playShock(ctx: AudioContext): void {
-  const bufferSize = ctx.sampleRate * 0.25;
-  const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
-  const data = buffer.getChannelData(0);
-  for (let i = 0; i < bufferSize; i++) {
-    data[i] = (Math.random() * 2 - 1) * (1 - i / bufferSize);
+function playSound(src: string): void {
+  try {
+    new Audio(src).play().catch(() => {
+      /* ignore browser autoplay-policy rejections */
+    });
+  } catch {
+    /* ignore environments where Audio is unavailable */
   }
-  const source = ctx.createBufferSource();
-  source.buffer = buffer;
-  const gain = ctx.createGain();
-  const distortion = ctx.createWaveShaper();
-
-  // Simple hard-clip distortion curve
-  const k = 200;
-  const curve = new Float32Array(256);
-  for (let i = 0; i < 256; i++) {
-    const x = (i * 2) / 256 - 1;
-    curve[i] = ((Math.PI + k) * x) / (Math.PI + k * Math.abs(x));
-  }
-  distortion.curve = curve;
-
-  source.connect(distortion);
-  distortion.connect(gain);
-  gain.connect(ctx.destination);
-  gain.gain.setValueAtTime(0.6, ctx.currentTime);
-  gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.25);
-  source.start(ctx.currentTime);
 }
 
 /* ------------------------------------------------------------------ */
@@ -154,7 +178,9 @@ export default function ZenerGame() {
   const [isFlipped, setIsFlipped] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
 
-  const audioCtxRef = useRef<AudioContext | null>(null);
+  const shockQueueRef = useRef(new SoundQueue(SHOCK_FILES));
+  const beforeQueueRef = useRef(new SoundQueue(BEFORE_FILES));
+  const wrongQueueRef = useRef(new SoundQueue(WRONG_FILES));
 
   /* Detect reduced motion preference */
   useEffect(() => {
@@ -165,18 +191,16 @@ export default function ZenerGame() {
     return () => mq.removeEventListener("change", handler);
   }, []);
 
-  /* Lazily create AudioContext on first user interaction */
-  const getAudioCtx = useCallback((): AudioContext | null => {
-    if (typeof AudioContext === "undefined" || typeof window === "undefined") return null;
-    if (!audioCtxRef.current) {
-      try {
-        audioCtxRef.current = new AudioContext();
-      } catch {
-        return null;
-      }
-    }
-    return audioCtxRef.current;
-  }, []);
+  /* Play a random "before" prompt 2–5 s after each card appears.
+     The effect cleanup cancels the timer if the user predicts first. */
+  useEffect(() => {
+    if (phase !== "waiting") return;
+    const delay = 2000 + Math.random() * 3000; // 2000–5000 ms
+    const timer = setTimeout(() => {
+      playSound(beforeQueueRef.current.next());
+    }, delay);
+    return () => clearTimeout(timer);
+  }, [phase]);
 
   /* Trigger a brief screen effect (cleared after animation) */
   const triggerEffect = useCallback(
@@ -217,7 +241,6 @@ export default function ZenerGame() {
       setPrediction(sym);
       setPhase("flipping");
 
-      const ctx = getAudioCtx();
       const flipMs = reducedMotion ? 0 : 600;
 
       // Flip card
@@ -233,11 +256,14 @@ export default function ZenerGame() {
         if (isCorrect) {
           setTotalScore((s) => s + score);
           triggerEffect("flash");
-          if (ctx) playBell(ctx);
         } else {
           setIncorrectCount((n) => n + 1);
           triggerEffect("shake");
-          if (ctx) playShock(ctx);
+          // Play a random shock sound immediately
+          playSound(shockQueueRef.current.next());
+          // Play a random wrong-answer quip 0.7–1.5 s later
+          const wrongDelay = 700 + Math.random() * 800;
+          setTimeout(() => playSound(wrongQueueRef.current.next()), wrongDelay);
         }
 
         setPhase("revealed");
@@ -267,7 +293,7 @@ export default function ZenerGame() {
         }, pauseMs);
       }, flipMs);
     },
-    [phase, deck, currentIndex, reducedMotion, getAudioCtx, triggerEffect],
+    [phase, deck, currentIndex, reducedMotion, triggerEffect],
   );
 
   /* Play again */
@@ -393,52 +419,28 @@ export default function ZenerGame() {
           {/* Card */}
           <div className="zener-card-wrapper" aria-label={`Card ${currentIndex + 1} of 25`}>
             <div className={cardClasses}>
-              <div className="zener-card__face zener-card__face--back" aria-hidden="true">
-                <span className="zener-card__back-label">?</span>
-              </div>
+              <div className="zener-card__face zener-card__face--back" aria-hidden="true"></div>
               <div className="zener-card__face zener-card__face--front">
                 {prediction && (
                   <div className="zener-card__revealed">
                     <SymbolIcon symbol={deck[currentIndex]} className="zener-card__symbol" />
-                    {lastResult && (
-                      <span
-                        className={`zener-result-badge zener-result-badge--${lastResult}`}
-                        aria-label={lastResult === "correct" ? "Correct!" : "Incorrect"}
-                      >
-                        {lastResult === "correct" ? "✓" : "✗"}
-                      </span>
-                    )}
+                    {/*{lastResult && (*/}
+                    {/*  <span*/}
+                    {/*    className={`zener-result-badge zener-result-badge--${lastResult}`}*/}
+                    {/*    aria-label={lastResult === "correct" ? "Correct!" : "Incorrect"}*/}
+                    {/*  >*/}
+                    {/*    {lastResult === "correct" ? "✓" : "✗"}*/}
+                    {/*  </span>*/}
+                    {/*)}*/}
                   </div>
                 )}
               </div>
             </div>
           </div>
 
-          {/* Prediction result feedback */}
-          {phase === "revealed" && lastResult && (
-            <div
-              className={`zener-feedback zener-feedback--${lastResult}`}
-              aria-live="assertive"
-              role="status"
-            >
-              {lastResult === "correct" ? (
-                <>
-                  <span className="zener-feedback__icon">⚡</span>
-                  Correct! +{calcScore(prediction!, deck.slice(currentIndex))} pts
-                </>
-              ) : (
-                <>
-                  <span className="zener-feedback__icon">⚡</span>
-                  Incorrect — it was <strong>{SYMBOL_LABELS[deck[currentIndex]]}</strong>
-                </>
-              )}
-            </div>
-          )}
-
           {/* Symbol buttons */}
           <div className="zener-symbols" role="group" aria-label="Choose the symbol you predict">
             {SYMBOLS.map((sym) => {
-              const preview = phase === "waiting" ? scorePreviewFor(sym) : null;
               return (
                 <button
                   key={sym}
@@ -450,20 +452,36 @@ export default function ZenerGame() {
                     .join(" ")}
                   onClick={() => handlePredict(sym)}
                   disabled={phase !== "waiting"}
-                  aria-label={`${SYMBOL_LABELS[sym]}${preview !== null ? ` (${preview} pts if correct)` : ""}`}
                   aria-pressed={prediction === sym}
                 >
                   <SymbolIcon symbol={sym} />
                   <span className="zener-symbol-btn__label">{SYMBOL_LABELS[sym]}</span>
-                  {preview !== null && (
-                    <span className="zener-symbol-btn__pts" aria-hidden="true">
-                      {preview} pts
-                    </span>
-                  )}
                 </button>
               );
             })}
+
           </div>
+
+          {/*/!* Prediction result feedback *!/*/}
+          {phase === "revealed" && lastResult && (
+            <div
+              className={`zener-feedback zener-feedback--${lastResult}`}
+              aria-live="assertive"
+              role="status"
+            >
+              {lastResult === "correct" ? (
+                <>
+                  <span className="zener-feedback__icon">⚡</span>
+                  Correct! {calcScore(prediction!, deck.slice(currentIndex))} pts
+                </>
+              ) : (
+                 <>
+                   <span className="zener-feedback__icon">⚡</span>
+                   Incorrect — it was <strong>{SYMBOL_LABELS[deck[currentIndex]]}</strong>
+                 </>
+               )}
+            </div>
+          )}
         </div>
       )}
 
