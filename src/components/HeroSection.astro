@@ -18,8 +18,9 @@ interface Props {
   primaryCtaLabel: string;
   primaryCtaHref: string;
   primaryCtaExternal?: boolean;
-  secondaryCtaLabel: string;
-  secondaryCtaHref: string;
+  secondaryCtaLabel?: string;
+  secondaryCtaHref?: string;
+  secondaryCtaExternal?: boolean;
   heroLogoSrc: string;
   heroLogoAlt: string;
   heroLogoImage?: ResponsiveImageAttrs;
@@ -34,6 +35,7 @@ const {
   primaryCtaExternal = false,
   secondaryCtaLabel,
   secondaryCtaHref,
+  secondaryCtaExternal = false,
   heroLogoSrc,
   heroLogoAlt,
   heroLogoImage,
@@ -61,8 +63,10 @@ const {
     <!-- Right column: copy + CTAs -->
     <div class="hero-content">
       <h1 id="home-hero-title" class="hero-title">
-        {heroTitleText}
-        <span class="hero-title-accent">{heroTitleAccent}</span>
+        <span class="hero-title-main">{heroTitleText}</span>
+        <span class="hero-title-accent" data-hero-accent>
+          <span class="hero-title-accent-inner">{heroTitleAccent}</span>
+        </span>
       </h1>
 
       <p class="hero-tagline">{heroTagline}</p>
@@ -70,15 +74,24 @@ const {
       <div class="hero-cta">
         <Button
           variant="primary"
-          class="btn--lg"
+          class="btn--lg btn--donate-hero"
           href={primaryCtaHref}
           external={primaryCtaExternal}
         >
           {primaryCtaLabel}
         </Button>
-        <Button variant="secondary" class="btn--lg" href={secondaryCtaHref} icon="arrow-right">
-          {secondaryCtaLabel}
-        </Button>
+        {
+          secondaryCtaLabel && secondaryCtaHref && (
+            <Button
+              variant="secondary"
+              class="btn--lg"
+              href={secondaryCtaHref}
+              external={secondaryCtaExternal}
+            >
+              {secondaryCtaLabel}
+            </Button>
+          )
+        }
       </div>
     </div>
   </div>
@@ -87,4 +100,34 @@ const {
 <script>
   const logo = document.querySelector(".hero-logo");
   logo?.addEventListener("animationend", () => logo.classList.add("entrance-done"), { once: true });
+
+  const title = document.querySelector(".hero-title");
+  const titleMain = title?.querySelector(".hero-title-main");
+  const titleAccent = title?.querySelector("[data-hero-accent]");
+  const titleAccentInner = title?.querySelector(".hero-title-accent-inner");
+
+  const syncAccentWidth = () => {
+    if (!(title instanceof HTMLElement)) return;
+    if (!(titleMain instanceof HTMLElement)) return;
+    if (!(titleAccentInner instanceof HTMLElement)) return;
+
+    title.style.setProperty("--hero-accent-scale", "1");
+    const mainWidth = titleMain.getBoundingClientRect().width;
+    const accentWidth = titleAccentInner.getBoundingClientRect().width;
+    if (accentWidth <= 0) return;
+
+    const scale = mainWidth / accentWidth;
+    title.style.setProperty("--hero-accent-scale", String(scale));
+  };
+
+  syncAccentWidth();
+  window.addEventListener("load", syncAccentWidth, { once: true });
+  document.fonts?.ready.then(syncAccentWidth);
+
+  if (titleMain instanceof HTMLElement && titleAccent instanceof HTMLElement) {
+    const resizeObserver = new ResizeObserver(() => syncAccentWidth());
+    resizeObserver.observe(titleMain);
+    resizeObserver.observe(titleAccent);
+    if (titleAccentInner instanceof HTMLElement) resizeObserver.observe(titleAccentInner);
+  }
 </script>

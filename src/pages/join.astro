@@ -10,7 +10,6 @@ import SectionHeading from "../components/ui/SectionHeading.astro";
 import Button from "../components/ui/Button.astro";
 import { getResponsiveImageAttrs } from "../lib/images";
 import { getPageCopy } from "../lib/page-copy";
-import { isSafeExternalUrl } from "../lib/links";
 
 const copy = await getPageCopy("join");
 
@@ -40,6 +39,10 @@ const beltGizmos = copy.beltGizmoItems || [
   "LifeGard 2",
   "PKE Meter",
 ];
+const showBeltGizmoSublist = copy.showBeltGizmoSublist ?? true;
+const beltGizmoParentIndex = requiredGear.findIndex((item) => /belt gizmo/i.test(item));
+const beltGizmoNestIndex =
+  beltGizmoParentIndex >= 0 ? beltGizmoParentIndex : requiredGear.length - 1;
 const applyText =
   copy.applyText ||
   "Got all your gear and ready to show us you ain't afraid of no ghosts? Head to our contact page and choose the method that works for you; we’ll send the membership survey link and notify you of results after Membership Liaison Officer verification.";
@@ -47,6 +50,8 @@ const notePrefix = copy.notePrefix || "Please Note:";
 const noteText =
   copy.noteText ||
   "We ask all applicants be able to pass a high-level background check to verify no felonies are on their record; this includes a verification with no results found on the national sex offender registry.";
+const applyLinkLabel = "Contact Us today";
+const applyLinkUrl = "/contact";
 const whatWeLookForHeading = copy.whatWeLookForHeading || "What We Look For";
 const howToApplyHeading = copy.howToApplyHeading || "How to Apply";
 const requiredGearHeading = copy.requiredGearHeading || "Required Gear";
@@ -137,10 +142,10 @@ const whatWeLookForImage = await getResponsiveImageAttrs({
             </h4>
             <ul class="check-list" role="list">
               {
-                requiredGear.map((item) => (
+                requiredGear.map((item, index) => (
                   <li>
                     {item}
-                    {item === "At least one belt gizmo" && (
+                    {showBeltGizmoSublist && index === beltGizmoNestIndex && (
                       <ul class="sub-list" role="list">
                         {beltGizmos.map((gizmo) => (
                           <li>{gizmo}</li>
@@ -159,10 +164,6 @@ const whatWeLookForImage = await getResponsiveImageAttrs({
     <div class="page-band page-band--alt">
       <div class="container container--mid">
         <SectionHeading>{howToApplyHeading}</SectionHeading>
-        <p class="prose-text" style="margin-bottom: var(--space-lg);">{applyText}</p>
-        <div class="join-cta-wrapper">
-          <Button variant="secondary-alt" href="/contact">Contact Us</Button>
-        </div>
         <LightboxImageTrigger
           group="join-gallery"
           src={heroImageSrc}
@@ -170,7 +171,7 @@ const whatWeLookForImage = await getResponsiveImageAttrs({
           buttonClass="page-image-lightbox page-join-hero"
           overlayClass="page-image-lightbox__overlay"
           ariaLabel={`View full image: ${heroImageAlt}`}
-          buttonStyle="margin-top: var(--space-xl);"
+          buttonStyle="margin-top: var(--space-xl); margin-bottom: var(--space-xl);"
         >
           <img
             {...heroImage}
@@ -180,6 +181,12 @@ const whatWeLookForImage = await getResponsiveImageAttrs({
             decoding="async"
           />
         </LightboxImageTrigger>
+        <p class="prose-text" style="margin-bottom: var(--space-lg);">{applyText}</p>
+        <div class="join-cta-wrapper">
+          <Button variant="secondary-alt" href={applyLinkUrl}>
+            {applyLinkLabel}
+          </Button>
+        </div>
         <div class="callout">
           <p>
             <strong>{notePrefix}</strong>
@@ -334,7 +341,7 @@ const whatWeLookForImage = await getResponsiveImageAttrs({
     list-style: none;
     padding: 0;
     margin-top: var(--space-md);
-    margin-left: 0.5rem;
+    margin-left: 0.25rem;
     display: flex;
     flex-direction: column;
     gap: var(--space-sm);
@@ -371,7 +378,7 @@ const whatWeLookForImage = await getResponsiveImageAttrs({
   }
 
   .callout {
-    margin-top: var(--space-lg);
+    margin-top: var(--space-2xl);
     background: var(--color-surface);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-md);

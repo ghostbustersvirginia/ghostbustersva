@@ -17,14 +17,14 @@ describe("siteConfig", () => {
     expect(labels).toContain("About");
     expect(labels).toContain("Join");
     expect(labels).toContain("Events");
-    expect(labels).toContain("Media");
+    expect(labels).toContain("Press");
     expect(labels).toContain("Contact");
     expect(labels).toContain("Donate");
   });
 
   it("footer logos include both required images", () => {
     const alts = siteConfig.footerLogos.map((l) => l.alt);
-    expect(alts).toContain("Ghost Corps Franchise Logo");
-    expect(alts).toContain("IRS 501(c)(3) determination letter");
+    expect(alts).toContain("Ghost Corps Certified Franchise");
+    expect(alts).toContain("IRS 501(c)(3) non-profit organization");
   });
 });

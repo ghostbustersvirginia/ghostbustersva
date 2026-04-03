@@ -101,6 +101,17 @@
   }
 }
 
+@keyframes title-line-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 /* ── Logo — large, shadow, entrance animation, tilt + scale on hover ── */
 .hero-logo {
   position: relative;
@@ -160,18 +171,51 @@
 
 /* ── Heading — two-tone title ── */
 .hero-title {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
   font-family: var(--font-brand-title);
   font-size: clamp(2rem, 5vw, 3.25rem);
   font-weight: 700;
   line-height: var(--leading-tight);
   color: var(--color-text);
   text-transform: uppercase;
+  --hero-accent-scale: 1;
+}
+
+.hero-title-main {
+  display: inline-block;
+  width: max-content;
+  white-space: nowrap;
+  opacity: 0;
+  animation: title-line-in 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) 0.12s forwards;
 }
 
 /* Second line accent color — brand green */
 .hero-title-accent {
+  display: inline-block;
+  width: max-content;
   color: var(--color-gb-green);
   white-space: nowrap;
+  opacity: 0;
+  animation: title-line-in 0.55s cubic-bezier(0.2, 0.8, 0.2, 1) 0.35s forwards;
+}
+
+.hero-title-accent-inner {
+  display: inline-block;
+  font-weight: 900;
+  transform-origin: right center;
+  transform: scaleX(var(--hero-accent-scale));
+}
+
+@media (max-width: 767px) {
+  .hero-title {
+    align-items: center;
+  }
+
+  .hero-title-accent-inner {
+    transform-origin: center;
+  }
 }
 
 /* ── Tagline ── */
@@ -203,18 +247,20 @@
   font-size: var(--text-base);
 }
 
-/* Secondary button — outlined green, fills on hover */
-.hero-cta .btn--secondary {
-  color: var(--color-gb-green);
-  background: transparent;
-  border: 2px solid var(--color-gb-green);
+.hero-cta .btn--donate-hero {
+  background-image: linear-gradient(135deg, #0000ff 0%, #2e2eff 48%, #1479ff 100%);
+  background-size: 170% 170%;
+  border-color: #0000ff;
+  box-shadow: 0 1px 6px rgba(0, 0, 255, 0.2);
 }
 
-.hero-cta .btn--secondary:hover,
-.hero-cta .btn--secondary:focus-visible {
-  background: var(--color-gb-green);
-  border-color: var(--color-gb-green);
-  color: #ffffff;
+.hero-cta .btn--donate-hero:hover,
+.hero-cta .btn--donate-hero:focus-visible {
+  background-position: 100% 50%;
+  box-shadow:
+    0 8px 20px rgba(0, 0, 255, 0.22),
+    0 0 0 1px rgba(255, 255, 255, 0.18) inset;
+  transform: translateY(-2px);
 }
 
 /* ── Mobile (≤ 640px) ── */
@@ -258,6 +304,12 @@
 
   .hero-content {
     animation: none;
+  }
+
+  .hero-title-main,
+  .hero-title-accent {
+    animation: none;
+    opacity: 1;
   }
 
   .hero-logo-glow {

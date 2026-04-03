@@ -20,25 +20,25 @@ const donateCopy = await getPageCopy("donate");
 const settings = await getSiteSettings();
 
 const allEvents = await getCollection("events");
-const { upcoming, past } = splitEventsByStatus(allEvents);
-const galleryItems = await getCollection("gallery");
+const { upcoming } = splitEventsByStatus(allEvents);
+const gallery = await getCollection("gallery");
 
 /* ── CMS-driven copy ── */
 const heroTitleText = String(copy.heroTitleText || "Bustin' Means");
 const heroTitleAccent = String(copy.heroTitleAccent || "Doing Good");
 const heroTagline = String(
   copy.heroTagline ||
-    "Virginia's only Sony-recognized 501(c)(3) Ghostbusters franchise — uniting fans and serving communities since 2001.",
+    "Giving back to the community through a love of Ghostbusters, uniting fans across Virginia to support local charities and turn fandom into real-world impact.",
 );
-const heroPrimaryCtaLabel = "Donate";
-const heroSecondaryCtaLabel = String(copy.heroSecondaryCtaLabel || "Join the Team");
-const heroSecondaryCtaHref = copy.heroSecondaryCtaHref;
+const heroPrimaryCtaLabel = donateCopy.donationCtaLabel || "Donate Today";
 const heroLogoSrc = String(copy.heroLogoSrc || "/images/logo.png");
 const heroLogoAlt = String(copy.heroLogoAlt || "Ghostbusters Virginia logo");
+const heroSecondaryCtaLabel = copy.heroSecondaryCtaLabel || undefined;
+const heroSecondaryCtaHref = copy.heroSecondaryCtaHref || undefined;
 const missionHeading = copy.missionHeading || "Who We Are";
 const missionSubtitle =
   copy.missionSubtitle ||
-  "Ghostbusters Virginia is the only 501(c)3 nonprofit recognized by Sony\u2019s Ghost Corps in the state. Since 2001, we\u2019ve united fans across the Commonwealth to turn our love of Ghostbusters into real community impact.";
+  "Ghostbusters Virginia is a 501(c)3 nonprofit uniting fans across the Commonwealth to turn our love of Ghostbusters into real community impact.";
 const missionBody =
   copy.missionBody ||
   "We participate in community events all over Virginia to help raise money and awareness for charities, visit children\u2019s hospitals in full Ghostbusters gear, appear at parades and comic conventions, and welcome fans of all ages and backgrounds \u2014 all in a safe, fun, and family friendly manner.";
@@ -46,8 +46,6 @@ const galleryHeading = copy.galleryHeading || "Out in the Field";
 const gallerySubtitle =
   copy.gallerySubtitle ||
   "From charity fundraisers and hospital visits to comic conventions and community parades.";
-const galleryCtaLabel = copy.galleryCtaLabel || "See All Media";
-const galleryCtaHref = copy.galleryCtaHref || "/media";
 const eventsHeading = copy.eventsHeading || "Events";
 const eventsSubtitle =
   copy.eventsSubtitle ||
@@ -87,12 +85,13 @@ const defaultDonateUrl =
   "https://secure2.wish.org/site/TR;jsessionid=00000000.app20002b?team_id=58435&fr_id=7464&pg=team&NONCE_TOKEN=16AE47C509ECB858ECB963CD3D174802";
 const donateUrl = settings.donateUrl || defaultDonateUrl;
 const safeHeroPrimaryCtaHref = isSafeExternalUrl(donateUrl) ? donateUrl : defaultDonateUrl;
-const safeHeroSecondaryCtaHref = getSafeCmsHref(heroSecondaryCtaHref) || "/join";
-const safeGalleryCtaHref = getSafeCmsHref(galleryCtaHref) || "/media";
+const safeHeroSecondaryCtaHref = getSafeCmsHref(heroSecondaryCtaHref);
 const safeEventsCtaHref = getSafeCmsHref(eventsCtaHref) || "/events";
 const safeNoUpcomingEventsContactHref = getSafeCmsHref(noUpcomingEventsContactHref) || "/contact";
 const safeJoinCtaHref = getSafeCmsHref(joinCtaHref) || "/join";
 const safeSupportCtaHref = safeHeroPrimaryCtaHref;
+const galleryCtaLabel = copy.galleryCtaLabel || "See All Media";
+const galleryCtaHref = getSafeCmsHref(copy.galleryCtaHref) || "/media";
 
 interface ImpactStat {
   value: string;
@@ -108,6 +107,25 @@ const defaultImpactStats: ImpactStat[] = [
 ];
 const impactStats = copy.impactStats || defaultImpactStats;
 const impactStatsAriaLabel = copy.impactStatsAriaLabel || "Our impact";
+
+const sortedGallery = [...gallery].sort((a, b) => {
+  const aTs = a.data.date ? new Date(a.data.date).getTime() : 0;
+  const bTs = b.data.date ? new Date(b.data.date).getTime() : 0;
+  return bTs - aTs;
+});
+const homeGallery = await Promise.all(
+  sortedGallery.slice(0, 6).map(async (item) => ({
+    ...item,
+    responsive: await getResponsiveImageAttrs({
+      src: item.data.image,
+      widths: [360, 720, 1080],
+      sizes: "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw",
+      width: 1080,
+      height: 720,
+      quality: 74,
+    }),
+  })),
+);
 
 const metaTitle = copy.metaTitle || "Home";
 const metaDescription =
@@ -136,18 +154,6 @@ const joinImage = await getResponsiveImageAttrs({
   height: 900,
   quality: 75,
 });
-const galleryImageAttrs = await Promise.all(
-  galleryItems.map((item) =>
-    getResponsiveImageAttrs({
-      src: item.data.image,
-      widths: [480, 768, 1200],
-      sizes: "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw",
-      width: 1200,
-      height: 750,
-      quality: 72,
-    }),
-  ),
-);
 ---
 
 <BaseLayout
@@ -205,63 +211,39 @@ const galleryImageAttrs = await Promise.all(
     </div>
   </section>
 
-  <!-- ───── GALLERY ───── -->
+  <!-- ───── OUT IN THE FIELD ───── -->
   {
-    galleryItems.length > 0 && (
+    homeGallery.length > 0 && (
       <section class="section hp-section--alt" aria-labelledby="gallery-heading">
         <div class="container">
           <h2 id="gallery-heading" class="section-heading">
             {galleryHeading}
           </h2>
           <p class="section-subtitle">{gallerySubtitle}</p>
-          <div id="gallery-splide" class="splide" aria-label="Photo gallery carousel">
-            <div class="splide__track">
-              <ul class="splide__list">
-                {galleryItems.map((item, index) => (
-                  <li class="splide__slide">
-                    <button
-                      class="gallery-slide"
-                      type="button"
-                      aria-label={`View full image: ${item.data.title}`}
-                      data-lightbox-group="home-gallery"
-                      data-lightbox-src={item.data.image}
-                      data-lightbox-alt={item.data.alt}
-                      data-lightbox-caption={item.data.title}
-                    >
-                      <img
-                        {...galleryImageAttrs[index]}
-                        alt={item.data.alt}
-                        loading="lazy"
-                        decoding="async"
-                        class="gallery-slide__img"
-                      />
-                      <span class="gallery-slide__overlay" aria-hidden="true">
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          width="24"
-                          height="24"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          stroke-width="2"
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                        >
-                          <polyline points="15 3 21 3 21 9" />
-                          <polyline points="9 21 3 21 3 15" />
-                          <line x1="21" y1="3" x2="14" y2="10" />
-                          <line x1="3" y1="21" x2="10" y2="14" />
-                        </svg>
-                      </span>
-                      <span class="gallery-slide__title">{item.data.title}</span>
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-          <div class="gallery-cta">
-            <Button variant="secondary-alt" href={safeGalleryCtaHref}>
+          <ul class="home-gallery-grid" role="list">
+            {homeGallery.map((item) => (
+              <li class="home-gallery-item">
+                <LightboxImageTrigger
+                  group="home-gallery"
+                  src={item.data.image}
+                  alt={item.data.alt}
+                  caption={item.data.title}
+                  buttonClass="gallery-slide"
+                  overlayClass="gallery-slide__overlay"
+                >
+                  <img
+                    {...item.responsive}
+                    alt={item.data.alt}
+                    class="gallery-slide__img"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                </LightboxImageTrigger>
+              </li>
+            ))}
+          </ul>
+          <div class="section-cta">
+            <Button variant="secondary" href={galleryCtaHref}>
               {galleryCtaLabel}
             </Button>
           </div>
@@ -359,9 +341,13 @@ const galleryImageAttrs = await Promise.all(
     </div>
   </section>
 
-  <!-- ── Lightbox overlay ── -->
-  <Lightbox id="home-lightbox" hasNav label="Image viewer" lightboxGroup="home-gallery" />
   <Lightbox id="home-join-lightbox" label="Join image viewer" lightboxGroup="home-join" />
+  <Lightbox
+    id="home-gallery-lightbox"
+    hasNav
+    label="Out in the Field image viewer"
+    lightboxGroup="home-gallery"
+  />
 </BaseLayout>
 
 <style is:global>
@@ -485,12 +471,6 @@ const galleryImageAttrs = await Promise.all(
     letter-spacing: var(--tracking-wide);
   }
 
-  .gallery-cta {
-    margin-top: var(--space-3xl);
-    display: flex;
-    justify-content: center;
-  }
-
   /* ── Upcoming events ── */
   .event-list {
     list-style: none;
@@ -580,9 +560,7 @@ const galleryImageAttrs = await Promise.all(
 
   .join-image {
     width: 100%;
-    height: 100%;
     display: block;
-    object-fit: cover;
   }
 
   .join-image-overlay {
@@ -594,7 +572,7 @@ const galleryImageAttrs = await Promise.all(
     background: rgba(0, 0, 0, 0.4);
     color: #fff;
     opacity: 0;
-    transition: opacity 0.25s ease;
+    transition: opacity var(--transition-base);
     pointer-events: none;
   }
 
@@ -611,135 +589,30 @@ const galleryImageAttrs = await Promise.all(
   .hp-section--alt {
     background-color: var(--color-surface-alt);
   }
-</style>
 
-<!-- Stat count-up animation -->
-<script>
-  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-  if (!reducedMotion) {
-    const statEls = document.querySelectorAll<HTMLElement>("[data-count-target]");
-
-    const observer = new IntersectionObserver(
-      (entries, obs) => {
-        entries.forEach((entry) => {
-          if (!entry.isIntersecting) return;
-          const el = entry.target as HTMLElement;
-          const target = parseInt(el.dataset.countTarget ?? "0", 10);
-          const suffix = el.dataset.countSuffix ?? "";
-          const duration = 1400;
-          const startTime = performance.now();
-
-          function tick(now: number) {
-            const elapsed = now - startTime;
-            const progress = Math.min(elapsed / duration, 1);
-            // easeOutQuart
-            const ease = 1 - Math.pow(1 - progress, 4);
-            el.textContent = Math.round(ease * target) + suffix;
-            if (progress < 1) {
-              requestAnimationFrame(tick);
-            } else {
-              el.textContent = target + suffix;
-            }
-          }
-
-          requestAnimationFrame(tick);
-          obs.unobserve(el);
-        });
-      },
-      { threshold: 0.4 },
-    );
-
-    statEls.forEach((el) => observer.observe(el));
-  }
-</script>
-
-<!-- Splide carousel + lightbox -->
-<script>
-  import Splide from "@splidejs/splide";
-  import "@splidejs/splide/css";
-
-  document.addEventListener("DOMContentLoaded", () => {
-    const el = document.getElementById("gallery-splide");
-    if (!el) return;
-
-    const splide = new Splide(el, {
-      type: "loop",
-      perPage: 2,
-      gap: "1.5rem",
-      autoplay: true,
-      interval: 7000,
-      pauseOnHover: true,
-      pauseOnFocus: true,
-      pagination: true,
-      arrows: true,
-      breakpoints: {
-        1024: { perPage: 2 },
-        640: { perPage: 1 },
-      },
-    }).mount();
-
-    const lightbox = document.getElementById("home-lightbox") as HTMLElement;
-    if (!lightbox) return;
-
-    lightbox.addEventListener("lightbox:open", () => {
-      splide.Components.Autoplay?.pause();
-    });
-
-    lightbox.addEventListener("lightbox:close", () => {
-      splide.Components.Autoplay?.play();
-    });
-  });
-</script>
-
-<style is:global>
-  /* ── Splide theme overrides for Ghostbusters dark theme ── */
-
-  /* Arrow buttons */
-  #gallery-splide .splide__arrow {
-    background: var(--color-surface);
-    border: 1px solid var(--color-border);
-    opacity: 0.85;
-    width: 2.5rem;
-    height: 2.5rem;
-    transition:
-      background var(--transition-base),
-      border-color var(--transition-base),
-      box-shadow var(--transition-base);
-  }
-  #gallery-splide .splide__arrow:hover {
-    background: var(--color-surface-alt);
-    border-color: var(--color-gb-green);
-    box-shadow: var(--shadow-glow-green);
-    opacity: 1;
-  }
-  #gallery-splide .splide__arrow svg {
-    fill: var(--color-text);
-    width: 1rem;
-    height: 1rem;
-  }
-  #gallery-splide .splide__arrow:hover svg {
-    fill: var(--color-gb-green);
+  .home-gallery-grid {
+    list-style: none;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-lg);
+    margin: 0;
+    padding: 0;
   }
 
-  /* Pagination dots */
-  #gallery-splide .splide__pagination {
-    bottom: -1.75rem;
+  @media (min-width: 640px) {
+    .home-gallery-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
   }
-  #gallery-splide .splide__pagination__page {
-    background: var(--color-border);
-    opacity: 0.6;
-    width: 8px;
-    height: 8px;
-    transition: background var(--transition-base);
+
+  @media (min-width: 1024px) {
+    .home-gallery-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
   }
-  #gallery-splide .splide__pagination__page.is-active {
-    background: var(--color-gb-green);
-    opacity: 1;
-  }
-  #gallery-splide .splide__pagination__page:hover {
-    background: var(--color-gb-green);
-    opacity: 1;
+
+  .home-gallery-item {
+    margin: 0;
   }
 
   /* Slide content */
@@ -792,32 +665,5 @@ const galleryImageAttrs = await Promise.all(
   .gallery-slide:hover .gallery-slide__overlay,
   .gallery-slide:focus-visible .gallery-slide__overlay {
     opacity: 1;
-  }
-  .gallery-slide__title {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    padding: 3rem 1rem 0.75rem;
-    font-size: var(--text-base);
-    font-weight: var(--weight-semibold);
-    color: var(--color-text-inverse);
-    text-align: center;
-    background: linear-gradient(transparent 0%, rgba(0, 0, 0, 0.55) 35%, rgba(0, 0, 0, 0.92) 100%);
-    pointer-events: none;
-    text-shadow: 0 1px 6px rgba(0, 0, 0, 0.9);
-  }
-
-  /* Spacing for pagination below */
-  #gallery-splide {
-    padding-bottom: var(--space-2xl);
-    max-width: 64rem;
-    margin-inline: auto;
-  }
-
-  @media (min-width: 1024px) {
-    #gallery-splide {
-      max-width: none;
-    }
   }
 </style>
