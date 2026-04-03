@@ -12,9 +12,7 @@ import ZenerGame from "../components/ZenerGame";
   description="Test your ESP with a 25-card Zener deck. Predict the symbol on each card and see how your score compares to chance."
   canonical="/zener-test"
 >
-  <div class="page-band page-band--full">
-    <ZenerGame client:load />
-  </div>
+  <ZenerGame client:load />
 </BaseLayout>
 
 <style is:global>
@@ -24,8 +22,8 @@ import ZenerGame from "../components/ZenerGame";
 
   /* ---- Container / layout ---- */
   .zener-game {
-    --zener-card-width: clamp(120px, 25vmin, 180px);
-    --zener-card-height: clamp(177px, 36.83vmin, 265px);
+    --zener-card-width: clamp(120px, 60vmin, 432px);
+    --zener-card-height: clamp(177px, 88.39vmin, 636px);
 
     position: relative;
     min-height: calc(100vh - 120px);
@@ -92,7 +90,7 @@ import ZenerGame from "../components/ZenerGame";
     position: relative;
     z-index: 2;
     display: flex;
-    gap: var(--space-2xl);
+    gap: var(--space-lg);
     align-items: center;
     justify-content: center;
     width: 100%;
@@ -136,7 +134,7 @@ import ZenerGame from "../components/ZenerGame";
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: var(--space-2xl);
+    gap: var(--space-lg);
     text-align: center;
   }
 
@@ -170,7 +168,7 @@ import ZenerGame from "../components/ZenerGame";
     display: flex;
     align-items: center;
     justify-content: center;
-    height: clamp(200px, 40vmin, 280px);
+    height: clamp(200px, 45vmin, 380px);
     width: 100%;
   }
 
@@ -419,7 +417,7 @@ import ZenerGame from "../components/ZenerGame";
     flex-direction: column;
     align-items: center;
     gap: var(--space-xs);
-    padding: var(--space-md) var(--space-lg);
+    padding: var(--space-md) var(--space-md);
     min-width: 80px;
     background: var(--color-surface);
     border: 2px solid var(--color-border);
@@ -475,13 +473,16 @@ import ZenerGame from "../components/ZenerGame";
     color: rgba(255, 255, 255, 0.75);
   }
 
+  .zener-symbol-btn .zener-symbol-icon {
+    width: 8dvw;
+    height: calc(var(--zener-card-height) * 0.2);
+  }
+
   /* Symbol icon in button */
   .zener-symbol-icon {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: calc(var(--zener-card-width) * 0.5);
-    height: calc(var(--zener-card-height) * 0.5);
   }
 
   .zener-symbol-icon svg {
