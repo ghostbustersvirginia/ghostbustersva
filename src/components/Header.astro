@@ -31,8 +31,13 @@ const isActivePage = (href: string) => {
 };
 
 const navItems = settings.navItems;
-const primaryNavItems = navItems.filter((link) => link.group !== "more");
-const moreDropdownItems = navItems.filter((link) => link.group === "more");
+const safeNavItems = navItems
+  .map((link) => {
+    const href = getSafeCmsHref(link.href);
+    if (!href) return null;
+    return { ...link, href };
+  })
+  .filter((link): link is NonNullable<typeof link> => Boolean(link));
 const isMoreActive = moreDropdownItems.some((link) => isActivePage(link.href));
 const navLogoImage = await getResponsiveImageAttrs({
   src: settings.navLogo,
@@ -82,7 +87,7 @@ const useLogoAsO = logoIndex >= 0;
     <nav class="desktop-nav" aria-label="Main navigation">
       <ul>
         {
-          primaryNavItems.map((link) => (
+          safeNavItems.map((link) => (
             <li>
               <a
                 href={link.href}
@@ -167,7 +172,7 @@ const useLogoAsO = logoIndex >= 0;
       <nav class="mobile-nav-links" aria-label="Main navigation">
         <ul>
           {
-            primaryNavItems.map((link) => (
+            safeNavItems.map((link) => (
               <li>
                 <a
                   href={link.href}
@@ -257,15 +262,15 @@ const useLogoAsO = logoIndex >= 0;
   }
 
   .logo-wordmark {
-    display: inline-flex;
-    align-items: center;
+    display: flex;
+    flex-direction: column;
     line-height: 1;
     text-transform: uppercase;
     white-space: nowrap;
   }
 
   .logo-wordmark-main {
-    font-family: var(--font-brand-title, var(--font-display));
+    font-family: var(--font-brand-title, var(--font-display)), sans-serif;
     font-weight: var(--weight-bold);
     font-size: calc(var(--font-logo-wordmark-size) * var(--font-logo-wordmark-ratio));
     letter-spacing: var(--tracking-heading);
@@ -277,7 +282,7 @@ const useLogoAsO = logoIndex >= 0;
   }
 
   .logo-wordmark-sub {
-    font-family: var(--font-brand-title, var(--font-display));
+    font-family: var(--font-brand-title, var(--font-display)), sans-serif;
     font-weight: var(--weight-bold);
     font-size: calc(var(--font-logo-wordmark-size) * var(--font-logo-wordmark-ratio) * 0.6);
     letter-spacing: calc(var(--font-logo-wordmark-size) * var(--font-logo-wordmark-ratio) * 0.16);
@@ -303,48 +308,38 @@ const useLogoAsO = logoIndex >= 0;
   .desktop-nav ul {
     list-style: none;
     display: flex;
-    align-items: stretch;
+    align-items: center;
     gap: var(--space-xs);
-    margin: 0;
-    padding: 0;
-  }
-
-  .desktop-nav__group {
-    position: relative;
   }
 
   .desktop-nav__link {
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    display: block;
     text-decoration: none;
-    font-family: var(--font-heading);
+    font-family: var(--font-heading), sans-serif;
     font-size: var(--text-base);
     font-weight: var(--weight-medium);
     letter-spacing: var(--tracking-wide);
     text-transform: capitalize;
     white-space: nowrap;
-    line-height: 1;
     color: var(--color-text-muted);
     padding: var(--space-xs) var(--space-md);
-    border-radius: var(--radius-sm);
-    min-height: 2.25rem;
+    border-bottom: 3px solid transparent;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     transition:
       color var(--transition-fast),
-      background-color var(--transition-fast);
+      border-color var(--transition-fast);
   }
 
   .desktop-nav__link:hover,
   .desktop-nav__link:focus-visible {
     color: var(--color-accent);
-    background-color: var(--color-action-secondary-hover);
+    border-bottom-color: var(--color-accent);
   }
 
   .desktop-nav__link[aria-current="page"] {
     color: var(--color-accent);
-    background-color: var(--color-action-secondary-hover);
+    background-color: var(--color-accent);
   }
 
   /* More button - styled as nav link but with button reset */
@@ -471,6 +466,7 @@ const useLogoAsO = logoIndex >= 0;
   .desktop-nav__submenu-link[aria-current="page"] {
     color: var(--color-accent);
     font-weight: var(--weight-bold, 700);
+    border-bottom-color: var(--color-accent);
   }
 
   .mobile-menu {
@@ -545,14 +541,12 @@ const useLogoAsO = logoIndex >= 0;
     display: flex;
     flex-direction: column;
     gap: var(--space-xs);
-    margin: 0;
-    padding: 0;
   }
 
   .mobile-nav__link {
     display: block;
     text-decoration: none;
-    font-family: var(--font-heading);
+    font-family: var(--font-heading), sans-serif;
     font-size: var(--text-base);
     font-weight: var(--weight-medium);
     letter-spacing: var(--tracking-wide);
@@ -741,53 +735,3 @@ const useLogoAsO = logoIndex >= 0;
     }
   }
 </style>
-
-<script>
-  // Handle dropdown toggle for "More" button
-  document.addEventListener("DOMContentLoaded", () => {
-    const toggleButtons = document.querySelectorAll<HTMLButtonElement>("[data-submenu-toggle]");
-
-    toggleButtons.forEach((toggle) => {
-      const submenuId = toggle.getAttribute("data-submenu-toggle");
-      const submenu = submenuId ? document.getElementById(submenuId) : null;
-
-      if (!submenu) return;
-
-      // Toggle dropdown on button click
-      toggle.addEventListener("click", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-
-        const isExpanded = toggle.getAttribute("aria-expanded") === "true";
-        toggle.setAttribute("aria-expanded", String(!isExpanded));
-
-        if (!isExpanded) {
-          submenu.removeAttribute("hidden");
-        } else {
-          submenu.setAttribute("hidden", "");
-        }
-      });
-
-      // Close dropdown when clicking outside
-      document.addEventListener("click", (e) => {
-        const target = e.target;
-        if (target instanceof Node && !toggle.contains(target) && !submenu.contains(target)) {
-          toggle.setAttribute("aria-expanded", "false");
-          submenu.setAttribute("hidden", "");
-        }
-      });
-
-      // Close dropdown on Escape key
-      document.addEventListener("keydown", (e) => {
-        if (e.key === "Escape") {
-          const isExpanded = toggle.getAttribute("aria-expanded") === "true";
-          if (isExpanded) {
-            toggle.setAttribute("aria-expanded", "false");
-            submenu.setAttribute("hidden", "");
-            toggle.focus();
-          }
-        }
-      });
-    });
-  });
-</script>
