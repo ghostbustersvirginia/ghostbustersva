@@ -44,10 +44,16 @@ const showBeltGizmoSublist = copy.showBeltGizmoSublist ?? true;
 const beltGizmoParentIndex = requiredGear.findIndex((item) => /belt gizmo/i.test(item));
 const beltGizmoNestIndex =
   beltGizmoParentIndex >= 0 ? beltGizmoParentIndex : requiredGear.length - 1;
+const showBeltGizmoSublist = copy.showBeltGizmoSublist ?? true;
+const beltGizmoParentIndex = requiredGear.findIndex((item) => /belt gizmo/i.test(item));
+const beltGizmoNestIndex =
+  beltGizmoParentIndex >= 0 ? beltGizmoParentIndex : requiredGear.length - 1;
 const notePrefix = copy.notePrefix || "Please Note:";
 const noteText =
   copy.noteText ||
   "We ask all applicants be able to pass a high-level background check to verify no felonies are on their record; this includes a verification with no results found on the national sex offender registry.";
+const applyLinkLabel = "Contact Us today";
+const applyLinkUrl = "/contact";
 const whatWeLookForHeading = copy.whatWeLookForHeading || "What We Look For";
 const requiredGearHeading = copy.requiredGearHeading || "Required Gear";
 const metaTitle = copy.metaTitle || "Join";

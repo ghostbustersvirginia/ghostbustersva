@@ -40,6 +40,8 @@ const heroPrimaryCtaLabel = "Donate with PayPal";
 const heroSecondaryCtaLabel = "Donate to Make-A-Wish";
 const heroLogoSrc = getSafeImageAssetPath(copy.heroLogoSrc) || "/images/logo.png";
 const heroLogoAlt = String(copy.heroLogoAlt || "Ghostbusters Virginia logo");
+const heroSecondaryCtaLabel = copy.heroSecondaryCtaLabel || undefined;
+const heroSecondaryCtaHref = copy.heroSecondaryCtaHref || undefined;
 const missionHeading = copy.missionHeading || "Who We Are";
 const missionSubtitle =
   copy.missionSubtitle ||
@@ -216,7 +218,6 @@ const protonPetsImage = await getResponsiveImageAttrs({
     heroTagline={heroTagline}
     primaryCtaLabel={heroPrimaryCtaLabel}
     primaryCtaHref={safeHeroPrimaryCtaHref}
-    primaryCtaExternal
     secondaryCtaLabel={heroSecondaryCtaLabel}
     secondaryCtaHref={safeHeroSecondaryCtaHref}
     secondaryCtaExternal

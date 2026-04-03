@@ -154,6 +154,19 @@ const externalAttrs = external ? { target: "_blank", rel: "noopener noreferrer" 
           </svg>
         </span>
       )}
+      {icon === "heart" && (
+        <span class="btn-trailing-icon" aria-hidden="true">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="currentColor"
+          >
+            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+          </svg>
+        </span>
+      )}
     </button>
   )
 }
@@ -183,7 +196,16 @@ const externalAttrs = external ? { target: "_blank", rel: "noopener noreferrer" 
     position: relative;
   }
 
+  .btn[data-trailing-icon] {
+    padding-left: 2.95rem;
+    padding-right: 2.45rem;
+  }
+
   .btn-trailing-icon {
+    right: 0.65rem;
+    top: 50%;
+    transform: translateY(-50%) translateX(-4px);
+    opacity: 0;
     position: static;
     display: inline-flex;
     align-items: center;
@@ -191,9 +213,7 @@ const externalAttrs = external ? { target: "_blank", rel: "noopener noreferrer" 
     width: 0;
     margin-left: 0;
     overflow: hidden;
-    opacity: 0;
     pointer-events: none;
-    transform: scale(0.9);
     transition:
       width var(--transition-fast),
       margin-left var(--transition-fast),
@@ -228,6 +248,56 @@ const externalAttrs = external ? { target: "_blank", rel: "noopener noreferrer" 
   .btn[data-trailing-icon="heart"]:focus-visible .btn-trailing-icon {
     animation: heart-wiggle-inline 0.45s ease-out;
     transform-origin: 50% 60%;
+  }
+
+  @keyframes heart-wiggle-inline {
+    0% {
+      transform: translateX(0) rotate(0deg) scale(1);
+    }
+    30% {
+      transform: translateX(0) rotate(-8deg) scale(1.05);
+    }
+    60% {
+      transform: translateX(0) rotate(7deg) scale(1.03);
+    }
+    100% {
+      transform: translateX(0) rotate(0deg) scale(1);
+    }
+  }
+
+  .btn[data-trailing-icon="heart"]:hover .btn-trailing-icon,
+  .btn[data-trailing-icon="heart"]:focus-visible .btn-trailing-icon {
+    animation: heart-wiggle-inline 0.45s ease-out;
+    transform-origin: 50% 60%;
+  }
+
+  .btn[data-trailing-icon="heart"] {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+
+  .btn[data-trailing-icon="heart"] .btn-trailing-icon {
+    position: static;
+    right: auto;
+    top: auto;
+    width: 0;
+    margin-left: 0;
+    opacity: 0;
+    overflow: hidden;
+    transform: scale(0.94);
+    transition:
+      width var(--transition-fast),
+      margin-left var(--transition-fast),
+      opacity var(--transition-fast),
+      transform var(--transition-fast);
+  }
+
+  .btn[data-trailing-icon="heart"]:hover .btn-trailing-icon,
+  .btn[data-trailing-icon="heart"]:focus-visible .btn-trailing-icon {
+    width: 1.05em;
+    margin-left: 0.4rem;
+    opacity: 1;
+    transform: scale(1);
   }
 
   /* Primary — solid fill */
@@ -307,6 +377,16 @@ const externalAttrs = external ? { target: "_blank", rel: "noopener noreferrer" 
   .btn--lg {
     padding: 0.75rem 1.75rem;
     font-size: var(--text-base);
+  }
+
+  .btn--lg[data-trailing-icon] {
+    padding-left: 3.2rem;
+    padding-right: 3.2rem;
+  }
+
+  .btn--lg[data-trailing-icon="heart"] {
+    padding-left: 1.75rem;
+    padding-right: 1.75rem;
   }
 
   /* Hidden — respect the native hidden attribute */
