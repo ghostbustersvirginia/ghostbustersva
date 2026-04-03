@@ -21,6 +21,7 @@
     "LifeGard 2",
     "PKE Meter"
   ],
+  "showBeltGizmoSublist": true,
   "howToApplyHeading": "How to Apply",
   "applyText": "Got all your gear and ready to show us you ain't afraid of no ghosts? Contact us and let us know! You will be provided a link to the membership survey and once complete, you will be notified of results following Membership Liaison Officer verification.",
   "applyLinkLabel": "Facebook page",

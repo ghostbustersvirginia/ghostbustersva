@@ -10,11 +10,15 @@
  */
 import { getCollection } from "astro:content";
 import { siteConfig } from "../config";
+import { getSafeCmsHref } from "./links";
+
+export type NavItemGroup = "primary" | "more";
 
 export interface NavItem {
   label: string;
   href: string;
   external: boolean;
+  group: NavItemGroup;
 }
 
 export interface FooterLogo {
@@ -28,6 +32,7 @@ export interface SiteSettings {
   donateUrl: string;
   contactEmail: string;
   contactPhone: string;
+  contactFormActionUrl: string;
   ledScrollbarText: string;
   socialLinks: { platform: string; url: string }[];
   // Navbar
@@ -40,6 +45,10 @@ export interface SiteSettings {
   codeOfConductUrl: string;
   codeOfConductLabel: string;
   footerLogos: FooterLogo[];
+  footerDisclaimerText: string;
+  reducedMotionToggleLabel: string;
+  reducedMotionToggleTitle: string;
+  reducedMotionToggleEnabledLabel: string;
 }
 
 /** Default nav items derived from the static siteConfig. */
@@ -47,6 +56,7 @@ const defaultNavItems: NavItem[] = siteConfig.nav.map((n) => ({
   label: n.label,
   href: n.href,
   external: false,
+  group: "primary",
 }));
 
 /** Default footer logos from siteConfig. */
@@ -77,11 +87,19 @@ export async function getSiteSettings(): Promise<SiteSettings> {
   const d = entries[0].data;
   const coreNavItems: NavItem[] =
     d.navItems && d.navItems.length > 0
-      ? d.navItems.map((n: { label: string; href: string; external?: boolean }) => ({
-          label: n.label,
-          href: n.href,
-          external: n.external ?? false,
-        }))
+      ? d.navItems
+          .map((n: { label: string; href: string; external?: boolean; group?: NavItemGroup }) => {
+            const href = getSafeCmsHref(n.href);
+            if (!href) return null;
+
+            return {
+              label: n.label,
+              href,
+              external: n.external ?? false,
+              group: n.group === "more" ? "more" : "primary",
+            };
+          })
+          .filter((item): item is NavItem => Boolean(item))
       : defaultNavItems;
 
   return {
@@ -90,6 +108,7 @@ export async function getSiteSettings(): Promise<SiteSettings> {
     donateUrl: d.donateUrl ?? "",
     contactEmail: d.contactEmail ?? "",
     contactPhone: d.contactPhone ?? "",
+    contactFormActionUrl: d.contactFormActionUrl ?? "",
     ledScrollbarText: d.ledScrollbarText ?? "",
     socialLinks: d.socialLinks ?? [],
     navLogo: d.navLogo || "/images/logo.png",
@@ -100,5 +119,9 @@ export async function getSiteSettings(): Promise<SiteSettings> {
     codeOfConductUrl: d.codeOfConductUrl || "/code-of-conduct",
     codeOfConductLabel: d.codeOfConductLabel || "Code of Conduct",
     footerLogos: d.footerLogos && d.footerLogos.length > 0 ? d.footerLogos : defaultFooterLogos,
+    footerDisclaimerText: d.footerDisclaimerText || "",
+    reducedMotionToggleLabel: d.reducedMotionToggleLabel || "",
+    reducedMotionToggleTitle: d.reducedMotionToggleTitle || "",
+    reducedMotionToggleEnabledLabel: d.reducedMotionToggleEnabledLabel || "",
   };
 }

@@ -35,6 +35,14 @@ const cmsHrefValidation = {
   },
 };
 
+// Validation for external HTTPS-only links used for public CTA fields.
+const externalHttpsValidation = {
+  pattern: {
+    regex: /^https:\/\/[^\s]+$/,
+    message: "Use a secure external URL starting with https://",
+  },
+};
+
 const storage = githubRepoConfig
   ? {
       kind: "github" as const,
@@ -56,7 +64,7 @@ export default config({
         "aboutPageCopy",
         "joinPageCopy",
         "eventsPageCopy",
-        "mediaPageCopy",
+        "pressPageCopy",
         "contactPageCopy",
         "donatePageCopy",
         "codeOfConductPageCopy",
@@ -239,9 +247,9 @@ export default config({
             validation: { isRequired: true },
           },
         }),
-        date: fields.text({
+        date: fields.date({
           label: "Date",
-          description: "Publication date (e.g. 'November 27, 2024').",
+          description: "Publication date (YYYY-MM-DD).",
           validation: { isRequired: true },
         }),
         location: fields.text({
@@ -436,6 +444,24 @@ export default config({
           publicPath: "/images/",
         }),
         teamImageAlt: fields.text({ label: "Who We Are Image Alt Text" }),
+        divisionsImage: fields.image({
+          label: "Divisions Image",
+          directory: "public/images",
+          publicPath: "/images/",
+        }),
+        divisionsImageAlt: fields.text({ label: "Divisions Image Alt Text" }),
+        communityImage: fields.image({
+          label: "Community Image",
+          directory: "public/images",
+          publicPath: "/images/",
+        }),
+        communityImageAlt: fields.text({ label: "Community Image Alt Text" }),
+        togetherImage: fields.image({
+          label: "Together Image",
+          directory: "public/images",
+          publicPath: "/images/",
+        }),
+        togetherImageAlt: fields.text({ label: "Together Image Alt Text" }),
         missionHeading: fields.text({ label: "Mission Section Heading" }),
         missionCardTitle: fields.text({ label: "Mission Card Title" }),
         missionItems: fields.array(fields.text({ label: "Mission Item" }), {
@@ -507,6 +533,11 @@ export default config({
           label: "Belt Gizmo Items",
           itemLabel: (props) => props.value || "Item",
         }),
+        showBeltGizmoSublist: fields.checkbox({
+          label: "Show Belt Gizmo Sub-list",
+          description: "Show the belt gizmo sub-list below the required gear list.",
+          defaultValue: true,
+        }),
         howToApplyHeading: fields.text({ label: "How to Apply Heading" }),
         applyText: fields.text({ label: "Apply Section Text", multiline: true }),
         applyLinkLabel: fields.text({ label: "Apply Link Label" }),
@@ -553,7 +584,25 @@ export default config({
         }),
         upcomingHeading: fields.text({ label: "Upcoming Events Heading" }),
         pastHeading: fields.text({ label: "Past Events Heading" }),
+        noUpcomingEventsTitle: fields.text({ label: "No Upcoming Events Title" }),
         emptyText: fields.text({ label: "Empty State Text" }),
+        noUpcomingEventsContactText: fields.text({
+          label: "No Upcoming Events Contact Text",
+          multiline: true,
+        }),
+        noUpcomingEventsContactHref: fields.text({
+          label: "No Upcoming Events Contact URL",
+          validation: internalPathValidation,
+        }),
+        eventCtaText: fields.text({
+          label: "Bottom CTA Text",
+          multiline: true,
+        }),
+        eventCtaLabel: fields.text({ label: "Bottom CTA Label" }),
+        eventCtaHref: fields.text({
+          label: "Bottom CTA URL",
+          validation: internalPathValidation,
+        }),
         showMoreLabel: fields.text({ label: "Show More Button Label" }),
         showLessLabel: fields.text({ label: "Show Less Button Label" }),
         metaTitle: fields.text({ label: "Meta Title", description: "Browser tab title." }),
@@ -579,18 +628,24 @@ export default config({
       },
     }),
 
-    mediaPageCopy: singleton({
-      label: "Media Page",
-      path: "src/content/page-copy/media",
+    pressPageCopy: singleton({
+      label: "Press Page",
+      path: "src/content/page-copy/press",
       format: { data: "json" },
       schema: {
-        page: fields.text({ label: "Page ID", defaultValue: "media" }),
+        page: fields.text({ label: "Page ID", defaultValue: "press" }),
         pageTitle: fields.text({ label: "Page Title", validation: { isRequired: true } }),
         pageIntro: fields.text({
           label: "Page Intro",
           multiline: true,
           validation: { isRequired: true },
         }),
+        pressKitTitle: fields.text({ label: "Press Kit Card Title" }),
+        pressKitBody: fields.text({ label: "Press Kit Card Body", multiline: true }),
+        pressKitCtaLabel: fields.text({ label: "Press Kit CTA Label" }),
+        charityKitTitle: fields.text({ label: "Charity Kit Card Title" }),
+        charityKitBody: fields.text({ label: "Charity Kit Card Body", multiline: true }),
+        charityKitCtaLabel: fields.text({ label: "Charity Kit CTA Label" }),
         galleryHeading: fields.text({ label: "Gallery Heading" }),
         videosHeading: fields.text({ label: "Videos Heading" }),
         newsHeading: fields.text({ label: "News Heading" }),
@@ -648,6 +703,12 @@ export default config({
           defaultValue: "after-social",
         }),
         bookingHeading: fields.text({ label: "Booking Section Heading" }),
+        bookingSectionHeading: fields.text({ label: "Booking Form Section Heading" }),
+        contactFormDescription: fields.text({
+          label: "Contact Form Description",
+          multiline: true,
+        }),
+        contactFormSubmitLabel: fields.text({ label: "Contact Form Submit Label" }),
         bookingImage: fields.image({
           label: "Booking Section Image",
           directory: "public/images",
@@ -697,6 +758,12 @@ export default config({
           itemLabel: (props) => props.value || "Item",
         }),
         donationCtaLabel: fields.text({ label: "Donate CTA Label" }),
+        donationImage: fields.image({
+          label: "Donation Section Image",
+          directory: "public/images",
+          publicPath: "/images/",
+        }),
+        donationImageAlt: fields.text({ label: "Donation Section Image Alt Text" }),
         communityHeading: fields.text({ label: "Community Partners Heading" }),
         communityText: fields.text({ label: "Community Partners Text", multiline: true }),
         communityCtaLabel: fields.text({ label: "Community CTA Label" }),
@@ -849,6 +916,11 @@ export default config({
           label: "Contact Phone",
           description: "Public phone number displayed on the contact page.",
         }),
+        contactFormActionUrl: fields.text({
+          label: "Contact Form Action URL",
+          description: "Secure endpoint used by the contact form submission.",
+          validation: externalHttpsValidation,
+        }),
         ledScrollbarText: fields.text({
           label: "LED Scrollbar Text",
           description:
@@ -907,10 +979,20 @@ export default config({
               description: "Check if this link goes to an external site.",
               defaultValue: false,
             }),
+            group: fields.select({
+              label: "Header Group",
+              description: "Choose where this link appears in header navigation.",
+              options: [
+                { label: "Primary", value: "primary" },
+                { label: "More Menu", value: "more" },
+              ],
+              defaultValue: "primary",
+            }),
           }),
           {
             label: "Navigation Items",
-            description: "Links shown in the header and footer navigation. Drag to reorder.",
+            description:
+              "Links shown in the header and footer navigation. Drag to reorder. Use Header Group to place items in the More menu.",
             itemLabel: (props) => props.fields.label.value || "New Link",
           },
         ),
@@ -952,6 +1034,23 @@ export default config({
             itemLabel: (props) => props.fields.alt.value || "New Logo",
           },
         ),
+        footerDisclaimerText: fields.text({
+          label: "Footer Disclaimer Text",
+          description: "Trademark/non-affiliation disclaimer shown at the bottom of the footer.",
+          multiline: true,
+        }),
+        reducedMotionToggleLabel: fields.text({
+          label: "Reduced Motion Toggle Label",
+          description: "Visible label for the reduced motion toggle button.",
+        }),
+        reducedMotionToggleTitle: fields.text({
+          label: "Reduced Motion Toggle Title",
+          description: "Tooltip/title attribute for the reduced motion toggle button.",
+        }),
+        reducedMotionToggleEnabledLabel: fields.text({
+          label: "Reduced Motion Enabled Label",
+          description: "Label shown when reduced motion mode is enabled.",
+        }),
       },
     }),
   },

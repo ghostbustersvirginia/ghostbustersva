@@ -92,6 +92,7 @@ const settings = defineCollection({
       .transform((val) => (val === "" ? undefined : val)),
     contactEmail: z.string().optional(),
     contactPhone: z.string().optional(),
+    contactFormActionUrl: safeExternalUrl.optional(),
     ledScrollbarText: z.string().optional(),
     socialLinks: z
       .array(
@@ -102,6 +103,9 @@ const settings = defineCollection({
       )
       .optional()
       .default([]),
+    reducedMotionToggleLabel: z.string().optional(),
+    reducedMotionToggleTitle: z.string().optional(),
+    reducedMotionToggleEnabledLabel: z.string().optional(),
 
     // Navbar
     navLogo: z.string().optional(),
@@ -113,6 +117,7 @@ const settings = defineCollection({
           label: z.string(),
           href: safeCmsHref,
           external: z.boolean().optional().default(false),
+          group: z.enum(["primary", "more"]).optional().default("primary"),
         }),
       )
       .optional()
@@ -131,6 +136,7 @@ const settings = defineCollection({
       )
       .optional()
       .default([]),
+    footerDisclaimerText: z.string().optional(),
 
     // Legacy field — kept for backwards compat, prefer footerCopyrightText
     footerText: z.string().optional(),
@@ -158,7 +164,7 @@ const news = defineCollection({
   loader: glob({ pattern: "**/*.json", base: "src/content/news" }),
   schema: z.object({
     title: z.string(),
-    date: z.string(),
+    date: z.coerce.date(),
     location: z.string().optional(),
     url: z.string().url(),
     source: z.string(),
@@ -233,6 +239,12 @@ const aboutPageCopy = z.object({
   missionCtaHref: safeInternalPath.optional(),
   teamImage: z.string().optional(),
   teamImageAlt: z.string().optional(),
+  divisionsImage: z.string().optional(),
+  divisionsImageAlt: z.string().optional(),
+  communityImage: z.string().optional(),
+  communityImageAlt: z.string().optional(),
+  togetherImage: z.string().optional(),
+  togetherImageAlt: z.string().optional(),
   metaTitle: z.string().optional(),
   metaDescription: z.string().optional(),
   ogTitle: z.string().optional(),
@@ -255,6 +267,7 @@ const joinPageCopy = z.object({
   requiredGearHeading: z.string().optional(),
   requiredGearItems: z.array(z.string()).min(1),
   beltGizmoItems: z.array(z.string()).min(1),
+  showBeltGizmoSublist: z.boolean().optional().default(true),
   howToApplyHeading: z.string().optional(),
   applyText: z.string().optional(),
   applyLinkLabel: z.string().optional(),
@@ -274,7 +287,13 @@ const eventsPageCopy = z.object({
   pageIntro: z.string(),
   upcomingHeading: z.string().optional(),
   pastHeading: z.string().optional(),
+  noUpcomingEventsTitle: z.string().optional(),
   emptyText: z.string().optional(),
+  noUpcomingEventsContactText: z.string().optional(),
+  noUpcomingEventsContactHref: safeInternalPath.optional(),
+  eventCtaText: z.string().optional(),
+  eventCtaLabel: z.string().optional(),
+  eventCtaHref: safeInternalPath.optional(),
   showMoreLabel: z.string().optional(),
   showLessLabel: z.string().optional(),
   metaTitle: z.string().optional(),
@@ -284,10 +303,16 @@ const eventsPageCopy = z.object({
   ogImage: z.string().optional(),
 });
 
-const mediaPageCopy = z.object({
-  page: z.literal("media"),
+const pressPageCopy = z.object({
+  page: z.literal("press"),
   pageTitle: z.string(),
   pageIntro: z.string(),
+  pressKitTitle: z.string().optional(),
+  pressKitBody: z.string().optional(),
+  pressKitCtaLabel: z.string().optional(),
+  charityKitTitle: z.string().optional(),
+  charityKitBody: z.string().optional(),
+  charityKitCtaLabel: z.string().optional(),
   galleryHeading: z.string().optional(),
   videosHeading: z.string().optional(),
   newsHeading: z.string().optional(),
@@ -309,6 +334,9 @@ const contactPageCopy = z.object({
   showLedScrollbar: z.boolean().optional(),
   ledPlacement: z.enum(["after-social", "before-booking"]).optional(),
   bookingHeading: z.string().optional(),
+  bookingSectionHeading: z.string().optional(),
+  contactFormDescription: z.string().optional(),
+  contactFormSubmitLabel: z.string().optional(),
   bookingImage: z.string().optional(),
   bookingImageAlt: z.string().optional(),
   metaTitle: z.string().optional(),
@@ -327,6 +355,8 @@ const donatePageCopy = z.object({
   donationCardHeading: z.string().optional(),
   donationItems: z.array(z.string()).min(1).optional(),
   donationCtaLabel: z.string().optional(),
+  donationImage: z.string().optional(),
+  donationImageAlt: z.string().optional(),
   communityHeading: z.string().optional(),
   communityText: z.string().optional(),
   communityCtaLabel: z.string().optional(),
@@ -380,7 +410,7 @@ const pageCopy = defineCollection({
     aboutPageCopy,
     joinPageCopy,
     eventsPageCopy,
-    mediaPageCopy,
+    pressPageCopy,
     contactPageCopy,
     donatePageCopy,
     codeOfConductPageCopy,

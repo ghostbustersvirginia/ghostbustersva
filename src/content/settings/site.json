@@ -4,6 +4,7 @@
   "donateUrl": "https://secure2.wish.org/site/TR;jsessionid=00000000.app20002b?team_id=58435&fr_id=7464&pg=team&NONCE_TOKEN=16AE47C509ECB858ECB963CD3D174802",
   "contactEmail": "info@ghostbustersva.com",
   "contactPhone": "(804) 482-1217",
+  "contactFormActionUrl": "https://formspree.io/f/xpqybzjj",
   "ledScrollbarText": " WE'RE READY TO BELIEVE YOU!     (804) 482-1217  \u2014  ",
   "socialLinks": [
     {
@@ -27,16 +28,20 @@
   "navTitle": "Ghostbusters",
   "navSubtitle": "Virginia",
   "navItems": [
-    { "label": "About", "href": "/about", "external": false },
-    { "label": "Join", "href": "/join", "external": false },
-    { "label": "Events", "href": "/events", "external": false },
-    { "label": "Media", "href": "/media", "external": false },
-    { "label": "Contact", "href": "/contact", "external": false },
-    { "label": "Donate", "href": "/donate", "external": false }
+    { "label": "Donate", "href": "/donate", "external": false, "group": "primary" },
+    { "label": "Join", "href": "/join", "external": false, "group": "primary" },
+    { "label": "Events", "href": "/events", "external": false, "group": "primary" },
+    { "label": "Contact", "href": "/contact", "external": false, "group": "primary" },
+    { "label": "About", "href": "/about", "external": false, "group": "more" },
+    { "label": "Press", "href": "/press", "external": false, "group": "more" }
   ],
   "footerCopyrightText": "",
   "codeOfConductUrl": "/code-of-conduct",
   "codeOfConductLabel": "Code of Conduct",
+  "footerDisclaimerText": "Ghostbusters and all related trademarks are property of Sony Pictures Entertainment Inc. GBVA is an independent fan group with no commercial affiliation.",
+  "reducedMotionToggleLabel": "Reduce motion",
+  "reducedMotionToggleTitle": "Reduce motion",
+  "reducedMotionToggleEnabledLabel": "Motion reduced",
   "footerLogos": [
     {
       "src": "/images/sony-ghost-corps-franchise-letter.png",

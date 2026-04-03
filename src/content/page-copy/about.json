@@ -20,5 +20,11 @@
   "ogDescription": "Discover who we are, how we serve the community, and why Ghostbusters Virginia exists.",
   "ogImage": "/images/ghostbusters-virginia-pke-meter-closeup.jpg",
   "teamImage": "/images/ghostbusters-virginia-alamo-drafthouse.jpg",
-  "teamImageAlt": "Ghostbusters Virginia members at an Alamo Drafthouse Cinema event with Slimer prop and franchise banner"
+  "teamImageAlt": "Ghostbusters Virginia members at an Alamo Drafthouse Cinema event with Slimer prop and franchise banner",
+  "divisionsImage": "/images/ghostbusters-virginia-convention-booth.jpg",
+  "divisionsImageAlt": "Ghostbusters Virginia convention booth showcasing regional divisions",
+  "communityImage": "/images/ghostbusters-virginia-ecto-night-lights.jpg",
+  "communityImageAlt": "Ghostbusters Virginia members posing with the Ecto vehicle at night with colorful decorative lights",
+  "togetherImage": "/images/ghostbusters-virginia-police-community-event.jpg",
+  "togetherImageAlt": "Ghostbusters Virginia members at a community event with local first responders"
 }
