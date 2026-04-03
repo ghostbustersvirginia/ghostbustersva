@@ -38,8 +38,11 @@ const donationItems = copy.donationItems || [
   "Sports balls and outdoor play items",
 ];
 const donationCtaLabel = copy.donationCtaLabel || "Donate to Make-A-Wish";
-const donationImageSrc = "/images/ghostbusters-virginia-toys-for-tots-drive.jpg";
-const donationImageAlt = "Ghostbusters Virginia members supporting a Toys for Tots donation drive";
+const donationImageSrc =
+  copy.donationImage || "/images/ghostbusters-virginia-toys-for-tots-drive.jpg";
+const donationImageAlt =
+  copy.donationImageAlt ||
+  "Ghostbusters Virginia members supporting a Toys for Tots donation drive";
 const communityHeading = copy.communityHeading || "Community Partners";
 const communityText =
   copy.communityText ||

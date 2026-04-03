@@ -14,7 +14,7 @@ export const siteConfig = {
     { label: "About", href: "/about" },
     { label: "Join", href: "/join" },
     { label: "Events", href: "/events" },
-    { label: "Media", href: "/media" },
+    { label: "Press", href: "/press" },
     { label: "Contact", href: "/contact" },
     { label: "Donate", href: "/donate" },
   ],

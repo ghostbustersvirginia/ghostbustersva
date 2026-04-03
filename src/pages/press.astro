@@ -1,0 +1,547 @@
+---
+/**
+ * Press page — press kit links, news coverage, and gallery.
+ */
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Button from "../components/ui/Button.astro";
+import Lightbox from "../components/ui/Lightbox.astro";
+import PageHeader from "../components/ui/PageHeader.astro";
+import SectionHeading from "../components/ui/SectionHeading.astro";
+import { getCollection } from "astro:content";
+import { getResponsiveImageAttrs } from "../lib/images";
+import { isSafeExternalUrl } from "../lib/links";
+import { getPageCopy } from "../lib/page-copy";
+
+const copy = await getPageCopy("press");
+
+const gallery = await getCollection("gallery");
+const news = await getCollection("news");
+
+const sortedNews = [...news].sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
+const safeSortedNews = sortedNews.filter((article) => isSafeExternalUrl(article.data.url));
+const newsDateFormatter = new Intl.DateTimeFormat("en-US", {
+  month: "long",
+  day: "numeric",
+  year: "numeric",
+  timeZone: "UTC",
+});
+
+const galleryImages = await Promise.all(
+  gallery.map(async (item) => ({
+    ...item,
+    responsive: await getResponsiveImageAttrs({
+      src: item.data.image,
+      widths: [320, 640, 960],
+      sizes: "(max-width: 480px) 100vw, (max-width: 768px) 50vw, 33vw",
+      width: 640,
+      height: 480,
+    }),
+  })),
+);
+
+const newsImageAttrs = await Promise.all(
+  safeSortedNews.map(async (article) => {
+    if (!article.data.image) return null;
+    return getResponsiveImageAttrs({
+      src: article.data.image,
+      widths: [320, 480, 640],
+      sizes: "(max-width: 768px) 100vw, 240px",
+      width: 640,
+      height: 360,
+      quality: 72,
+    });
+  }),
+);
+
+const pageTitle = copy.pageTitle || "Press";
+const pageIntro =
+  copy.pageIntro ||
+  "Press resources, charity information, and coverage of Ghostbusters Virginia in action.";
+const pressKitHeading = copy.videosHeading || "Press Kit / Charity Kit";
+const pressKitTitle = copy.pressKitTitle || "Press Kit Request";
+const pressKitBody =
+  copy.pressKitBody ||
+  "Request official logos, approved boilerplate, and franchise background details for interviews, event listings, and publication coverage.";
+const pressKitCtaLabel = copy.pressKitCtaLabel || "Contact for Press Kit";
+const charityKitTitle = copy.charityKitTitle || "Charity Kit Request";
+const charityKitBody =
+  copy.charityKitBody ||
+  "Need details for a fundraiser, sponsorship, or nonprofit collaboration? Reach out and we will send current charity participation and outreach information.";
+const charityKitCtaLabel = copy.charityKitCtaLabel || "Contact for Charity Kit";
+const newsHeading = copy.newsHeading || "In The News";
+const galleryHeading = copy.galleryHeading || "Gallery";
+const showMoreGalleryLabel = copy.showMoreGalleryLabel || "Show More";
+const showLessGalleryLabel = copy.showLessGalleryLabel || "Show Less";
+const showMoreNewsLabel = copy.showMoreNewsLabel || "Show More";
+const showLessNewsLabel = copy.showLessNewsLabel || "Show Less";
+const metaTitle = copy.metaTitle || "Press";
+const metaDescription =
+  copy.metaDescription ||
+  "Access Ghostbusters Virginia press and charity kit details, read news coverage, and browse the gallery.";
+const ogTitleVal = copy.ogTitle || "Press | Ghostbusters Virginia";
+const ogDescriptionVal =
+  copy.ogDescription ||
+  "Press resources, news coverage, and photos from Ghostbusters Virginia events and appearances.";
+const ogImage = copy.ogImage || "/images/ghostbusters-virginia-full-team-photo.jpg";
+---
+
+<BaseLayout
+  title={metaTitle}
+  description={metaDescription}
+  canonical="/press"
+  ogTitle={ogTitleVal}
+  ogDescription={ogDescriptionVal}
+  ogImage={ogImage}
+>
+  <section class="page" aria-labelledby="press-title">
+    <div class="page-band page-band--alt">
+      <div class="container container--mid">
+        <PageHeader id="press-title" title={pageTitle} subtitle={pageIntro} />
+      </div>
+    </div>
+
+    {/* ── Press kit / charity kit ── */}
+    <div class="page-band page-band--white">
+      <div class="container container--mid">
+        <SectionHeading id="press-kit">{pressKitHeading}</SectionHeading>
+        <div class="kit-grid" role="list">
+          <article class="kit-card" role="listitem">
+            <h3 class="kit-card__title">{pressKitTitle}</h3>
+            <p class="kit-card__body">{pressKitBody}</p>
+            <Button variant="secondary-alt" href="/contact">{pressKitCtaLabel}</Button>
+          </article>
+          <article class="kit-card" role="listitem">
+            <h3 class="kit-card__title">{charityKitTitle}</h3>
+            <p class="kit-card__body">{charityKitBody}</p>
+            <Button variant="secondary-alt" href="/contact">{charityKitCtaLabel}</Button>
+          </article>
+        </div>
+      </div>
+    </div>
+
+    {/* ── In the News ── */}
+    {
+      safeSortedNews.length > 0 && (
+        <div class="page-band page-band--alt">
+          <div class="container">
+            <SectionHeading id="news">{newsHeading}</SectionHeading>
+            <ul class="news-list" id="news-grid" role="list">
+              {safeSortedNews.map((article, index) => (
+                <li class={`news-item${index >= 6 ? " news-hidden" : ""}`}>
+                  <a
+                    href={article.data.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="news-link"
+                  >
+                    {article.data.image && (
+                      <div class="news-link__image-wrapper">
+                        <img
+                          class="news-link__image"
+                          {...newsImageAttrs[index]!}
+                          alt=""
+                          loading="lazy"
+                          decoding="async"
+                        />
+                      </div>
+                    )}
+                    <div class="news-link__body">
+                      <span class="news-link__title">{article.data.title}</span>
+                      <p class="news-link__excerpt">{article.data.excerpt}</p>
+                      <div class="news-link__footer">
+                        <time
+                          class="news-link__date"
+                          datetime={article.data.date.toISOString().slice(0, 10)}
+                        >
+                          {newsDateFormatter.format(article.data.date)}
+                        </time>
+                        <span class="news-link__source">{article.data.source}</span>
+                        {article.data.location && (
+                          <span class="news-link__location">
+                            <svg
+                              class="news-link__footer-icon"
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="14"
+                              height="14"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              stroke-width="2"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              aria-hidden="true"
+                            >
+                              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                              <circle cx="12" cy="10" r="3" />
+                            </svg>
+                            <span>{article.data.location}</span>
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <svg
+                      class="news-link__external"
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      aria-hidden="true"
+                    >
+                      <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                      <polyline points="15 3 21 3 21 9" />
+                      <line x1="10" y1="14" x2="21" y2="3" />
+                    </svg>
+                  </a>
+                </li>
+              ))}
+            </ul>
+            {safeSortedNews.length > 6 && (
+              <div class="show-toggle">
+                <Button
+                  variant="secondary-alt"
+                  type="button"
+                  class="toggle-btn"
+                  id="news-show-more"
+                >
+                  {showMoreNewsLabel} ({safeSortedNews.length - 6} more)
+                </Button>
+                <Button
+                  variant="secondary-alt"
+                  type="button"
+                  class="toggle-btn"
+                  id="news-show-less"
+                  hidden
+                >
+                  {showLessNewsLabel}
+                </Button>
+              </div>
+            )}
+          </div>
+        </div>
+      )
+    }
+
+    {/* ── Gallery ── */}
+    {
+      galleryImages.length > 0 && (
+        <div class="page-band page-band--white">
+          <div class="container">
+            <SectionHeading id="gallery">{galleryHeading}</SectionHeading>
+            <div class="gallery-grid" id="gallery-grid">
+              {galleryImages.map((item, index) => (
+                <button
+                  class={`gallery-thumb${index >= 12 ? " gallery-hidden" : ""}`}
+                  type="button"
+                  data-lightbox-group="press-gallery"
+                  data-lightbox-src={item.data.image}
+                  data-lightbox-alt={item.data.alt}
+                  data-lightbox-caption={item.data.title}
+                  aria-label={`View: ${item.data.title}`}
+                >
+                  <img
+                    {...item.responsive}
+                    alt={item.data.alt}
+                    loading={index < 6 ? "eager" : "lazy"}
+                    decoding="async"
+                  />
+                  <span class="gallery-thumb__expand" aria-hidden="true">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <polyline points="15 3 21 3 21 9" />
+                      <polyline points="9 21 3 21 3 15" />
+                      <line x1="21" y1="3" x2="14" y2="10" />
+                      <line x1="3" y1="21" x2="10" y2="14" />
+                    </svg>
+                  </span>
+                </button>
+              ))}
+            </div>
+            {galleryImages.length > 12 && (
+              <div class="show-toggle">
+                <Button
+                  variant="secondary-alt"
+                  type="button"
+                  class="toggle-btn"
+                  id="gallery-show-more"
+                >
+                  {showMoreGalleryLabel} ({galleryImages.length - 12} more)
+                </Button>
+                <Button
+                  variant="secondary-alt"
+                  type="button"
+                  class="toggle-btn"
+                  id="gallery-show-less"
+                  hidden
+                >
+                  {showLessGalleryLabel}
+                </Button>
+              </div>
+            )}
+          </div>
+        </div>
+      )
+    }
+
+    <Lightbox
+      id="press-gallery-lightbox"
+      hasNav
+      label="Gallery viewer"
+      lightboxGroup="press-gallery"
+    />
+  </section>
+</BaseLayout>
+
+<script>
+  import { setupShowMoreToggle } from "../lib/show-more";
+
+  setupShowMoreToggle({
+    showMoreId: "gallery-show-more",
+    showLessId: "gallery-show-less",
+    hiddenClass: "gallery-hidden",
+    containerId: "gallery-grid",
+    initialVisibleCount: 12,
+  });
+
+  setupShowMoreToggle({
+    showMoreId: "news-show-more",
+    showLessId: "news-show-less",
+    hiddenClass: "news-hidden",
+    containerId: "news-grid",
+    initialVisibleCount: 6,
+  });
+</script>
+
+<style>
+  .kit-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-lg);
+  }
+
+  @media (min-width: 768px) {
+    .kit-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  .kit-card {
+    background: var(--color-surface-alt);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-panel);
+    padding: var(--space-xl);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+  }
+
+  .kit-card__title {
+    margin: 0;
+    font-size: var(--text-xl);
+  }
+
+  .kit-card__body {
+    margin: 0;
+    color: var(--color-text-muted);
+    line-height: var(--leading-loose);
+  }
+
+  .gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: var(--space-md);
+  }
+
+  @media (min-width: 768px) {
+    .gallery-grid {
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    }
+  }
+
+  .gallery-thumb {
+    position: relative;
+    background: none;
+    border: none;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: 0;
+    cursor: pointer;
+    overflow: hidden;
+    aspect-ratio: 4 / 3;
+    transition:
+      border-color var(--transition-base),
+      box-shadow var(--transition-base);
+  }
+
+  .gallery-thumb:hover,
+  .gallery-thumb:focus-visible {
+    border-color: var(--color-hover-border);
+    box-shadow:
+      0 8px 24px rgba(0, 0, 0, 0.15),
+      0 2px 8px rgba(0, 0, 0, 0.08);
+  }
+
+  .gallery-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.3s ease;
+  }
+
+  .gallery-thumb:hover img,
+  .gallery-thumb:focus-visible img {
+    transform: scale(1.03);
+  }
+
+  .gallery-thumb__expand {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.4);
+    color: #fff;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+    z-index: 1;
+  }
+
+  .gallery-thumb:hover .gallery-thumb__expand,
+  .gallery-thumb:focus-visible .gallery-thumb__expand {
+    opacity: 1;
+  }
+
+  .gallery-hidden,
+  .news-hidden {
+    display: none !important;
+  }
+
+  .show-toggle {
+    margin-top: var(--space-lg);
+    display: flex;
+    justify-content: center;
+    gap: var(--space-md);
+  }
+
+  .news-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-lg);
+  }
+
+  .news-item {
+    margin: 0;
+  }
+
+  .news-link {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-md);
+    align-items: stretch;
+    text-decoration: none;
+    color: inherit;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: var(--space-md);
+    transition:
+      border-color var(--transition-base),
+      box-shadow var(--transition-base),
+      transform var(--transition-fast);
+  }
+
+  .news-link:hover,
+  .news-link:focus-visible {
+    border-color: var(--color-hover-border);
+    box-shadow: var(--shadow-hover);
+    transform: translateY(-2px);
+  }
+
+  @media (min-width: 768px) {
+    .news-link {
+      grid-template-columns: 240px 1fr auto;
+      gap: var(--space-lg);
+    }
+  }
+
+  .news-link__image-wrapper {
+    width: 100%;
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    background: var(--color-surface-alt);
+  }
+
+  .news-link__image {
+    width: 100%;
+    height: 100%;
+    max-height: 180px;
+    object-fit: cover;
+    display: block;
+  }
+
+  .news-link__body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+  }
+
+  .news-link__title {
+    font-family: var(--font-brand-title);
+    font-size: var(--text-xl);
+    line-height: var(--leading-tight);
+    color: var(--color-accent);
+  }
+
+  .news-link__excerpt {
+    margin: 0;
+    color: var(--color-text-muted);
+    line-height: var(--leading-loose);
+  }
+
+  .news-link__footer {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-md);
+    align-items: center;
+    margin-top: auto;
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+  }
+
+  .news-link__date {
+    font-weight: var(--weight-semibold);
+    letter-spacing: var(--tracking-wide);
+  }
+
+  .news-link__location {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
+
+  .news-link__external {
+    align-self: flex-start;
+    color: var(--color-text-muted);
+    margin-top: 0.15rem;
+    flex-shrink: 0;
+  }
+</style>

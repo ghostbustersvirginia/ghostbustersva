@@ -920,7 +920,7 @@ a.event-link:hover .event-link__summary {
   right: var(--space-xl);
   background: none;
   border: none;
-  color: var(--color-text);
+  color: #ffffff;
   font-size: 2.5rem;
   cursor: pointer;
   line-height: 1;
@@ -936,11 +936,11 @@ a.event-link:hover .event-link__summary {
 
 .lightbox__close:hover,
 .lightbox__close:focus-visible {
-  color: var(--color-accent-hover);
+  color: rgba(255, 255, 255, 0.82);
 }
 
 .lightbox__close:focus-visible {
-  outline: 2px solid var(--color-focus);
+  outline: 2px solid rgba(255, 255, 255, 0.85);
   outline-offset: 2px;
 }
 

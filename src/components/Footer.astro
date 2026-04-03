@@ -11,46 +11,29 @@ import { getSafeCmsHref, isSafeExternalUrl } from "../lib/links";
 const settings = await getSiteSettings();
 const leftLogo = settings.footerLogos[0];
 const rightLogo = settings.footerLogos[1];
-const navItems = settings.navItems
-  .map((link) => {
-    const href = getSafeCmsHref(link.href);
-    if (!href) return null;
-    return { ...link, href };
-  })
-  .filter((link): link is NonNullable<typeof link> => Boolean(link));
+const navItems = settings.navItems;
 const footerCopyright = settings.footerCopyrightText || siteConfig.copyright;
 const tagline = settings.siteDescription || siteConfig.description;
 const safeCodeOfConductUrl = getSafeCmsHref(settings.codeOfConductUrl) || "/code-of-conduct";
+const footerDisclaimerText =
+  settings.footerDisclaimerText ||
+  "Ghostbusters and all related trademarks are property of Sony Pictures Entertainment Inc. GBVA is an independent fan group with no commercial affiliation.";
+const reducedMotionToggleLabel = settings.reducedMotionToggleLabel || "Reduce motion";
+const reducedMotionToggleTitle = settings.reducedMotionToggleTitle || reducedMotionToggleLabel;
+const reducedMotionToggleEnabledLabel =
+  settings.reducedMotionToggleEnabledLabel || "Motion reduced";
 
-const findSocial = (platform: string) => {
-  const candidate = settings.socialLinks.find(
-    (s) => s.platform.toLowerCase() === platform.toLowerCase(),
-  )?.url;
-  return isSafeExternalUrl(candidate) ? candidate : undefined;
-};
-
-const socialLinks = [
-  {
-    label: "Facebook",
-    href: findSocial("facebook") || "https://www.facebook.com/Ghostbusters.Virginia.757",
-    icon: "facebook",
-  },
-  {
-    label: "Instagram",
-    href: findSocial("instagram") || "https://www.instagram.com/ghostbustersva/",
-    icon: "instagram",
-  },
-  {
-    label: "TikTok",
-    href: findSocial("tiktok") || "https://www.tiktok.com/@ghostbustersvirginia",
-    icon: "tiktok",
-  },
-  {
-    label: "YouTube",
-    href: findSocial("youtube") || "https://www.youtube.com/@Ghostbusters_Virginia",
-    icon: "youtube",
-  },
-];
+const socialLinks = settings.socialLinks
+  .map((social) => {
+    const href = isSafeExternalUrl(social.url) ? social.url : undefined;
+    if (!href) return null;
+    return {
+      label: social.platform,
+      href,
+      icon: social.platform.toLowerCase(),
+    };
+  })
+  .filter((social): social is NonNullable<typeof social> => Boolean(social));
 ---
 
 <footer class="site-footer">
@@ -129,8 +112,16 @@ const socialLinks = [
     </div>
 
     <p class="copyright">{footerCopyright}</p>
+    <p class="footer-disclaimer">{footerDisclaimerText}</p>
 
-    <button type="button" class="reduced-motion-toggle" aria-pressed="false" title="Reduce motion">
+    <button
+      type="button"
+      class="reduced-motion-toggle"
+      aria-pressed="false"
+      title={reducedMotionToggleTitle}
+      data-label-on={reducedMotionToggleEnabledLabel}
+      data-label-off={reducedMotionToggleLabel}
+    >
       <svg
         xmlns="http://www.w3.org/2000/svg"
         width="16"
@@ -144,7 +135,7 @@ const socialLinks = [
         aria-hidden="true"
         ><circle cx="12" cy="12" r="10"></circle><line x1="4" y1="4" x2="20" y2="20"></line></svg
       >
-      <span class="reduced-motion-toggle__label">Reduce motion</span>
+      <span class="reduced-motion-toggle__label">{reducedMotionToggleLabel}</span>
     </button>
   </div>
 </footer>
@@ -319,6 +310,16 @@ const socialLinks = [
     border-top: 1px solid rgba(255, 255, 255, 0.08);
   }
 
+  .footer-disclaimer {
+    margin: 0;
+    max-width: 52rem;
+    align-self: center;
+    text-align: center;
+    font-size: 0.6875rem;
+    line-height: 1.45;
+    color: rgba(255, 255, 255, 0.45);
+  }
+
   @media (min-width: 768px) {
     .site-footer {
       padding-block: 0 var(--space-xl);
@@ -434,7 +435,9 @@ const socialLinks = [
       document.querySelectorAll<HTMLButtonElement>(".reduced-motion-toggle").forEach((btn) => {
         btn.setAttribute("aria-pressed", String(enabled));
         const label = btn.querySelector(".reduced-motion-toggle__label");
-        if (label) label.textContent = enabled ? "Motion reduced" : "Reduce motion";
+        const labelOn = btn.dataset.labelOn || "Motion reduced";
+        const labelOff = btn.dataset.labelOff || "Reduce motion";
+        if (label) label.textContent = enabled ? labelOn : labelOff;
       });
     }
 

@@ -32,9 +32,16 @@ const pageIntro =
   copy.pageIntro ||
   "Interested in having Ghostbusters Virginia appear at your event, convention, or community gathering? We love supporting charitable and community causes across the Commonwealth. Contact us today to learn more.";
 const bookingHeading = copy.bookingHeading || "You know who to Call";
+const bookingSectionHeading = copy.bookingSectionHeading || "Event Bookings & Appearances";
 const contactFormDescription =
+  copy.contactFormDescription ||
   "Got a ghost problem? A media inquiry? Just want to say hey? We're listening.";
-const formspreeAction = "https://formspree.io/f/xpqybzjj";
+const defaultFormAction = "https://formspree.io/f/xpqybzjj";
+const formspreeAction =
+  settings.contactFormActionUrl && isSafeExternalUrl(settings.contactFormActionUrl)
+    ? settings.contactFormActionUrl
+    : defaultFormAction;
+const contactFormSubmitLabel = copy.contactFormSubmitLabel || "Send Message";
 const metaTitle = copy.metaTitle || "Contact";
 const metaDescription =
   copy.metaDescription ||
@@ -165,7 +172,7 @@ const bookingImage = await getResponsiveImageAttrs({
             </div>
           )
         }
-        <SectionHeading>Event Bookings & Appearances</SectionHeading>
+        <SectionHeading>{bookingSectionHeading}</SectionHeading>
         <div class="booking-layout">
           <LightboxImageTrigger
             group="contact-gallery"
@@ -271,7 +278,7 @@ const bookingImage = await getResponsiveImageAttrs({
                 class="contact-form__honeypot"
               />
               <div class="contact-form__actions">
-                <Button type="submit" variant="primary">Send Message</Button>
+                <Button type="submit" variant="primary">{contactFormSubmitLabel}</Button>
               </div>
             </form>
             <img src="/images/slime.png" alt="" aria-hidden="true" class="contact-form-ooze" />

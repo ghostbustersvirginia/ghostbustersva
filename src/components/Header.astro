@@ -8,7 +8,6 @@
  * Reads logo, title, and nav items from CMS settings.
  */
 import { getSiteSettings } from "../lib/settings";
-import { getSafeCmsHref } from "../lib/links";
 
 const settings = await getSiteSettings();
 const currentPath = Astro.url.pathname;
@@ -31,13 +30,8 @@ const isActivePage = (href: string) => {
 };
 
 const navItems = settings.navItems;
-const safeNavItems = navItems
-  .map((link) => {
-    const href = getSafeCmsHref(link.href);
-    if (!href) return null;
-    return { ...link, href };
-  })
-  .filter((link): link is NonNullable<typeof link> => Boolean(link));
+const primaryNavItems = navItems.filter((link) => link.group !== "more");
+const moreDropdownItems = navItems.filter((link) => link.group === "more");
 const navTitle = settings.navTitle?.trim() || "Ghostbusters";
 const navSubtitle = settings.navSubtitle?.trim() || "Virginia";
 const logoIndex = navTitle.toLowerCase().indexOf("o");
@@ -58,8 +52,8 @@ const useLogoAsO = logoIndex >= 0;
             )
           }
           {titleAfterLogo}
+          <span class="logo-wordmark-sub">{navSubtitle}</span>
         </span>
-        <span class="logo-wordmark-sub">{navSubtitle}</span>
       </span>
     </a>
 
@@ -67,7 +61,7 @@ const useLogoAsO = logoIndex >= 0;
     <nav class="desktop-nav" aria-label="Main navigation">
       <ul>
         {
-          safeNavItems.map((link) => (
+          primaryNavItems.map((link) => (
             <li>
               <a
                 href={link.href}
@@ -80,6 +74,58 @@ const useLogoAsO = logoIndex >= 0;
               </a>
             </li>
           ))
+        }
+        {
+          moreDropdownItems.length > 0 && (
+            <li class="desktop-nav__group">
+              <button
+                type="button"
+                class="desktop-nav__link desktop-nav__more-button"
+                aria-expanded="false"
+                aria-controls="more-submenu-desktop"
+                data-submenu-toggle="more-submenu-desktop"
+              >
+                More
+                <svg
+                  class="desktop-nav__caret"
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>
+              </button>
+              <ul
+                id="more-submenu-desktop"
+                class="desktop-nav__submenu"
+                aria-label="More menu"
+                hidden
+              >
+                {moreDropdownItems.map((subLink) => (
+                  <li>
+                    <a
+                      href={subLink.href}
+                      class="desktop-nav__submenu-link"
+                      aria-current={isActivePage(subLink.href) ? "page" : undefined}
+                      {...(subLink.external
+                        ? { target: "_blank", rel: "noopener noreferrer" }
+                        : {})}
+                    >
+                      {subLink.label}
+                      {subLink.external && <span class="sr-only"> (opens in new tab)</span>}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </li>
+          )
         }
       </ul>
     </nav>
@@ -96,7 +142,7 @@ const useLogoAsO = logoIndex >= 0;
       <nav class="mobile-nav-links" aria-label="Main navigation">
         <ul>
           {
-            safeNavItems.map((link) => (
+            primaryNavItems.map((link) => (
               <li>
                 <a
                   href={link.href}
@@ -109,6 +155,58 @@ const useLogoAsO = logoIndex >= 0;
                 </a>
               </li>
             ))
+          }
+          {
+            moreDropdownItems.length > 0 && (
+              <li class="mobile-nav__group">
+                <button
+                  type="button"
+                  class="mobile-nav__link mobile-nav__more-button"
+                  aria-expanded="false"
+                  aria-controls="more-submenu-mobile"
+                  data-submenu-toggle="more-submenu-mobile"
+                >
+                  More
+                  <svg
+                    class="mobile-nav__caret"
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                  >
+                    <polyline points="6 9 12 15 18 9" />
+                  </svg>
+                </button>
+                <ul
+                  id="more-submenu-mobile"
+                  class="mobile-nav__submenu"
+                  aria-label="More menu"
+                  hidden
+                >
+                  {moreDropdownItems.map((subLink) => (
+                    <li>
+                      <a
+                        href={subLink.href}
+                        class="mobile-nav__submenu-link"
+                        aria-current={isActivePage(subLink.href) ? "page" : undefined}
+                        {...(subLink.external
+                          ? { target: "_blank", rel: "noopener noreferrer" }
+                          : {})}
+                      >
+                        {subLink.label}
+                        {subLink.external && <span class="sr-only"> (opens in new tab)</span>}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </li>
+            )
           }
         </ul>
       </nav>
@@ -156,8 +254,8 @@ const useLogoAsO = logoIndex >= 0;
   }
 
   .logo-wordmark {
-    display: flex;
-    flex-direction: column;
+    display: inline-flex;
+    align-items: center;
     line-height: 1;
     text-transform: uppercase;
     white-space: nowrap;
@@ -165,9 +263,9 @@ const useLogoAsO = logoIndex >= 0;
 
   .logo-wordmark-main {
     font-family: var(--font-brand-title, var(--font-display));
-    font-weight: var(--weight-bold);
-    font-size: 1.9rem;
-    letter-spacing: var(--tracking-heading);
+    font-weight: 800;
+    font-size: 2.05rem;
+    letter-spacing: 0.03em;
     color: var(--color-text);
     line-height: 1;
     display: inline-flex;
@@ -177,19 +275,19 @@ const useLogoAsO = logoIndex >= 0;
 
   .logo-wordmark-sub {
     font-family: var(--font-brand-title, var(--font-display));
-    font-weight: var(--weight-bold);
-    font-size: 0.85rem;
-    letter-spacing: 0.22em;
-    color: var(--color-text-muted);
+    font-weight: 760;
+    font-size: 0.66em;
+    letter-spacing: 0.08em;
+    color: var(--color-text);
     line-height: 1;
-    margin-top: 0.15em;
+    margin-left: 0.32ch;
   }
 
   .logo-o {
     width: 1.02em;
     height: 1.02em;
     object-fit: contain;
-    margin-inline: 0.02em;
+    margin-inline: 0;
     transform: translateY(0.03em);
     flex-shrink: 0;
     filter: var(--shadow-logo-drop);
@@ -202,12 +300,20 @@ const useLogoAsO = logoIndex >= 0;
   .desktop-nav ul {
     list-style: none;
     display: flex;
-    align-items: center;
+    align-items: stretch;
     gap: var(--space-xs);
+    margin: 0;
+    padding: 0;
+  }
+
+  .desktop-nav__group {
+    position: relative;
   }
 
   .desktop-nav__link {
-    display: block;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     text-decoration: none;
     font-family: var(--font-heading);
     font-size: var(--text-base);
@@ -215,25 +321,154 @@ const useLogoAsO = logoIndex >= 0;
     letter-spacing: var(--tracking-wide);
     text-transform: capitalize;
     white-space: nowrap;
+    line-height: 1;
     color: var(--color-text-muted);
     padding: var(--space-xs) var(--space-md);
-    border-bottom: 3px solid transparent;
+    border-radius: var(--radius-sm);
+    min-height: 2.25rem;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     transition:
       color var(--transition-fast),
-      border-color var(--transition-fast);
+      background-color var(--transition-fast);
   }
 
   .desktop-nav__link:hover,
   .desktop-nav__link:focus-visible {
     color: var(--color-accent);
-    border-bottom-color: var(--color-accent);
+    background-color: var(--color-action-secondary-hover, rgba(0, 0, 0, 0.05));
   }
 
   .desktop-nav__link[aria-current="page"] {
     color: var(--color-accent);
-    border-bottom-color: var(--color-accent);
+    background-color: var(--color-action-secondary-hover, rgba(0, 0, 0, 0.05));
+  }
+
+  .desktop-nav__link--group {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+
+  /* More button - styled as nav link but with button reset */
+  .desktop-nav__more-button {
+    appearance: none;
+    background: none;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    margin: 0;
+    padding: var(--space-xs) var(--space-md);
+    min-height: 2.25rem;
+    line-height: 1;
+    border-radius: var(--radius-sm);
+    color: var(--color-text-muted);
+    font-family: var(--font-heading);
+    font-size: var(--text-base);
+    font-weight: var(--weight-medium);
+    letter-spacing: var(--tracking-wide);
+    text-transform: capitalize;
+    white-space: nowrap;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    transition:
+      color var(--transition-fast),
+      background-color var(--transition-fast);
+  }
+
+  .desktop-nav__more-button:hover,
+  .desktop-nav__more-button:focus-visible {
+    color: var(--color-accent);
+    background-color: var(--color-action-secondary-hover, rgba(0, 0, 0, 0.05));
+  }
+
+  .desktop-nav__more-button[aria-expanded="true"] {
+    color: var(--color-accent);
+    background-color: var(--color-action-secondary-hover, rgba(0, 0, 0, 0.05));
+  }
+
+  .desktop-nav__more-button:hover .desktop-nav__caret,
+  .desktop-nav__more-button:focus-visible .desktop-nav__caret {
+    color: var(--color-accent);
+  }
+
+  .desktop-nav__caret {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+    transition: transform var(--transition-normal, 0.2s) ease-in-out;
+  }
+
+  .desktop-nav__more-button[aria-expanded="true"] .desktop-nav__caret {
+    transform: rotate(180deg);
+  }
+
+  .desktop-nav__submenu {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    position: absolute;
+    top: calc(100% + 0.5rem);
+    left: 0;
+    min-width: 6.5rem;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-nav);
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    z-index: 250;
+    overflow: hidden;
+  }
+
+  .desktop-nav__submenu[hidden] {
+    display: none !important;
+  }
+
+  .desktop-nav__submenu li {
+    width: 100%;
+  }
+
+  .desktop-nav__submenu-link {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    text-decoration: none;
+    color: var(--color-text-muted);
+    font-family: var(--font-heading);
+    font-size: var(--text-sm);
+    font-weight: var(--weight-medium);
+    letter-spacing: var(--tracking-wide);
+    text-transform: capitalize;
+    text-align: center;
+    white-space: nowrap;
+    padding: var(--space-sm) var(--space-md);
+    transition:
+      color var(--transition-fast),
+      background-color var(--transition-fast);
+  }
+
+  .desktop-nav__submenu-link:first-child {
+    padding-top: var(--space-sm);
+  }
+
+  .desktop-nav__submenu-link:last-child {
+    padding-bottom: var(--space-sm);
+  }
+
+  .desktop-nav__submenu-link:hover,
+  .desktop-nav__submenu-link:focus-visible {
+    color: var(--color-accent);
+    background-color: var(--color-action-secondary-hover, rgba(0, 0, 0, 0.05));
+  }
+
+  .desktop-nav__submenu-link[aria-current="page"] {
+    color: var(--color-accent);
+    font-weight: var(--weight-bold, 700);
   }
 
   .mobile-menu {
@@ -308,6 +543,8 @@ const useLogoAsO = logoIndex >= 0;
     display: flex;
     flex-direction: column;
     gap: var(--space-xs);
+    margin: 0;
+    padding: 0;
   }
 
   .mobile-nav__link {
@@ -341,6 +578,97 @@ const useLogoAsO = logoIndex >= 0;
     border-bottom-color: var(--color-accent);
   }
 
+  /* More button styled as a nav link for mobile */
+  .mobile-nav__more-button {
+    background: transparent;
+    border: none;
+    border-bottom: 3px solid transparent;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    text-align: left;
+    margin: 0;
+    font-family: inherit;
+    font-size: inherit;
+    font-weight: inherit;
+    letter-spacing: inherit;
+    text-transform: inherit;
+  }
+
+  .mobile-nav__more-button:hover,
+  .mobile-nav__more-button:focus-visible,
+  .mobile-nav__group[data-open="true"] .mobile-nav__more-button {
+    color: var(--color-accent);
+    border-bottom-color: var(--color-accent);
+  }
+
+  .mobile-nav__caret {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+    transition: transform var(--transition-normal, 0.2s) ease-in-out;
+  }
+
+  .mobile-nav__more-button[aria-expanded="true"] .mobile-nav__caret {
+    transform: rotate(180deg);
+  }
+
+  .mobile-nav__submenu {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    overflow: hidden;
+  }
+
+  .mobile-nav__submenu[hidden] {
+    display: none !important;
+  }
+
+  .mobile-nav__submenu li {
+    width: 100%;
+  }
+
+  .mobile-nav__submenu-link {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    text-decoration: none;
+    font-family: var(--font-heading);
+    font-size: var(--text-sm);
+    font-weight: var(--weight-medium);
+    letter-spacing: var(--tracking-wide);
+    text-transform: capitalize;
+    color: var(--color-text-muted);
+    padding: var(--space-sm) var(--space-lg);
+    transition:
+      color var(--transition-fast),
+      background-color var(--transition-fast);
+  }
+
+  .mobile-nav__submenu-link:first-child {
+    padding-top: var(--space-sm);
+  }
+
+  .mobile-nav__submenu-link:last-child {
+    padding-bottom: var(--space-sm);
+  }
+
+  .mobile-nav__submenu-link:hover,
+  .mobile-nav__submenu-link:focus-visible {
+    color: var(--color-accent);
+    background-color: var(--color-action-secondary-hover, rgba(0, 0, 0, 0.05));
+  }
+
+  .mobile-nav__submenu-link[aria-current="page"] {
+    color: var(--color-accent);
+    font-weight: var(--weight-bold, 700);
+  }
+
   .mobile-nav__link:focus-visible,
   .desktop-nav__link:focus-visible {
     outline: 2px solid var(--color-accent);
@@ -369,17 +697,13 @@ const useLogoAsO = logoIndex >= 0;
     }
 
     .logo-wordmark-main {
-      font-size: 1.2rem;
+      font-size: 1.28rem;
       letter-spacing: 0.02em;
     }
 
     .logo-wordmark-sub {
-      font-size: 0.65rem;
-      letter-spacing: 0.18em;
-    }
-
-    .logo-wordmark {
-      gap: 0.08em;
+      font-size: 0.62em;
+      letter-spacing: 0.06em;
     }
 
     .logo-o {
@@ -390,11 +714,57 @@ const useLogoAsO = logoIndex >= 0;
 
   @media (min-width: 768px) and (max-width: 1024px) {
     .logo-wordmark-main {
-      font-size: 1.65rem;
-    }
-
-    .logo-wordmark-sub {
-      font-size: 0.75rem;
+      font-size: 1.78rem;
     }
   }
 </style>
+
+<script>
+  // Handle dropdown toggle for "More" button
+  document.addEventListener("DOMContentLoaded", () => {
+    const toggleButtons = document.querySelectorAll<HTMLButtonElement>("[data-submenu-toggle]");
+
+    toggleButtons.forEach((toggle) => {
+      const submenuId = toggle.getAttribute("data-submenu-toggle");
+      const submenu = submenuId ? document.getElementById(submenuId) : null;
+
+      if (!submenu) return;
+
+      // Toggle dropdown on button click
+      toggle.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const isExpanded = toggle.getAttribute("aria-expanded") === "true";
+        toggle.setAttribute("aria-expanded", String(!isExpanded));
+
+        if (!isExpanded) {
+          submenu.removeAttribute("hidden");
+        } else {
+          submenu.setAttribute("hidden", "");
+        }
+      });
+
+      // Close dropdown when clicking outside
+      document.addEventListener("click", (e) => {
+        const target = e.target;
+        if (target instanceof Node && !toggle.contains(target) && !submenu.contains(target)) {
+          toggle.setAttribute("aria-expanded", "false");
+          submenu.setAttribute("hidden", "");
+        }
+      });
+
+      // Close dropdown on Escape key
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") {
+          const isExpanded = toggle.getAttribute("aria-expanded") === "true";
+          if (isExpanded) {
+            toggle.setAttribute("aria-expanded", "false");
+            submenu.setAttribute("hidden", "");
+            toggle.focus();
+          }
+        }
+      });
+    });
+  });
+</script>

@@ -19,7 +19,9 @@ import { getPageCopy } from "../lib/page-copy";
 const copy = await getPageCopy("about");
 
 const pageTitle = copy.pageTitle || "About Ghostbusters Virginia";
-const pageIntro = copy.pageIntro || "Who we are, where we came from, and why we do what we do.";
+const pageIntro =
+  copy.pageIntro ||
+  "Ghostbusters Virginia is a fan-powered nonprofit built to welcome you in, get you involved, and turn shared fandom into local impact.";
 
 const ogImage = copy.ogImage || "/images/ghostbusters-virginia-pke-meter-closeup.jpg";
 const teamImageSrc = copy.teamImage || "/images/ghostbusters-virginia-full-team-photo.jpg";
@@ -46,8 +48,10 @@ const teamImage = await getResponsiveImageAttrs({
 });
 
 /* Row 2 — portrait: Convention booth (1536×2040, ~3:4) */
-const divisionsImageSrc = "/images/ghostbusters-virginia-convention-booth.jpg";
-const divisionsImageAlt = "Ghostbusters Virginia convention booth showcasing regional divisions";
+const divisionsImageSrc =
+  copy.divisionsImage || "/images/ghostbusters-virginia-convention-booth.jpg";
+const divisionsImageAlt =
+  copy.divisionsImageAlt || "Ghostbusters Virginia convention booth showcasing regional divisions";
 const divisionsImage = await getResponsiveImageAttrs({
   src: divisionsImageSrc,
   widths: portraitWidths,
@@ -58,8 +62,10 @@ const divisionsImage = await getResponsiveImageAttrs({
 });
 
 /* Row 3 — landscape: Ecto under the lights (1440×999, ~3:2) */
-const communityImageSrc = "/images/ghostbusters-virginia-ecto-night-lights.jpg";
+const communityImageSrc =
+  copy.communityImage || "/images/ghostbusters-virginia-ecto-night-lights.jpg";
 const communityImageAlt =
+  copy.communityImageAlt ||
   "Ghostbusters Virginia members posing with the Ecto vehicle at night with colorful decorative lights";
 const communityImage = await getResponsiveImageAttrs({
   src: communityImageSrc,
@@ -71,8 +77,10 @@ const communityImage = await getResponsiveImageAttrs({
 });
 
 /* Row 4 — landscape: Police community event (2048×1536, 4:3) */
-const togetherImageSrc = "/images/ghostbusters-virginia-police-community-event.jpg";
+const togetherImageSrc =
+  copy.togetherImage || "/images/ghostbusters-virginia-police-community-event.jpg";
 const togetherImageAlt =
+  copy.togetherImageAlt ||
   "Ghostbusters Virginia members at a community event with local first responders";
 const togetherImage = await getResponsiveImageAttrs({
   src: togetherImageSrc,
@@ -93,16 +101,16 @@ const ogDescriptionVal =
 
 const whoWeAreBodyOne =
   copy.whoWeAreBodyOne ||
-  "Ghostbusters Virginia (GBVA) was established in 2001 by a lifelong Ghosthead and rather young member of the Ghostbusters community. Since then GBVA has ebbed and flowed with popularity and activity, culminating in 2011 with a spike in popularity that established GBVA as the premier Ghostbusters franchise in the Commonwealth of Virginia.";
+  "Ghostbusters Virginia is a 501(c)3 nonprofit uniting fans across the Commonwealth to turn our love of Ghostbusters into real community impact.";
 const whoWeAreBodyTwo =
   copy.whoWeAreBodyTwo ||
-  "Our mission has always been straightforward: celebrate and promote the Ghostbusters franchise, support charitable causes, and create a welcoming space for fans of all ages and backgrounds. We visit children\u2019s hospitals in full gear, appear at parades and conventions, and raise money and awareness for local charities \u2014 all in a safe, fun, and family-friendly way.";
+  "Since 2001, neighbors, families, and fans have joined us to raise funds for local causes through events, appearances, and community partnerships. When you donate, you help turn costumes, props, and fandom energy into direct support for people who need it.";
 const whoWeAreBodyThree =
   copy.whoWeAreBodyThree ||
-  "Unlike other states where multiple groups operate independently, GBVA functions as a large umbrella for all Ghostbusters fans in Virginia. Individual groups maintain their own identity while proudly flying the GBVA banner and participating in events like conventions, fundraisers, and build parties. The three primary groups are The Richmond Division, District 757 protecting Southeastern Virginia, and the NOVA Division keeping the northern border of Virginia safe and sound.";
+  "You do not need special experience to be part of this mission - just a willingness to show up and help. Join us at events, volunteer your time, or contribute a donation to keep this work moving in every region of Virginia.";
 const whoWeAreBodyFour =
   copy.whoWeAreBodyFour ||
-  "Under the GBVA banner these groups pool their resources and cooperate at a level that makes the whole stronger than its parts. Alongside members from across Virginia \u2014 including the Eastern Shore \u2014 they are what make GBVA such a fantastic franchise, with a future filled with good fun, memories, and lifelong friendships.";
+  "If you have ever wanted your fandom to do good in the real world, this is your invitation. Join Ghostbusters Virginia or donate today to help us keep serving communities across the Commonwealth.";
 
 const missionHeading = copy.missionHeading || "Our Mission";
 const missionCardTitle = copy.missionCardTitle || "Mission Priorities";
@@ -113,7 +121,7 @@ const missionItems = copy.missionItems || [
   "Unite Virginia\u2019s regional Ghostbusters groups under one banner",
 ];
 const missionCtaLabel = copy.missionCtaLabel || "See us in Action";
-const missionCtaHref = copy.missionCtaHref || "/media";
+const missionCtaHref = copy.missionCtaHref || "/press";
 ---
 
 <BaseLayout

@@ -22,13 +22,19 @@ const pageIntro =
   copy.pageIntro || "Meet the team, support local charities, and see the Ecto in person.";
 const upcomingHeading = copy.upcomingHeading || "Upcoming Events";
 const pastHeading = copy.pastHeading || "Past Events";
-const noUpcomingEventsTitle = "No Events Scheduled Yet";
+const noUpcomingEventsTitle = copy.noUpcomingEventsTitle || "No Events Scheduled Yet";
 const noUpcomingEventsBody =
   copy.emptyText ||
   "No upcoming or active events are currently scheduled, but take a look at our previous events to see where we’ve been.";
 const noUpcomingEventsContactText =
+  copy.noUpcomingEventsContactText ||
   "Want the team at your next event? Reach out and tell us what you have in mind.";
-const noUpcomingEventsContactHref = "/contact";
+const noUpcomingEventsContactHref = copy.noUpcomingEventsContactHref || "/contact";
+const eventCtaText =
+  copy.eventCtaText ||
+  "Interested in having Ghostbusters Virginia appear at your event, convention, or community gathering? We love supporting charitable and community causes across the Commonwealth. Contact us today to learn more.";
+const eventCtaLabel = copy.eventCtaLabel || "Contact Us";
+const eventCtaHref = copy.eventCtaHref || "/contact";
 const showMoreLabel = copy.showMoreLabel || "Show More";
 const showLessLabel = copy.showLessLabel || "Show Less";
 const metaTitle = copy.metaTitle || "Events";
@@ -41,6 +47,7 @@ const ogDescriptionVal =
   "Find where Ghostbusters Virginia will be next and browse our past appearances.";
 const ogImage = copy.ogImage || "/images/ghostbusters-virginia-pageant-winner-ecto.jpg";
 const safeNoUpcomingEventsContactHref = getSafeCmsHref(noUpcomingEventsContactHref) || "/contact";
+const safeEventCtaHref = getSafeCmsHref(eventCtaHref) || "/contact";
 ---
 
 <BaseLayout
@@ -122,12 +129,8 @@ const safeNoUpcomingEventsContactHref = getSafeCmsHref(noUpcomingEventsContactHr
     <div class="page-band page-band--alt">
       <div class="container container--mid">
         <div class="event-cta-card">
-          <p class="prose-text event-cta-text">
-            Interested in having Ghostbusters Virginia appear at your event, convention, or
-            community gathering? We love supporting charitable and community causes across the
-            Commonwealth. Contact us today to learn more.
-          </p>
-          <Button href="/contact" variant="primary">Contact Us</Button>
+          <p class="prose-text event-cta-text">{eventCtaText}</p>
+          <Button href={safeEventCtaHref} variant="primary">{eventCtaLabel}</Button>
         </div>
       </div>
     </div>
