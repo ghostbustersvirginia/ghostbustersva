@@ -14,6 +14,8 @@ export function validateStep(
   if (step === 0) {
     if (!formData.eventName.trim()) errs.eventName = copy.errorEventNameRequired;
     if (!formData.eventType) errs.eventType = copy.errorEventTypeRequired;
+    if (formData.eventType === "Other" && !formData.eventTypeOther.trim())
+      errs.eventTypeOther = copy.errorEventTypeOtherRequired;
   }
 
   if (step === 1) {
@@ -79,7 +81,9 @@ export function buildPayload(formData: FormData): Record<string, string> {
   const payload: Record<string, string> = {
     _subject: `Appearance Request: ${formData.eventName}`,
     "Event Name": formData.eventName,
-    "Event Type": formData.eventType,
+    "Event Type": formData.eventType === "Other"
+      ? `Other: ${formData.eventTypeOther}`
+      : formData.eventType,
     "Event Scheduled": formData.isScheduled === "yes" ? "Yes" : "No",
   };
 

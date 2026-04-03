@@ -48,6 +48,27 @@ export default function Step0EventInformation() {
         </fieldset>
         <FieldError id="eventType-error" message={errors.eventType} />
       </div>
+
+      {formData.eventType === "Other" && (
+        <div className="arf__group">
+          <FormLabel htmlFor="eventTypeOther" required>
+            {copy.eventTypeOtherLabel}
+          </FormLabel>
+          <input
+            id="eventTypeOther"
+            type="text"
+            className={["arf__input", errors.eventTypeOther ? "arf__input--error" : ""]
+              .filter(Boolean)
+              .join(" ")}
+            value={formData.eventTypeOther}
+            onChange={(e) => update("eventTypeOther", e.target.value)}
+            aria-required="true"
+            aria-describedby={errors.eventTypeOther ? "eventTypeOther-error" : undefined}
+            autoComplete="off"
+          />
+          <FieldError id="eventTypeOther-error" message={errors.eventTypeOther} />
+        </div>
+      )}
     </>
   );
 }

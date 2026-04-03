@@ -58,6 +58,7 @@ export const DEFAULT_COPY: FormCopy = {
     "Trunk or Treat",
     "Other",
   ],
+  eventTypeOtherLabel: "Please describe the event type",
 
   isScheduledLegend: "Is the event already scheduled?",
   optionYes: "Yes",
@@ -110,6 +111,7 @@ export const DEFAULT_COPY: FormCopy = {
 
   errorEventNameRequired: "Event name is required.",
   errorEventTypeRequired: "Please select an event type.",
+  errorEventTypeOtherRequired: "Please describe the event type.",
   errorIsScheduledRequired: "Please indicate whether the event is already scheduled.",
   errorEventStartDateRequired: "Event start date is required.",
   errorEventEndDateRequired: "Event end date is required.",
@@ -138,6 +140,7 @@ export const DEFAULT_COPY: FormCopy = {
 export const DEFAULT_FORM_DATA: FormData = {
   eventName: "",
   eventType: "",
+  eventTypeOther: "",
   isScheduled: "",
   eventStartDate: "",
   eventEndDate: "",

@@ -2,6 +2,7 @@ export interface FormData {
   // Step 0
   eventName: string;
   eventType: string;
+  eventTypeOther: string;
   // Step 1
   isScheduled: string;
   eventStartDate: string;
@@ -68,6 +69,7 @@ export interface FormCopy {
   eventTypeLegend: string;
   /** Display labels for the event type radio options (value = label). */
   eventTypeOptions: string[];
+  eventTypeOtherLabel: string;
 
   // Step 1 — Event Schedule
   isScheduledLegend: string;
@@ -130,6 +132,7 @@ export interface FormCopy {
   // Validation error messages
   errorEventNameRequired: string;
   errorEventTypeRequired: string;
+  errorEventTypeOtherRequired: string;
   errorIsScheduledRequired: string;
   errorEventStartDateRequired: string;
   errorEventEndDateRequired: string;
