@@ -1,6 +1,6 @@
 {
   "page": "home",
-  "heroTitleText": "Bustin' Means",
+  "heroTitleText": "Bustin' Means - TEST",
   "heroTitleAccent": "Doing Good",
   "heroTagline": "Giving back to the community through a love of Ghostbusters, uniting fans across Virginia to support local charities and turn fandom into real-world impact.",
   "heroLogoSrc": "/images/logo.png",
@@ -9,10 +9,25 @@
   "missionSubtitle": "Ghostbusters Virginia is a 501(c)3 nonprofit uniting fans across the Commonwealth to turn our love of Ghostbusters into real community impact.",
   "missionBody": "We participate in community events all over Virginia to help raise money and awareness for charities, visit children's hospitals in full Ghostbusters gear, appear at parades and comic conventions, and welcome fans of all ages and backgrounds — all in a safe, fun, and family friendly manner.",
   "impactStats": [
-    { "value": "2001", "label": "Founded", "countTarget": "2001" },
-    { "value": "501c3", "label": "Registered Nonprofit" },
-    { "value": "50+", "label": "Community Events", "countTarget": "50", "countSuffix": "+" },
-    { "value": "VA", "label": "Statewide Presence" }
+    {
+      "value": "2001",
+      "label": "Founded",
+      "countTarget": "2001"
+    },
+    {
+      "value": "501c3",
+      "label": "Registered Nonprofit"
+    },
+    {
+      "value": "50+",
+      "label": "Community Events",
+      "countTarget": "50",
+      "countSuffix": "+"
+    },
+    {
+      "value": "VA",
+      "label": "Statewide Presence"
+    }
   ],
   "impactStatsAriaLabel": "Our impact",
   "galleryHeading": "Out in the Field",
@@ -29,7 +44,7 @@
   "eventsCtaHref": "/events",
   "joinHeading": "Join the Team",
   "joinSubtitle": "Whether you're a lifelong Ghosthead or just getting started, there's a place for you in our franchise. Join a community of fans who build props, attend events, visit hospitals, and raise money for charity — all while having a blast.",
-  "joinImage": "/images/ghostbusters-virginia-street-gathering.jpg",
+  "joinImage": "/images/joinImage.jpg",
   "joinImageAlt": "Ghostbusters Virginia members gathered together outdoors at a community street event",
   "joinQuoteLineOne": "Do you believe in UFOs, astral projections, mental telepathy, ESP, clairvoyance, spirit photography, telekinetic movement, full trance mediums, the Loch Ness monster and the theory of Atlantis?",
   "joinQuoteLineTwo": "Ready to get out there and start busting some ghosts? Excellent news rookie, we have openings!",
@@ -40,5 +55,5 @@
   "metaDescription": "Ghostbusters Virginia is a Sony-recognized 501(c)(3) nonprofit bringing fandom and community service together across Virginia.",
   "ogTitle": "Ghostbusters Virginia",
   "ogDescription": "See upcoming events, media, and ways to join or support Ghostbusters Virginia.",
-  "ogImage": "/images/ghostbusters-virginia-slimer-stay-puft.jpg"
+  "ogImage": "/images/ogImage.jpg"
 }
