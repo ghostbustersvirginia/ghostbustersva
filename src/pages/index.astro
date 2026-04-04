@@ -31,8 +31,6 @@ const heroTagline = String(
 const heroPrimaryCtaLabel = "Donate Today";
 const heroLogoSrc = String(copy.heroLogoSrc || "/images/logo.png");
 const heroLogoAlt = String(copy.heroLogoAlt || "Ghostbusters Virginia logo");
-const heroSecondaryCtaLabel = copy.heroSecondaryCtaLabel || undefined;
-const heroSecondaryCtaHref = copy.heroSecondaryCtaHref || undefined;
 const missionHeading = copy.missionHeading || "Who We Are";
 const missionSubtitle =
   copy.missionSubtitle ||
@@ -80,7 +78,6 @@ const supportCardText =
   donateCopy.donationText ||
   "Ghostbusters Virginia is a volunteer-run, community-focused franchise. Your generous donations help us fund charitable events, maintain the Ecto, purchase supplies for community outreach, and keep the franchise running strong.";
 const safeHeroPrimaryCtaHref = "/donate";
-const safeHeroSecondaryCtaHref = getSafeCmsHref(heroSecondaryCtaHref);
 const safeEventsCtaHref = getSafeCmsHref(eventsCtaHref) || "/events";
 const safeNoUpcomingEventsContactHref = getSafeCmsHref(noUpcomingEventsContactHref) || "/contact";
 const safeJoinCtaHref = getSafeCmsHref(joinCtaHref) || "/join";
@@ -167,8 +164,6 @@ const joinImage = await getResponsiveImageAttrs({
     heroTagline={heroTagline}
     primaryCtaLabel={heroPrimaryCtaLabel}
     primaryCtaHref={safeHeroPrimaryCtaHref}
-    secondaryCtaLabel={heroSecondaryCtaLabel}
-    secondaryCtaHref={safeHeroSecondaryCtaHref}
     heroLogoSrc={heroLogoSrc}
     heroLogoAlt={heroLogoAlt}
     heroLogoImage={heroLogoImage}
