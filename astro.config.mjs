@@ -6,13 +6,17 @@ import react from "@astrojs/react";
 import keystatic from "@keystatic/astro";
 import vercel from "@astrojs/vercel";
 
+const deploymentSite = process.env.VERCEL_URL
+  ? `https://${process.env.VERCEL_URL}`
+  : "https://ghostbustersva.vercel.app";
+
 // https://astro.build/config
 export default defineConfig({
   // Pages are pre-rendered (static) by default.
   // Keystatic opts its API/admin routes into server rendering via the integration.
   output: "static",
-  // Update to ghostbustersva.com when custom domain is connected.
-  site: "https://ghostbustersva.vercel.app",
+  // Use the deployment URL on Vercel previews; default to production URL locally.
+  site: deploymentSite,
   adapter: vercel(),
   integrations: [sitemap(), markdoc(), react(), keystatic()],
   security: {
@@ -21,6 +25,10 @@ export default defineConfig({
     allowedDomains: [
       { hostname: "ghostbustersva.vercel.app", protocol: "https" },
       { hostname: "ghostbustersva.com", protocol: "https" },
+      {
+        hostname: "ghostbustersva-git-**-afton-gauntletts-projects.vercel.app",
+        protocol: "https",
+      },
     ],
   },
 });
