@@ -145,6 +145,12 @@ export default config({
             "Legacy flag for backwards compatibility. Prefer using the Status field above.",
           defaultValue: false,
         }),
+        body: fields.markdoc({
+          label: "Extra Details (optional)",
+          description:
+            "Optional notes. This content is kept for CMS markdown compatibility and is not displayed on the site.",
+          extension: "md",
+        }),
       },
     }),
 
@@ -183,6 +189,12 @@ export default config({
         date: fields.date({
           label: "Date",
           description: "Optional date the photo was taken.",
+        }),
+        body: fields.markdoc({
+          label: "Extra Details (optional)",
+          description:
+            "Optional notes. This content is kept for CMS markdown compatibility and is not displayed on the site.",
+          extension: "md",
         }),
       },
     }),
