@@ -145,12 +145,6 @@ export default config({
             "Legacy flag for backwards compatibility. Prefer using the Status field above.",
           defaultValue: false,
         }),
-        body: fields.markdoc({
-          label: "Extra Details (optional)",
-          description:
-            "Optional extra text — currently not shown on the website. Use Summary for the visible description.",
-          extension: "md",
-        }),
       },
     }),
 
@@ -189,11 +183,6 @@ export default config({
         date: fields.date({
           label: "Date",
           description: "Optional date the photo was taken.",
-        }),
-        body: fields.markdoc({
-          label: "Extra Details (optional)",
-          description: "Optional notes — not currently displayed on the site.",
-          extension: "md",
         }),
       },
     }),
@@ -309,11 +298,6 @@ export default config({
           description: "Path to the logo image in the hero section (e.g. /images/logo.png).",
         }),
         heroLogoAlt: fields.text({ label: "Hero Logo Alt Text" }),
-        heroSecondaryCtaLabel: fields.text({ label: "Hero Secondary CTA Label" }),
-        heroSecondaryCtaHref: fields.text({
-          label: "Hero Secondary CTA URL",
-          validation: internalPathValidation,
-        }),
         missionHeading: fields.text({ label: "Mission Heading" }),
         missionSubtitle: fields.text({ label: "Mission Subtitle", multiline: true }),
         missionBody: fields.text({ label: "Mission Body", multiline: true }),
@@ -646,8 +630,8 @@ export default config({
         charityKitTitle: fields.text({ label: "Charity Kit Card Title" }),
         charityKitBody: fields.text({ label: "Charity Kit Card Body", multiline: true }),
         charityKitCtaLabel: fields.text({ label: "Charity Kit CTA Label" }),
+        pressKitHeading: fields.text({ label: "Press Kit Section Heading" }),
         galleryHeading: fields.text({ label: "Gallery Heading" }),
-        videosHeading: fields.text({ label: "Videos Heading" }),
         newsHeading: fields.text({ label: "News Heading" }),
         showMoreGalleryLabel: fields.text({ label: "Show More Gallery Label" }),
         showLessGalleryLabel: fields.text({ label: "Show Less Gallery Label" }),
