@@ -1,32 +1,34 @@
 const eventInquiryValues = new Set(["Schedule Event"]);
-const loadFlatpickr = () => {
+const loadFlatpickr = async () => {
   if (typeof window !== "undefined" && window.flatpickr) {
-    return Promise.resolve(window.flatpickr);
+    return window.flatpickr;
   }
-  // Try ESM import first for modern browsers
-  return import("https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.esm.js")
-    .then((m) => m.default || m)
-    .catch(() => {
-      // Fallback: inject UMD script and resolve window.flatpickr
-      return new Promise((resolve, reject) => {
-        if (typeof window !== "undefined" && window.flatpickr) {
-          return resolve(window.flatpickr);
-        }
 
-        const script = document.createElement("script");
-        script.src = "https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.js";
-        script.async = true;
-        script.onload = () => {
-          if (window.flatpickr) {
-            resolve(window.flatpickr);
-          } else {
-            reject(new Error("flatpickr failed to load via UMD fallback"));
-          }
-        };
-        script.onerror = (e) => reject(e || new Error("flatpickr script load error"));
-        document.head.appendChild(script);
-      });
+  // Try ESM import first for modern browsers
+  try {
+    const mod = await import("https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.esm.js");
+    return mod.default || mod;
+  } catch {
+    // Fallback: inject UMD script and resolve window.flatpickr
+    return new Promise((resolve, reject) => {
+      if (typeof window !== "undefined" && window.flatpickr) {
+        return resolve(window.flatpickr);
+      }
+
+      const script = document.createElement("script");
+      script.src = "https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.js";
+      script.async = true;
+      script.onload = () => {
+        if (window.flatpickr) {
+          resolve(window.flatpickr);
+        } else {
+          reject(new Error("flatpickr failed to load via UMD fallback"));
+        }
+      };
+      script.onerror = (e) => reject(e || new Error("flatpickr script load error"));
+      document.head.appendChild(script);
     });
+  }
 };
 const shouldShowEventFields = (inquiryType) => eventInquiryValues.has((inquiryType || "").trim());
 
@@ -102,7 +104,6 @@ async function initContactForm() {
     syncDateClearButtons();
   };
 
-
   const initializeInquirySelect = () => {
     const selectedValue = inquirySelect.value || "";
 
@@ -118,9 +119,6 @@ async function initContactForm() {
 
   try {
     const flatpickr = await loadFlatpickr();
-
-    const startDateParent = dateInput.closest(".contact-form__field");
-    const endDateParent = dateEndInput.closest(".contact-form__field");
 
     let endDatePicker = null;
 
@@ -172,8 +170,6 @@ async function initContactForm() {
       },
     });
 
-    
-
     endDatePicker = flatpickr(dateEndInput, {
       dateFormat: "m/d/Y",
       disableMobile: true,
@@ -218,13 +214,13 @@ async function initContactForm() {
       endDatePicker?.open();
     });
 
-    
-
     dateInput.addEventListener("focus", () => {
-      try { startDatePicker.open(); } catch (err) { /* ignore */ }
+      try {
+        startDatePicker.open();
+      } catch (err) {
+        /* ignore */
+      }
     });
-
-    
 
     // Close pickers when clicking outside of inputs/calendars
     const clickOutsideHandler = (ev) => {
@@ -232,12 +228,23 @@ async function initContactForm() {
         const target = ev.target;
         const calendars = Array.from(document.querySelectorAll(".flatpickr-calendar"));
         const clickedInCalendar = calendars.some((c) => c.contains(target));
-        const clickedInInput = (dateInput && (dateInput === target || dateInput.contains && dateInput.contains(target))) ||
-          (dateEndInput && (dateEndInput === target || dateEndInput.contains && dateEndInput.contains(target)));
+        const clickedInInput =
+          (dateInput &&
+            (dateInput === target || (dateInput.contains && dateInput.contains(target)))) ||
+          (dateEndInput &&
+            (dateEndInput === target || (dateEndInput.contains && dateEndInput.contains(target))));
 
         if (!clickedInCalendar && !clickedInInput) {
-          try { startDatePicker?.close?.(); } catch (e) { /* ignore */ }
-          try { endDatePicker?.close?.(); } catch (e) { /* ignore */ }
+          try {
+            startDatePicker?.close?.();
+          } catch (e) {
+            /* ignore */
+          }
+          try {
+            endDatePicker?.close?.();
+          } catch (e) {
+            /* ignore */
+          }
         }
       } catch (err) {
         /* ignore */
