@@ -11,7 +11,7 @@ import LightboxImageTrigger from "../components/ui/LightboxImageTrigger.astro";
 import { getCollection } from "astro:content";
 import { splitEventsByStatus } from "../lib/events";
 import { getResponsiveImageAttrs } from "../lib/images";
-import { getSafeCmsHref } from "../lib/links";
+import { getSafeCmsHref, getSafeImageAssetPath } from "../lib/links";
 import { getPageCopy } from "../lib/page-copy";
 
 const copy = await getPageCopy("home");
@@ -29,7 +29,7 @@ const heroTagline = String(
     "Giving back to the community through a love of Ghostbusters, uniting fans across Virginia to support local charities and turn fandom into real-world impact.",
 );
 const heroPrimaryCtaLabel = "Donate Today";
-const heroLogoSrc = String(copy.heroLogoSrc || "/images/logo.png");
+const heroLogoSrc = getSafeImageAssetPath(copy.heroLogoSrc) || "/images/logo.png";
 const heroLogoAlt = String(copy.heroLogoAlt || "Ghostbusters Virginia logo");
 const missionHeading = copy.missionHeading || "Who We Are";
 const missionSubtitle =
@@ -53,14 +53,15 @@ const noUpcomingEventsBody =
 const noUpcomingEventsContactText =
   copy.noUpcomingEventsContactText ||
   "Want the team at your next event? Reach out and tell us what you have in mind.";
-const noUpcomingEventsContactHref = copy.noUpcomingEventsContactHref || "/contact";
+const noUpcomingEventsContactHref = "/contact";
 const eventsCtaLabel = copy.eventsCtaLabel || "See Past Events";
 const eventsCtaHref = copy.eventsCtaHref || "/events";
 const joinHeading = copy.joinHeading || "Join the Team";
 const joinSubtitle =
   copy.joinSubtitle ||
   "Whether you\u2019re a lifelong Ghosthead or just getting started, there\u2019s a place for you in our franchise. Join a community of fans who build props, attend events, visit hospitals, and raise money for charity \u2014 all while having a blast.";
-const joinImagePath = copy.joinImage || "/images/ghostbusters-virginia-movie-premiere.jpg";
+const joinImagePath =
+  getSafeImageAssetPath(copy.joinImage) || "/images/ghostbusters-virginia-movie-premiere.jpg";
 const joinImageAlt =
   copy.joinImageAlt ||
   "Three Ghostbusters Virginia members in full uniforms posing at a movie premiere event";
@@ -82,8 +83,8 @@ const safeEventsCtaHref = getSafeCmsHref(eventsCtaHref) || "/events";
 const safeNoUpcomingEventsContactHref = getSafeCmsHref(noUpcomingEventsContactHref) || "/contact";
 const safeJoinCtaHref = getSafeCmsHref(joinCtaHref) || "/join";
 const safeSupportCtaHref = "/donate";
-const galleryCtaLabel = copy.galleryCtaLabel || "See All Media";
-const galleryCtaHref = getSafeCmsHref(copy.galleryCtaHref) || "/media";
+const galleryCtaLabel = "See All Media";
+const galleryCtaHref = "/media";
 
 interface ImpactStat {
   value: string;

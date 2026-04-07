@@ -10,7 +10,7 @@
  */
 import { getCollection } from "astro:content";
 import { siteConfig } from "../config";
-import { getSafeCmsHref } from "./links";
+import { getSafeCmsHref, getSafeImageAssetPath } from "./links";
 
 export type NavItemGroup = "primary" | "more";
 
@@ -102,6 +102,21 @@ export async function getSiteSettings(): Promise<SiteSettings> {
           .filter((item): item is NavItem => Boolean(item))
       : defaultNavItems;
 
+  const safeNavLogo = getSafeImageAssetPath(d.navLogo) || "/images/logo.png";
+  const safeFooterLogos =
+    d.footerLogos && d.footerLogos.length > 0
+      ? d.footerLogos
+          .map((logo: { src: string; alt: string }) => {
+            const src = getSafeImageAssetPath(logo.src);
+            if (!src) return null;
+            return {
+              src,
+              alt: logo.alt,
+            };
+          })
+          .filter((logo): logo is FooterLogo => Boolean(logo))
+      : [];
+
   return {
     siteName: d.siteName || siteConfig.title,
     siteDescription: d.siteDescription || siteConfig.description,
@@ -111,14 +126,14 @@ export async function getSiteSettings(): Promise<SiteSettings> {
     contactFormActionUrl: d.contactFormActionUrl ?? "",
     ledScrollbarText: d.ledScrollbarText ?? "",
     socialLinks: d.socialLinks ?? [],
-    navLogo: d.navLogo || "/images/logo.png",
+    navLogo: safeNavLogo,
     navTitle: d.navTitle || "Ghostbusters",
     navSubtitle: d.navSubtitle || "Virginia",
     navItems: coreNavItems,
     footerCopyrightText: d.footerCopyrightText || d.footerText || siteConfig.copyright,
     codeOfConductUrl: d.codeOfConductUrl || "/code-of-conduct",
     codeOfConductLabel: d.codeOfConductLabel || "Code of Conduct",
-    footerLogos: d.footerLogos && d.footerLogos.length > 0 ? d.footerLogos : defaultFooterLogos,
+    footerLogos: safeFooterLogos.length > 0 ? safeFooterLogos : defaultFooterLogos,
     footerDisclaimerText: d.footerDisclaimerText || "",
     reducedMotionToggleLabel: d.reducedMotionToggleLabel || "",
     reducedMotionToggleTitle: d.reducedMotionToggleTitle || "",

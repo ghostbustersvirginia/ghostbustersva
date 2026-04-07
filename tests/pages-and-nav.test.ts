@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { siteConfig } from "../src/config";
 
 const { getCollectionMock } = vi.hoisted(() => ({
   getCollectionMock: vi.fn(),
@@ -47,6 +48,56 @@ describe("site settings (no dynamic CMS pages)", () => {
     getCollectionMock.mockResolvedValue([]);
 
     await expect(getSiteSettings()).rejects.toThrow("[settings] Missing required site settings");
+  });
+
+  it("falls back to safe default logo when navLogo path is invalid", async () => {
+    getCollectionMock.mockImplementation(async (name: string) => {
+      if (name === "settings") {
+        return [
+          {
+            id: "site",
+            data: {
+              siteName: "Ghostbusters Virginia",
+              siteDescription: "Community charity franchise",
+              navItems: [{ label: "About", href: "/about", external: false }],
+              navLogo: "javascript:alert(1)",
+              socialLinks: [],
+              footerLogos: [],
+            },
+          },
+        ];
+      }
+      return [];
+    });
+
+    const settings = await getSiteSettings();
+    expect(settings.navLogo).toBe("/images/logo.png");
+  });
+
+  it("falls back to default footer logos when all CMS logo paths are invalid", async () => {
+    getCollectionMock.mockImplementation(async (name: string) => {
+      if (name === "settings") {
+        return [
+          {
+            id: "site",
+            data: {
+              siteName: "Ghostbusters Virginia",
+              siteDescription: "Community charity franchise",
+              navItems: [{ label: "About", href: "/about", external: false }],
+              socialLinks: [],
+              footerLogos: [
+                { src: "mailto:test@example.com", alt: "Bad 1" },
+                { src: "https://example.com/logo.png", alt: "Bad 2" },
+              ],
+            },
+          },
+        ];
+      }
+      return [];
+    });
+
+    const settings = await getSiteSettings();
+    expect(settings.footerLogos).toEqual(siteConfig.footerLogos);
   });
 });
 
