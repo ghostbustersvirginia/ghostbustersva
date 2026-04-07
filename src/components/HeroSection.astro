@@ -17,6 +17,10 @@ interface Props {
   heroTagline: string;
   primaryCtaLabel: string;
   primaryCtaHref: string;
+  primaryCtaExternal?: boolean;
+  secondaryCtaLabel?: string;
+  secondaryCtaHref?: string;
+  secondaryCtaExternal?: boolean;
   heroLogoSrc: string;
   heroLogoAlt: string;
   heroLogoImage?: ResponsiveImageAttrs;
@@ -28,6 +32,10 @@ const {
   heroTagline,
   primaryCtaLabel,
   primaryCtaHref,
+  primaryCtaExternal = false,
+  secondaryCtaLabel,
+  secondaryCtaHref,
+  secondaryCtaExternal = false,
   heroLogoSrc,
   heroLogoAlt,
   heroLogoImage,
@@ -68,10 +76,22 @@ const {
           variant="primary"
           class="btn--lg btn--donate-hero"
           href={primaryCtaHref}
-          icon="heart"
+          external={primaryCtaExternal}
         >
           {primaryCtaLabel}
         </Button>
+        {
+          secondaryCtaLabel && secondaryCtaHref ? (
+            <Button
+              variant="secondary"
+              class="btn--lg"
+              href={secondaryCtaHref}
+              external={secondaryCtaExternal}
+            >
+              {secondaryCtaLabel}
+            </Button>
+          ) : null
+        }
       </div>
     </div>
   </div>

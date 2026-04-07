@@ -175,7 +175,7 @@
   flex-direction: column;
   align-items: flex-end;
   font-family: var(--font-brand-title);
-  font-size: clamp(2rem, 5vw, 3.25rem);
+  font-size: clamp(2.25rem, 5.8vw, 3.75rem);
   font-weight: 700;
   line-height: var(--leading-tight);
   color: var(--color-text);
@@ -275,7 +275,7 @@
   }
 
   .hero-title {
-    font-size: clamp(1.75rem, 7vw, 2.25rem);
+    font-size: clamp(2rem, 8.2vw, 2.6rem);
   }
 
   .hero-tagline {

@@ -90,6 +90,10 @@ const settings = defineCollection({
       .union([safeExternalUrl, z.literal("")])
       .optional()
       .transform((val) => (val === "" ? undefined : val)),
+    paypalUrl: z
+      .union([safeExternalUrl, z.literal("")])
+      .optional()
+      .transform((val) => (val === "" ? undefined : val)),
     contactEmail: z.string().optional(),
     contactPhone: z.string().optional(),
     contactFormActionUrl: safeExternalUrl.optional(),
