@@ -289,7 +289,12 @@ export default config({
       path: "src/content/page-copy/home",
       format: { data: "json" },
       schema: {
-        page: fields.text({ label: "Page ID", defaultValue: "home" }),
+        page: fields.select({
+          label: "Page",
+          description: "Internal page identifier (locked).",
+          options: [{ label: "Home", value: "home" }],
+          defaultValue: "home",
+        }),
         heroTitleText: fields.text({
           label: "Hero Title Text",
           description: "Main heading text before the visual accent.",
@@ -305,9 +310,11 @@ export default config({
           multiline: true,
           validation: { isRequired: true },
         }),
-        heroLogoSrc: fields.text({
-          label: "Hero Logo Path",
-          description: "Path to the logo image in the hero section (e.g. /images/logo.png).",
+        heroLogoSrc: fields.image({
+          label: "Hero Logo",
+          description: "Upload/select the hero logo image.",
+          directory: "public/images",
+          publicPath: "/images/",
         }),
         heroLogoAlt: fields.text({ label: "Hero Logo Alt Text" }),
         missionHeading: fields.text({ label: "Mission Heading" }),
@@ -347,11 +354,6 @@ export default config({
         }),
         galleryHeading: fields.text({ label: "Gallery Heading" }),
         gallerySubtitle: fields.text({ label: "Gallery Subtitle", multiline: true }),
-        galleryCtaLabel: fields.text({ label: "Gallery CTA Label" }),
-        galleryCtaHref: fields.text({
-          label: "Gallery CTA URL",
-          validation: internalPathValidation,
-        }),
         eventsHeading: fields.text({ label: "Events Heading" }),
         eventsSubtitle: fields.text({ label: "Events Subtitle", multiline: true }),
         noUpcomingEventsTitle: fields.text({
@@ -367,12 +369,6 @@ export default config({
           label: "No Events Card Contact Text",
           description: "Shown on the Home page only when there are no active or upcoming events.",
           multiline: true,
-        }),
-        noUpcomingEventsContactHref: fields.text({
-          label: "No Events Card Contact URL",
-          description:
-            "Link used in the No Events card; shown only when there are no active or upcoming events.",
-          validation: internalPathValidation,
         }),
         eventsCtaLabel: fields.text({ label: "Events CTA Label" }),
         eventsCtaHref: fields.text({
@@ -423,7 +419,12 @@ export default config({
       path: "src/content/page-copy/about",
       format: { data: "json" },
       schema: {
-        page: fields.text({ label: "Page ID", defaultValue: "about" }),
+        page: fields.select({
+          label: "Page",
+          description: "Internal page identifier (locked).",
+          options: [{ label: "About", value: "about" }],
+          defaultValue: "about",
+        }),
         pageTitle: fields.text({ label: "Page Title", validation: { isRequired: true } }),
         pageIntro: fields.text({
           label: "Page Intro",
@@ -497,7 +498,12 @@ export default config({
       path: "src/content/page-copy/join",
       format: { data: "json" },
       schema: {
-        page: fields.text({ label: "Page ID", defaultValue: "join" }),
+        page: fields.select({
+          label: "Page",
+          description: "Internal page identifier (locked).",
+          options: [{ label: "Join", value: "join" }],
+          defaultValue: "join",
+        }),
         pageTitle: fields.text({ label: "Page Title", validation: { isRequired: true } }),
         pageIntro: fields.text({
           label: "Page Intro",
@@ -571,7 +577,12 @@ export default config({
       path: "src/content/page-copy/events",
       format: { data: "json" },
       schema: {
-        page: fields.text({ label: "Page ID", defaultValue: "events" }),
+        page: fields.select({
+          label: "Page",
+          description: "Internal page identifier (locked).",
+          options: [{ label: "Events", value: "events" }],
+          defaultValue: "events",
+        }),
         pageTitle: fields.text({ label: "Page Title", validation: { isRequired: true } }),
         pageIntro: fields.text({
           label: "Page Intro",
@@ -585,10 +596,6 @@ export default config({
         noUpcomingEventsContactText: fields.text({
           label: "No Upcoming Events Contact Text",
           multiline: true,
-        }),
-        noUpcomingEventsContactHref: fields.text({
-          label: "No Upcoming Events Contact URL",
-          validation: internalPathValidation,
         }),
         eventCtaText: fields.text({
           label: "Bottom CTA Text",
@@ -629,7 +636,12 @@ export default config({
       path: "src/content/page-copy/press",
       format: { data: "json" },
       schema: {
-        page: fields.text({ label: "Page ID", defaultValue: "press" }),
+        page: fields.select({
+          label: "Page",
+          description: "Internal page identifier (locked).",
+          options: [{ label: "Press", value: "press" }],
+          defaultValue: "press",
+        }),
         pageTitle: fields.text({ label: "Page Title", validation: { isRequired: true } }),
         pageIntro: fields.text({
           label: "Page Intro",
@@ -677,7 +689,12 @@ export default config({
       path: "src/content/page-copy/contact",
       format: { data: "json" },
       schema: {
-        page: fields.text({ label: "Page ID", defaultValue: "contact" }),
+        page: fields.select({
+          label: "Page",
+          description: "Internal page identifier (locked).",
+          options: [{ label: "Contact", value: "contact" }],
+          defaultValue: "contact",
+        }),
         pageTitle: fields.text({ label: "Page Title", validation: { isRequired: true } }),
         pageIntro: fields.text({
           label: "Page Intro",
@@ -739,7 +756,12 @@ export default config({
       path: "src/content/page-copy/donate",
       format: { data: "json" },
       schema: {
-        page: fields.text({ label: "Page ID", defaultValue: "donate" }),
+        page: fields.select({
+          label: "Page",
+          description: "Internal page identifier (locked).",
+          options: [{ label: "Donate", value: "donate" }],
+          defaultValue: "donate",
+        }),
         pageTitle: fields.text({ label: "Page Title", validation: { isRequired: true } }),
         pageIntro: fields.text({
           label: "Page Intro",
@@ -832,7 +854,12 @@ export default config({
       path: "src/content/page-copy/code-of-conduct",
       format: { data: "json" },
       schema: {
-        page: fields.text({ label: "Page ID", defaultValue: "code-of-conduct" }),
+        page: fields.select({
+          label: "Page",
+          description: "Internal page identifier (locked).",
+          options: [{ label: "Code of Conduct", value: "code-of-conduct" }],
+          defaultValue: "code-of-conduct",
+        }),
         pageTitle: fields.text({ label: "Page Title", validation: { isRequired: true } }),
         pageIntro: fields.text({
           label: "Page Intro",
@@ -943,10 +970,11 @@ export default config({
         ),
 
         // ── Navbar ──
-        navLogo: fields.text({
-          label: "Nav Logo Path",
-          description: "Path to the logo image displayed in the header (e.g. /images/logo.png).",
-          defaultValue: "/images/logo.png",
+        navLogo: fields.image({
+          label: "Nav Logo",
+          description: "Upload/select the logo image used in the header wordmark.",
+          directory: "public/images",
+          publicPath: "/images/",
         }),
         navTitle: fields.text({
           label: "Nav Title",
@@ -1012,10 +1040,11 @@ export default config({
         }),
         footerLogos: fields.array(
           fields.object({
-            src: fields.text({
-              label: "Image Path",
-              description:
-                "Path to the logo image (e.g. /images/sony-ghost-corps-franchise-letter.png).",
+            src: fields.image({
+              label: "Image",
+              description: "Upload/select the footer credential logo image.",
+              directory: "public/images",
+              publicPath: "/images/",
               validation: { isRequired: true },
             }),
             alt: fields.text({
