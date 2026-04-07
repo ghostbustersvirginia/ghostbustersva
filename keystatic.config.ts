@@ -931,6 +931,10 @@ export default config({
           label: "Donate URL",
           description: "Link to the donation page or payment processor.",
         }),
+        paypalUrl: fields.url({
+          label: "PayPal Donate URL",
+          description: "Direct PayPal donation link for the home hero CTA.",
+        }),
         contactEmail: fields.text({
           label: "Contact Email",
           description: "Public contact email address.",

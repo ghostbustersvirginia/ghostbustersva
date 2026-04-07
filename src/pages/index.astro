@@ -11,11 +11,13 @@ import LightboxImageTrigger from "../components/ui/LightboxImageTrigger.astro";
 import { getCollection } from "astro:content";
 import { splitEventsByStatus } from "../lib/events";
 import { getResponsiveImageAttrs } from "../lib/images";
-import { getSafeCmsHref, getSafeImageAssetPath } from "../lib/links";
+import { getSafeCmsHref, getSafeImageAssetPath, isSafeExternalUrl } from "../lib/links";
 import { getPageCopy } from "../lib/page-copy";
+import { getSiteSettings } from "../lib/settings";
 
 const copy = await getPageCopy("home");
 const donateCopy = await getPageCopy("donate");
+const settings = await getSiteSettings();
 
 const allEvents = await getCollection("events");
 const { upcoming } = splitEventsByStatus(allEvents);
@@ -28,7 +30,8 @@ const heroTagline = String(
   copy.heroTagline ||
     "Giving back to the community through a love of Ghostbusters, uniting fans across Virginia to support local charities and turn fandom into real-world impact.",
 );
-const heroPrimaryCtaLabel = "Donate Today";
+const heroPrimaryCtaLabel = "Donate with PayPal";
+const heroSecondaryCtaLabel = "Donate to Make-A-Wish";
 const heroLogoSrc = getSafeImageAssetPath(copy.heroLogoSrc) || "/images/logo.png";
 const heroLogoAlt = String(copy.heroLogoAlt || "Ghostbusters Virginia logo");
 const missionHeading = copy.missionHeading || "Who We Are";
@@ -78,7 +81,15 @@ const supportCtaLabel = "Donate Today";
 const supportCardText =
   donateCopy.donationText ||
   "Ghostbusters Virginia is a volunteer-run, community-focused franchise. Your generous donations help us fund charitable events, maintain the Ecto, purchase supplies for community outreach, and keep the franchise running strong.";
-const safeHeroPrimaryCtaHref = "/donate";
+const defaultPaypalDonateUrl = "https://www.paypal.com/donate/";
+const defaultMakeAWishDonateUrl =
+  "https://secure2.wish.org/site/TR;jsessionid=00000000.app20002b?team_id=58435&fr_id=7464&pg=team&NONCE_TOKEN=16AE47C509ECB858ECB963CD3D174802";
+const safeHeroPrimaryCtaHref = isSafeExternalUrl(settings.paypalUrl)
+  ? settings.paypalUrl
+  : defaultPaypalDonateUrl;
+const safeHeroSecondaryCtaHref = isSafeExternalUrl(settings.donateUrl)
+  ? settings.donateUrl
+  : defaultMakeAWishDonateUrl;
 const safeEventsCtaHref = getSafeCmsHref(eventsCtaHref) || "/events";
 const safeNoUpcomingEventsContactHref = getSafeCmsHref(noUpcomingEventsContactHref) || "/contact";
 const safeJoinCtaHref = getSafeCmsHref(joinCtaHref) || "/join";
@@ -165,6 +176,10 @@ const joinImage = await getResponsiveImageAttrs({
     heroTagline={heroTagline}
     primaryCtaLabel={heroPrimaryCtaLabel}
     primaryCtaHref={safeHeroPrimaryCtaHref}
+    primaryCtaExternal
+    secondaryCtaLabel={heroSecondaryCtaLabel}
+    secondaryCtaHref={safeHeroSecondaryCtaHref}
+    secondaryCtaExternal
     heroLogoSrc={heroLogoSrc}
     heroLogoAlt={heroLogoAlt}
     heroLogoImage={heroLogoImage}

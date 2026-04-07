@@ -99,9 +99,6 @@ export function initContactForm() {
 
   try {
     if (dateInput) {
-      const startDateParent = dateInput.closest<HTMLElement>(".contact-form__field");
-      const endDateParent = dateEndInput?.closest<HTMLElement>(".contact-form__field");
-
       let endDatePicker: any = null;
 
       const startDatePicker = flatpickr(dateInput, {
@@ -206,14 +203,28 @@ export function initContactForm() {
       const clickOutsideHandler = (ev: Event) => {
         try {
           const target = ev.target as Node;
-          const calendars = Array.from(document.querySelectorAll(".flatpickr-calendar")) as Element[];
+          const calendars = Array.from(
+            document.querySelectorAll(".flatpickr-calendar"),
+          ) as Element[];
           const clickedInCalendar = calendars.some((c) => c.contains(target));
-          const clickedInInput = (dateInput && (dateInput === target || dateInput.contains && dateInput.contains(target))) ||
-            (dateEndInput && (dateEndInput === target || dateEndInput.contains && dateEndInput.contains(target)));
+          const clickedInInput =
+            (dateInput &&
+              (dateInput === target || (dateInput.contains && dateInput.contains(target)))) ||
+            (dateEndInput &&
+              (dateEndInput === target ||
+                (dateEndInput.contains && dateEndInput.contains(target))));
 
           if (!clickedInCalendar && !clickedInInput) {
-            try { (startDatePicker as any)?.close?.(); } catch (e) { /* ignore */ }
-            try { (endDatePicker as any)?.close?.(); } catch (e) { /* ignore */ }
+            try {
+              (startDatePicker as any)?.close?.();
+            } catch (e) {
+              /* ignore */
+            }
+            try {
+              (endDatePicker as any)?.close?.();
+            } catch (e) {
+              /* ignore */
+            }
           }
         } catch (err) {
           /* ignore */
@@ -228,20 +239,20 @@ export function initContactForm() {
 
   try {
     dateClearButtons.forEach((button) => {
-    const wrapper = button.closest<HTMLElement>(".contact-form__date-input-wrap");
-    const input = wrapper?.querySelector<HTMLInputElement>("input");
+      const wrapper = button.closest<HTMLElement>(".contact-form__date-input-wrap");
+      const input = wrapper?.querySelector<HTMLInputElement>("input");
 
-    if (!input) {
-      return;
-    }
+      if (!input) {
+        return;
+      }
 
-    const syncForInput = () => {
-      button.hidden = !input.value || input.disabled;
-    };
+      const syncForInput = () => {
+        button.hidden = !input.value || input.disabled;
+      };
 
-    button.addEventListener("click", () => {
-      const pickerInstance = (input as HTMLInputElement & { _flatpickr?: { clear: () => void } })
-        ._flatpickr;
+      button.addEventListener("click", () => {
+        const pickerInstance = (input as HTMLInputElement & { _flatpickr?: { clear: () => void } })
+          ._flatpickr;
 
         if (pickerInstance) {
           pickerInstance.clear();
@@ -262,7 +273,6 @@ export function initContactForm() {
   } catch (err) {
     console.warn("date clear button init failed:", err);
   }
-
 }
 
 initContactForm();

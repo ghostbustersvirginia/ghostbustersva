@@ -32,24 +32,27 @@ describe("public contact-form client", () => {
   }
 
   it("smoke: shipped script parses and exposes initContactForm", () => {
-    const stubbed = fileText.replace(/import\s+flatpickr[\s\S]*?;\n/, `const flatpickr = (el, opts) => ({
+    const stubbed = fileText.replace(
+      /import\s+flatpickr[\s\S]*?;\n/,
+      `const flatpickr = (el, opts) => ({
       selectedDates: [],
       set: () => {},
       clear: () => {},
       parseDate: () => null,
       open: () => {},
-    });\n`);
+    });\n`,
+    );
 
     const fakeDoc: any = {
-      querySelector(selector: string) {
+      querySelector() {
         return null;
       },
-      querySelectorAll(selector: string) {
+      querySelectorAll() {
         return [];
       },
     };
 
-    const stubFlatpickr = (el: any, opts: any) => ({
+    const stubFlatpickr = () => ({
       selectedDates: [],
       set: () => {},
       clear: () => {},
@@ -57,20 +60,32 @@ describe("public contact-form client", () => {
       open: () => {},
     });
 
-    const context: any = { document: fakeDoc, window: { flatpickr: stubFlatpickr }, Event: function Event(t: string, opts?: any) { return { type: t, ...opts }; } };
-    const result = vm.runInNewContext(stubbed + "\n; typeof initContactForm === 'function';", context);
+    const context: any = {
+      document: fakeDoc,
+      window: { flatpickr: stubFlatpickr },
+      Event: function Event(t: string, opts?: any) {
+        return { type: t, ...opts };
+      },
+    };
+    const result = vm.runInNewContext(
+      stubbed + "\n; typeof initContactForm === 'function';",
+      context,
+    );
 
     expect(result).toBe(true);
   });
 
   it("interaction: selecting 'Schedule Event' unhides event fields", () => {
-    const stubbed = fileText.replace(/import\s+flatpickr[\s\S]*?;\n/, `const flatpickr = (el, opts) => ({
+    const stubbed = fileText.replace(
+      /import\s+flatpickr[\s\S]*?;\n/,
+      `const flatpickr = (el, opts) => ({
       selectedDates: [],
       set: () => {},
       clear: () => {},
       parseDate: () => null,
       open: () => {},
-    });\n`);
+    });\n`,
+    );
 
     // Build a minimal document mapping that the script will query
     const inquirySelect = createFakeElement();
@@ -111,7 +126,7 @@ describe("public contact-form client", () => {
       },
     };
 
-    const stubFlatpickr = (el: any, opts: any) => ({
+    const stubFlatpickr = () => ({
       selectedDates: [],
       set: () => {},
       clear: () => {},
@@ -119,7 +134,13 @@ describe("public contact-form client", () => {
       open: () => {},
     });
 
-    const context: any = { document: fakeDoc, window: { flatpickr: stubFlatpickr }, Event: function Event(t: string, opts?: any) { return { type: t, ...opts }; } };
+    const context: any = {
+      document: fakeDoc,
+      window: { flatpickr: stubFlatpickr },
+      Event: function Event(t: string, opts?: any) {
+        return { type: t, ...opts };
+      },
+    };
     const initContactForm = vm.runInNewContext(stubbed + "\n; initContactForm;", context);
 
     // initialize

@@ -30,6 +30,7 @@ export interface SiteSettings {
   siteName: string;
   siteDescription: string;
   donateUrl: string;
+  paypalUrl: string;
   contactEmail: string;
   contactPhone: string;
   contactFormActionUrl: string;
@@ -121,6 +122,7 @@ export async function getSiteSettings(): Promise<SiteSettings> {
     siteName: d.siteName || siteConfig.title,
     siteDescription: d.siteDescription || siteConfig.description,
     donateUrl: d.donateUrl ?? "",
+    paypalUrl: d.paypalUrl ?? "",
     contactEmail: d.contactEmail ?? "",
     contactPhone: d.contactPhone ?? "",
     contactFormActionUrl: d.contactFormActionUrl ?? "",

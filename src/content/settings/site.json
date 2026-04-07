@@ -2,6 +2,7 @@
   "siteName": "Ghostbusters Virginia",
   "siteDescription": "Virginia's community Ghostbusters franchise — events, media, and how to join the team.",
   "donateUrl": "https://secure2.wish.org/site/TR;jsessionid=00000000.app20002b?team_id=58435&fr_id=7464&pg=team&NONCE_TOKEN=16AE47C509ECB858ECB963CD3D174802",
+  "paypalUrl": "https://www.paypal.com/donate/",
   "contactEmail": "info@ghostbustersva.com",
   "contactPhone": "(804) 482-1217",
   "contactFormActionUrl": "https://formspree.io/f/xpqybzjj",
@@ -29,11 +30,11 @@
   "navSubtitle": "Virginia",
   "navItems": [
     { "label": "Donate", "href": "/donate", "external": false, "group": "primary" },
-    { "label": "Join", "href": "/join", "external": false, "group": "primary" },
+    { "label": "Join", "href": "/join", "external": false, "group": "more" },
     { "label": "Events", "href": "/events", "external": false, "group": "primary" },
     { "label": "Contact", "href": "/contact", "external": false, "group": "primary" },
     { "label": "About", "href": "/about", "external": false, "group": "more" },
-    { "label": "Press", "href": "/press", "external": false, "group": "more" }
+    { "label": "Press", "href": "/press", "external": false, "group": "primary" }
   ],
   "footerCopyrightText": "",
   "codeOfConductUrl": "/code-of-conduct",
