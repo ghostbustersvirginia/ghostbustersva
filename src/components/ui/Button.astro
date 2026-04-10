@@ -31,7 +31,7 @@ interface Props {
   hidden?: boolean;
 }
 
-import { getSafeCmsHref } from "../../lib/links";
+import { getSafeHref } from "../../lib/links";
 
 const {
   variant = "primary",
@@ -45,7 +45,7 @@ const {
   hidden,
 } = Astro.props;
 
-const safeHref = getSafeCmsHref(href);
+const safeHref = getSafeHref(href);
 const externalAttrs = external ? { target: "_blank", rel: "noopener noreferrer" } : {};
 ---
 

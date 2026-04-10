@@ -1,5 +1,5 @@
 const SAFE_EXTERNAL_PROTOCOLS = new Set(["https:", "http:"]);
-const SAFE_CMS_PROTOCOLS = new Set(["https:", "http:", "mailto:", "tel:"]);
+const SAFE_HREF_PROTOCOLS = new Set(["https:", "http:", "mailto:", "tel:"]);
 const INTERNAL_PATH_PATTERN = /^\/(?!\/)[^\s]*$/;
 const IMAGE_ASSET_PATH_PATTERN = /^\/images\/[\w./-]+\.(?:png|jpe?g|webp|avif|svg|gif)$/i;
 
@@ -21,7 +21,7 @@ export function isApprovedInternalPath(path: string | undefined | null): path is
   return INTERNAL_PATH_PATTERN.test(trimmed);
 }
 
-export function isSafeCmsHref(href: string | undefined | null): href is string {
+export function isSafeHref(href: string | undefined | null): href is string {
   if (!href) return false;
   const trimmed = href.trim();
   if (!trimmed) return false;
@@ -32,14 +32,14 @@ export function isSafeCmsHref(href: string | undefined | null): href is string {
 
   try {
     const parsed = new URL(trimmed);
-    return SAFE_CMS_PROTOCOLS.has(parsed.protocol);
+    return SAFE_HREF_PROTOCOLS.has(parsed.protocol);
   } catch {
     return false;
   }
 }
 
-export function getSafeCmsHref(href: string | undefined | null): string | undefined {
-  return isSafeCmsHref(href) ? href.trim() : undefined;
+export function getSafeHref(href: string | undefined | null): string | undefined {
+  return isSafeHref(href) ? href.trim() : undefined;
 }
 
 export function isSafeImageAssetPath(path: string | undefined | null): path is string {

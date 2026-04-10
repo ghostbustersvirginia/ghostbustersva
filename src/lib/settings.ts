@@ -1,16 +1,14 @@
 /**
- * CMS settings helper — loads site settings from the Keystatic-managed
- * content collection, with a safe fallback to src/config.ts defaults.
+ * Site settings helper — loads site settings from content collections,
+ * with a safe fallback to src/config.ts defaults.
  *
  * Usage in .astro files:
  *   import { getSiteSettings } from "../lib/settings";
  *   const settings = await getSiteSettings();
- *
- * PRD 012: Keystatic CMS Integration
  */
 import { getCollection } from "astro:content";
 import { siteConfig } from "../config";
-import { getSafeCmsHref, getSafeImageAssetPath } from "./links";
+import { getSafeHref, getSafeImageAssetPath } from "./links";
 
 export type NavItemGroup = "primary" | "more";
 
@@ -67,7 +65,7 @@ const defaultFooterLogos: FooterLogo[] = siteConfig.footerLogos.map((l) => ({
 }));
 
 /**
- * Load CMS-managed site settings. Falls back to siteConfig defaults
+ * Load site settings from content collections. Falls back to siteConfig defaults
  * for optional values, but fails loudly when required settings content is missing.
  */
 export async function getSiteSettings(): Promise<SiteSettings> {
@@ -90,7 +88,7 @@ export async function getSiteSettings(): Promise<SiteSettings> {
     d.navItems && d.navItems.length > 0
       ? d.navItems
           .map((n: { label: string; href: string; external?: boolean; group?: NavItemGroup }) => {
-            const href = getSafeCmsHref(n.href);
+            const href = getSafeHref(n.href);
             if (!href) return null;
 
             return {

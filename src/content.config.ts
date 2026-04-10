@@ -2,12 +2,12 @@
  * Astro Content Collections configuration.
  *
  * Defines schemas for markdown-based content (events, gallery)
- * and data-only content (settings — managed via Keystatic CMS).
+ * and data-only content (settings, videos, and news).
  * See: https://docs.astro.build/en/guides/content-collections/
  */
 import { defineCollection, z } from "astro:content";
 import { glob } from "astro/loaders";
-import { isApprovedInternalPath, isSafeCmsHref, isSafeExternalUrl } from "./lib/links";
+import { isApprovedInternalPath, isSafeHref, isSafeExternalUrl } from "./lib/links";
 
 const safeExternalUrl = z
   .string()
@@ -22,11 +22,11 @@ const safeInternalPath = z
     "Use an internal path beginning with / (for example: /about).",
   );
 
-const safeCmsHref = z
+const safeHref = z
   .string()
   .trim()
   .refine(
-    (value) => isSafeCmsHref(value),
+    (value) => isSafeHref(value),
     "Use an internal path or an allowed protocol (https, http, mailto, tel).",
   );
 
@@ -51,7 +51,7 @@ const events = defineCollection({
     /**
      * Optional explicit event status override.
      * If omitted or empty, status is derived from date/endDate at build time.
-     * Empty string from CMS "Auto" selection is treated as undefined.
+     * Empty string is treated as undefined.
      */
     status: z
       .union([z.enum(["upcoming", "past"]), z.literal("")])
@@ -77,10 +77,7 @@ const gallery = defineCollection({
   }),
 });
 
-/**
- * Site settings singleton — managed via Keystatic CMS (PRD 012).
- * Stored as JSON at src/content/settings/site.json.
- */
+/** Site settings singleton stored as JSON at src/content/settings/site.json. */
 const settings = defineCollection({
   loader: glob({ pattern: "site.json", base: "src/content/settings" }),
   schema: z.object({
@@ -119,7 +116,7 @@ const settings = defineCollection({
       .array(
         z.object({
           label: z.string(),
-          href: safeCmsHref,
+          href: safeHref,
           external: z.boolean().optional().default(false),
           group: z.enum(["primary", "more"]).optional().default("primary"),
         }),
@@ -147,10 +144,7 @@ const settings = defineCollection({
   }),
 });
 
-/**
- * Videos collection — YouTube videos shown on the Media page.
- * Managed via Keystatic CMS.
- */
+/** Videos collection — YouTube videos shown on the Media page. */
 const videos = defineCollection({
   loader: glob({ pattern: "**/*.json", base: "src/content/videos" }),
   schema: z.object({
@@ -160,10 +154,7 @@ const videos = defineCollection({
   }),
 });
 
-/**
- * News collection — press/news links shown on the Media page.
- * Managed via Keystatic CMS.
- */
+/** News collection — press/news links shown on the Media page. */
 const news = defineCollection({
   loader: glob({ pattern: "**/*.json", base: "src/content/news" }),
   schema: z.object({

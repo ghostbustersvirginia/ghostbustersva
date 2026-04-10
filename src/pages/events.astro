@@ -10,7 +10,7 @@ import SectionHeading from "../components/ui/SectionHeading.astro";
 import { getCollection } from "astro:content";
 import { splitEventsByStatus } from "../lib/events";
 import { getPageCopy } from "../lib/page-copy";
-import { getSafeCmsHref } from "../lib/links";
+import { getSafeHref } from "../lib/links";
 
 const copy = await getPageCopy("events");
 const allEvents = await getCollection("events");
@@ -46,8 +46,8 @@ const ogDescriptionVal =
   copy.ogDescription ||
   "Find where Ghostbusters Virginia will be next and browse our past appearances.";
 const ogImage = copy.ogImage || "/images/ghostbusters-virginia-pageant-winner-ecto.jpg";
-const safeNoUpcomingEventsContactHref = getSafeCmsHref(noUpcomingEventsContactHref) || "/contact";
-const safeEventCtaHref = getSafeCmsHref(eventCtaHref) || "/contact";
+const safeNoUpcomingEventsContactHref = getSafeHref(noUpcomingEventsContactHref) || "/contact";
+const safeEventCtaHref = getSafeHref(eventCtaHref) || "/contact";
 ---
 
 <BaseLayout

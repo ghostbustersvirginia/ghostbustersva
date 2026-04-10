@@ -9,7 +9,7 @@ import LightboxImageTrigger from "../components/ui/LightboxImageTrigger.astro";
 import PageHeader from "../components/ui/PageHeader.astro";
 import SectionHeading from "../components/ui/SectionHeading.astro";
 import { getResponsiveImageAttrs } from "../lib/images";
-import { getSafeCmsHref, isSafeExternalUrl } from "../lib/links";
+import { getSafeHref, isSafeExternalUrl } from "../lib/links";
 import { getSiteSettings } from "../lib/settings";
 import { getPageCopy } from "../lib/page-copy";
 
@@ -79,8 +79,8 @@ const initiativeImageAlt =
   "Proton Pets — Ghostbusters Virginia community fundraiser for local pet shelters";
 const communityCtaLabel = copy.communityCtaLabel || "Contact Us";
 const communityCtaHref = copy.communityCtaHref || "/contact";
-const safeCommunityCtaHref = getSafeCmsHref(communityCtaHref) || "/contact";
-const safeVolunteerCtaHref = getSafeCmsHref(volunteerCtaHref) || "/join";
+const safeCommunityCtaHref = getSafeHref(communityCtaHref) || "/contact";
+const safeVolunteerCtaHref = getSafeHref(volunteerCtaHref) || "/join";
 const safeInitiativeLinkUrl = isSafeExternalUrl(initiativeLinkUrl)
   ? initiativeLinkUrl
   : "https://whoyagonnacall.org/proton-pets";

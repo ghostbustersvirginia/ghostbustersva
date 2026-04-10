@@ -1,12 +1,12 @@
 ---
 /**
  * Site footer with compact center content, social row, and credential logos.
- * Reads logos, nav items, social links, and legal link from CMS settings.
+ * Reads logos, nav items, social links, and legal link from site settings.
  */
 import { siteConfig } from "../config";
 import { getSiteSettings } from "../lib/settings";
 import SocialLinks from "./ui/SocialLinks.astro";
-import { getSafeCmsHref, isSafeExternalUrl } from "../lib/links";
+import { getSafeHref, isSafeExternalUrl } from "../lib/links";
 
 const settings = await getSiteSettings();
 const leftLogo = settings.footerLogos[0];
@@ -14,7 +14,7 @@ const rightLogo = settings.footerLogos[1];
 const navItems = settings.navItems;
 const footerCopyright = settings.footerCopyrightText || siteConfig.copyright;
 const tagline = settings.siteDescription || siteConfig.description;
-const safeCodeOfConductUrl = getSafeCmsHref(settings.codeOfConductUrl) || "/code-of-conduct";
+const safeCodeOfConductUrl = getSafeHref(settings.codeOfConductUrl) || "/code-of-conduct";
 const footerDisclaimerText =
   settings.footerDisclaimerText ||
   "Ghostbusters and all related trademarks are property of Sony Pictures Entertainment Inc. GBVA is an independent fan group with no commercial affiliation.";
