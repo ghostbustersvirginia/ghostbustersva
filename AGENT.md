@@ -12,7 +12,7 @@ Build a fast, accessible, content-driven **demo site** for Ghostbusters Virginia
 
 ## Routes in Scope
 
-- `/`, `/about`, `/events`, `/media`, `/join`, `/contact`, `/donate`
+- `/`, `/about`, `/events`, `/press`, `/join`, `/contact`, `/donate`
 
 ## Non-Negotiable Constraints
 

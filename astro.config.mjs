@@ -4,15 +4,16 @@ import sitemap from "@astrojs/sitemap";
 import markdoc from "@astrojs/markdoc";
 import vercel from "@astrojs/vercel";
 
-const deploymentSite = process.env.VERCEL_URL
-  ? `https://${process.env.VERCEL_URL}`
-  : "https://ghostbustersva.vercel.app";
+const productionSiteUrl = (process.env.SITE_URL || "https://gbva-site.vercel.app/").replace(
+  /\/+$/,
+  "",
+);
 
 // https://astro.build/config
 export default defineConfig({
   output: "static",
-  // Use the deployment URL on Vercel previews; default to production URL locally.
-  site: deploymentSite,
+  // Canonical and sitemap URLs always use the explicit primary domain.
+  site: productionSiteUrl,
   adapter: vercel(),
   integrations: [sitemap(), markdoc()],
 });

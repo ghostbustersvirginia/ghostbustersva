@@ -19,7 +19,7 @@ Built with [Astro](https://astro.build), TypeScript, and markdown-based content.
 
 This is a **static website** — think of it like a brochure that gets regenerated whenever we make changes, rather than a live app with a database behind it.
 
-- **Core pages** (Home, About, Events, Media, Join, Contact, Donate) are built from template files and deployed as plain HTML.
+- **Core pages** (Home, About, Events, Press, Join, Contact, Donate) are built from template files and deployed as plain HTML.
 - **Content** (events, gallery, page copy, settings) is stored as markdown and JSON files in `src/content/` and edited directly — no login required.
 - When a developer pushes changes to the `main` branch, the site automatically rebuilds and deploys within minutes.
 - The site rebuilds on a daily schedule so time-sensitive content (like event status) stays current.
@@ -47,6 +47,7 @@ Content lives in this repository as plain files. Edit them directly and push to 
 | Add/edit an event                | Edit or create a file in `src/content/events/` and push to `main`          |
 | Add gallery photos               | Edit or create a file in `src/content/gallery/` and push to `main`         |
 | Change site-wide settings        | Edit `src/content/settings/site.json` and push to `main`                   |
+| Update contact form destination  | Edit `contactFormActionUrl` in `src/content/settings/site.json`            |
 | Change page copy (text/content)  | Edit the relevant JSON file in `src/content/page-copy/` and push to `main` |
 | Change page layout/UX (template) | Edit the `.astro` file in `src/pages/`                                     |
 | Deploy                           | Push to `main` — deploy is automatic via Vercel                            |
@@ -98,6 +99,12 @@ npm run dev
 
 For handoff stability, keep `package-lock.json` committed and avoid changing the `readyled` dependency source unless there is a clear need.
 
+### Canonical Origin and Preview Strategy
+
+- Canonical URLs and sitemap generation use `SITE_URL`.
+- Set `SITE_URL` to the primary production domain (for example: `https://ghostbustersva.org`).
+- Preview deployments keep production canonical URLs and default to `noindex,nofollow` metadata.
+
 ---
 
 ## Content Editing
@@ -122,9 +129,9 @@ Content is stored as plain files in this repository. Edit them directly using a 
 | ------------- | --------------------------------------------------------------------------------------------------------------------------- |
 | Events        | Event listings — title, date, location, summary, images, status                                                             |
 | Gallery       | Photo gallery entries — image, title, alt text, date                                                                        |
-| Videos        | YouTube videos shown on the Media page                                                                                      |
-| News          | Press coverage / news links shown on the Media page                                                                         |
-| Page copy     | Per-page text fields for home/about/join/events/media/contact/donate/code-of-conduct (in `src/content/page-copy/`)          |
+| Videos        | YouTube videos shown on the Press page (`/press`)                                                                           |
+| News          | Press coverage / news links shown on the Press page (`/press`)                                                              |
+| Page copy     | Per-page text fields for home/about/join/events/press/contact/donate/code-of-conduct (in `src/content/page-copy/`)          |
 | Site Settings | Global values: site name/description, donate URL, contact email/phone, LED scrollbar text, nav/footer content, social links |
 
 ### Branch Workflow

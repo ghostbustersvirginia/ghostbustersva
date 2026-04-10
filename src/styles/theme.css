@@ -210,6 +210,11 @@
   --color-footer-text-muted: rgba(255, 255, 255, 0.55);
   --color-footer-link: rgba(255, 255, 255, 0.7);
   --color-footer-link-hover: #ffffff;
+
+  /* Lightbox overlay text */
+  --color-lightbox-caption: #f8fafc;
+  --color-lightbox-caption-link: #ffffff;
+  --color-lightbox-caption-link-hover: #bfdbfe;
 }
 
 /* -------------------------------------------------- */
@@ -233,6 +238,20 @@
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+}
+
+html.reduce-motion,
+html.reduce-motion body {
+  scroll-behavior: auto !important;
+}
+
+html.reduce-motion *,
+html.reduce-motion *::before,
+html.reduce-motion *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
 }
 
 /* -------------------------------------------------- */
@@ -981,8 +1000,21 @@ a.event-link:hover .event-link__summary {
 
 .lightbox__caption {
   font-size: var(--text-sm);
-  color: var(--color-text-muted);
+  color: var(--color-lightbox-caption);
   text-align: center;
+  line-height: var(--leading-normal);
+  max-width: 72ch;
+}
+
+.lightbox__caption a {
+  color: var(--color-lightbox-caption-link);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.lightbox__caption a:hover,
+.lightbox__caption a:focus-visible {
+  color: var(--color-lightbox-caption-link-hover);
 }
 
 .lightbox__nav {

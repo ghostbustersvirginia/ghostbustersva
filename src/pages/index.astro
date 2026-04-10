@@ -56,7 +56,7 @@ const noUpcomingEventsBody =
 const noUpcomingEventsContactText =
   copy.noUpcomingEventsContactText ||
   "Want the team at your next event? Reach out and tell us what you have in mind.";
-const noUpcomingEventsContactHref = "/contact";
+const noUpcomingEventsContactHref = copy.noUpcomingEventsContactHref || "/contact";
 const eventsCtaLabel = copy.eventsCtaLabel || "See Past Events";
 const eventsCtaHref = copy.eventsCtaHref || "/events";
 const joinHeading = copy.joinHeading || "Join the Team";
@@ -94,8 +94,9 @@ const safeEventsCtaHref = getSafeHref(eventsCtaHref) || "/events";
 const safeNoUpcomingEventsContactHref = getSafeHref(noUpcomingEventsContactHref) || "/contact";
 const safeJoinCtaHref = getSafeHref(joinCtaHref) || "/join";
 const safeSupportCtaHref = "/donate";
-const galleryCtaLabel = "See All Media";
-const galleryCtaHref = "/media";
+const galleryCtaLabel = copy.galleryCtaLabel || "See All Media";
+const galleryCtaHref = copy.galleryCtaHref || "/press#gallery";
+const safeGalleryCtaHref = getSafeHref(galleryCtaHref) || "/press#gallery";
 
 interface ImpactStat {
   value: string;
@@ -248,7 +249,7 @@ const joinImage = await getResponsiveImageAttrs({
             ))}
           </ul>
           <div class="section-cta">
-            <Button variant="secondary" href={galleryCtaHref}>
+            <Button variant="secondary" href={safeGalleryCtaHref}>
               {galleryCtaLabel}
             </Button>
           </div>
@@ -340,7 +341,7 @@ const joinImage = await getResponsiveImageAttrs({
       <div class="highlight-card highlight-card--centered">
         <p class="prose-text">{supportCardText}</p>
         <div class="section-cta">
-          <Button variant="secondary" href={safeSupportCtaHref} external>{supportCtaLabel}</Button>
+          <Button variant="secondary" href={safeSupportCtaHref}>{supportCtaLabel}</Button>
         </div>
       </div>
     </div>
@@ -354,6 +355,107 @@ const joinImage = await getResponsiveImageAttrs({
     lightboxGroup="home-gallery"
   />
 </BaseLayout>
+
+<script>
+  (function initImpactStatCountUp() {
+    const statNumbers = Array.from(
+      document.querySelectorAll<HTMLElement>(".impact-stat__number[data-count-target]"),
+    );
+
+    if (statNumbers.length === 0) {
+      return;
+    }
+
+    const hasReducedMotion = () => {
+      const root = document.documentElement;
+      return (
+        root.classList.contains("reduce-motion") ||
+        window.matchMedia("(prefers-reduced-motion: reduce)").matches
+      );
+    };
+
+    const setFinalValues = () => {
+      statNumbers.forEach((el) => {
+        const targetText = (el.getAttribute("data-count-target") || "").trim();
+        const suffix = el.getAttribute("data-count-suffix") || "";
+        if (!targetText) return;
+        el.textContent = `${targetText}${suffix}`;
+        el.setAttribute("data-counted", "true");
+      });
+    };
+
+    const animateCount = (el: HTMLElement) => {
+      if (el.getAttribute("data-counted") === "true") {
+        return;
+      }
+
+      const targetText = (el.getAttribute("data-count-target") || "").trim();
+      const suffix = el.getAttribute("data-count-suffix") || "";
+      const target = Number.parseInt(targetText, 10);
+
+      if (!Number.isFinite(target) || target <= 0 || hasReducedMotion()) {
+        el.textContent = `${targetText}${suffix}`;
+        el.setAttribute("data-counted", "true");
+        return;
+      }
+
+      const duration = 900;
+      const start = performance.now();
+
+      const tick = (now: number) => {
+        const elapsed = now - start;
+        const progress = Math.min(elapsed / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3);
+        const value = Math.round(target * eased);
+        el.textContent = `${value}${suffix}`;
+
+        if (progress < 1) {
+          window.requestAnimationFrame(tick);
+          return;
+        }
+
+        el.textContent = `${targetText}${suffix}`;
+        el.setAttribute("data-counted", "true");
+      };
+
+      window.requestAnimationFrame(tick);
+    };
+
+    const startAnimation = () => {
+      if (hasReducedMotion()) {
+        setFinalValues();
+        return;
+      }
+
+      statNumbers.forEach((el) => animateCount(el));
+    };
+
+    const container = document.querySelector(".impact-stats");
+    if (!container) {
+      return;
+    }
+
+    if (!("IntersectionObserver" in window)) {
+      startAnimation();
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+          startAnimation();
+          observer.disconnect();
+        });
+      },
+      {
+        threshold: 0.35,
+      },
+    );
+
+    observer.observe(container);
+  })();
+</script>
 
 <style is:global>
   /* ── Homepage section spacing ── */

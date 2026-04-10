@@ -9,6 +9,7 @@ import PageHeader from "../components/ui/PageHeader.astro";
 import SectionHeading from "../components/ui/SectionHeading.astro";
 import Button from "../components/ui/Button.astro";
 import { getResponsiveImageAttrs } from "../lib/images";
+import { getSafeHref } from "../lib/links";
 import { getPageCopy } from "../lib/page-copy";
 
 const copy = await getPageCopy("join");
@@ -50,8 +51,9 @@ const notePrefix = copy.notePrefix || "Please Note:";
 const noteText =
   copy.noteText ||
   "We ask all applicants be able to pass a high-level background check to verify no felonies are on their record; this includes a verification with no results found on the national sex offender registry.";
-const applyLinkLabel = "Contact Us today";
-const applyLinkUrl = "/contact";
+const applyLinkLabel = copy.applyLinkLabel || "Contact Us today";
+const applyLinkUrl = copy.applyLinkUrl || "/contact";
+const safeApplyLinkUrl = getSafeHref(applyLinkUrl) || "/contact";
 const whatWeLookForHeading = copy.whatWeLookForHeading || "What We Look For";
 const howToApplyHeading = copy.howToApplyHeading || "How to Apply";
 const requiredGearHeading = copy.requiredGearHeading || "Required Gear";
@@ -183,7 +185,7 @@ const whatWeLookForImage = await getResponsiveImageAttrs({
         </LightboxImageTrigger>
         <p class="prose-text" style="margin-bottom: var(--space-lg);">{applyText}</p>
         <div class="join-cta-wrapper">
-          <Button variant="secondary-alt" href={applyLinkUrl}>
+          <Button variant="secondary-alt" href={safeApplyLinkUrl}>
             {applyLinkLabel}
           </Button>
         </div>

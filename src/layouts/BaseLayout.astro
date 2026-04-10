@@ -28,6 +28,13 @@ interface Props {
 const settings = await getSiteSettings();
 const siteName = settings.siteName || siteConfig.title;
 const siteDescription = settings.siteDescription || siteConfig.description;
+const canonicalOrigin = (
+  import.meta.env.SITE_URL ||
+  Astro.site?.toString() ||
+  "https://ghostbustersva.org"
+).replace(/\/+$/, "");
+const defaultRobots =
+  import.meta.env.VERCEL_ENV === "preview" ? "noindex,nofollow" : "index,follow";
 
 const {
   title,
@@ -37,20 +44,14 @@ const {
   ogDescription,
   ogImage = "/images/logo.png",
   twitterCard = "summary_large_image",
-  robots = "index,follow",
+  robots = defaultRobots,
   heroImagePreload,
 } = Astro.props;
 const pageTitle = title ? `${title} | ${siteName}` : siteName;
-const resolvedCanonical = new URL(
-  canonical ?? Astro.url.pathname,
-  Astro.site ?? "https://ghostbustersva.vercel.app",
-).toString();
+const resolvedCanonical = new URL(canonical ?? Astro.url.pathname, canonicalOrigin).toString();
 const resolvedOgTitle = ogTitle ?? pageTitle;
 const resolvedOgDescription = ogDescription ?? description;
-const resolvedOgImage = new URL(
-  ogImage,
-  Astro.site ?? "https://ghostbustersva.vercel.app",
-).toString();
+const resolvedOgImage = new URL(ogImage, canonicalOrigin).toString();
 ---
 
 <!doctype html>

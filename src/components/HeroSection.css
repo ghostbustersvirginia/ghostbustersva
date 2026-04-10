@@ -321,3 +321,27 @@
     transition: none;
   }
 }
+
+.reduce-motion .hero-logo {
+  transition: none;
+  animation: none;
+}
+
+.reduce-motion .hero-content {
+  animation: none;
+}
+
+.reduce-motion .hero-title-main,
+.reduce-motion .hero-title-accent {
+  animation: none;
+  opacity: 1;
+}
+
+.reduce-motion .hero-logo-glow {
+  animation: none;
+  opacity: 0.7;
+}
+
+.reduce-motion .hero-cta .btn {
+  transition: none;
+}

@@ -32,18 +32,8 @@ describe("public contact-form client", () => {
   }
 
   it("smoke: shipped script parses and exposes initContactForm", () => {
-    const stubbed = fileText.replace(
-      /import\s+flatpickr[\s\S]*?;\n/,
-      `const flatpickr = (el, opts) => ({
-      selectedDates: [],
-      set: () => {},
-      clear: () => {},
-      parseDate: () => null,
-      open: () => {},
-    });\n`,
-    );
-
     const fakeDoc: any = {
+      readyState: "complete",
       querySelector() {
         return null;
       },
@@ -68,7 +58,7 @@ describe("public contact-form client", () => {
       },
     };
     const result = vm.runInNewContext(
-      stubbed + "\n; typeof initContactForm === 'function';",
+      fileText + "\n; typeof initContactForm === 'function';",
       context,
     );
 
@@ -76,17 +66,6 @@ describe("public contact-form client", () => {
   });
 
   it("interaction: selecting 'Schedule Event' unhides event fields", () => {
-    const stubbed = fileText.replace(
-      /import\s+flatpickr[\s\S]*?;\n/,
-      `const flatpickr = (el, opts) => ({
-      selectedDates: [],
-      set: () => {},
-      clear: () => {},
-      parseDate: () => null,
-      open: () => {},
-    });\n`,
-    );
-
     // Build a minimal document mapping that the script will query
     const inquirySelect = createFakeElement();
     const dateInput = createFakeElement();
@@ -96,6 +75,7 @@ describe("public contact-form client", () => {
     const eventField2 = createFakeElement();
 
     const fakeDoc: any = {
+      readyState: "complete",
       querySelector(selector: string) {
         switch (selector) {
           case "select[name='inquiryType']":
@@ -141,7 +121,7 @@ describe("public contact-form client", () => {
         return { type: t, ...opts };
       },
     };
-    const initContactForm = vm.runInNewContext(stubbed + "\n; initContactForm;", context);
+    const initContactForm = vm.runInNewContext(fileText + "\n; initContactForm;", context);
 
     // initialize
     initContactForm();

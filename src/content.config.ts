@@ -144,7 +144,7 @@ const settings = defineCollection({
   }),
 });
 
-/** Videos collection — YouTube videos shown on the Media page. */
+/** Videos collection — YouTube videos shown on the Press page. */
 const videos = defineCollection({
   loader: glob({ pattern: "**/*.json", base: "src/content/videos" }),
   schema: z.object({
@@ -154,7 +154,7 @@ const videos = defineCollection({
   }),
 });
 
-/** News collection — press/news links shown on the Media page. */
+/** News collection — press/news links shown on the Press page. */
 const news = defineCollection({
   loader: glob({ pattern: "**/*.json", base: "src/content/news" }),
   schema: z.object({
@@ -196,8 +196,11 @@ const homePageCopy = z.object({
   noUpcomingEventsTitle: z.string().optional(),
   noUpcomingEventsBody: z.string().optional(),
   noUpcomingEventsContactText: z.string().optional(),
+  noUpcomingEventsContactHref: safeInternalPath.optional(),
   eventsCtaLabel: z.string().optional(),
   eventsCtaHref: safeInternalPath.optional(),
+  galleryCtaLabel: z.string().optional(),
+  galleryCtaHref: safeInternalPath.optional(),
   joinHeading: z.string().optional(),
   joinSubtitle: z.string().optional(),
   joinImage: z.string().optional(),
@@ -280,6 +283,7 @@ const eventsPageCopy = z.object({
   noUpcomingEventsTitle: z.string().optional(),
   emptyText: z.string().optional(),
   noUpcomingEventsContactText: z.string().optional(),
+  noUpcomingEventsContactHref: safeInternalPath.optional(),
   eventCtaText: z.string().optional(),
   eventCtaLabel: z.string().optional(),
   eventCtaHref: safeInternalPath.optional(),

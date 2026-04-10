@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://ghostbustersva.vercel.app/sitemap-index.xml
+Sitemap: https://ghostbustersva.org/sitemap-index.xml

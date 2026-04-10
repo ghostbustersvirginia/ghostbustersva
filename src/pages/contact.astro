@@ -431,6 +431,15 @@ const bookingImage = await getResponsiveImageAttrs({
     animation: wiggle 0.5s ease-in-out;
   }
 
+  :global(.reduce-motion .social-icon-link) {
+    transition: none;
+  }
+
+  :global(.reduce-motion .social-icon-link:hover),
+  :global(.reduce-motion .social-icon-link:focus-visible) {
+    animation: none;
+  }
+
   @keyframes wiggle {
     0% {
       transform: rotate(0deg);
