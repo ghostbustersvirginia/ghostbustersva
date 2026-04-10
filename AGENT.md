@@ -1,7 +1,5 @@
 # AGENT.md — AI Project Guide
 
-**Last reviewed:** 2026-03-10 · **Owner:** GBVA project lead
-
 Short context for AI tools. Keep this file lightweight and defer detailed rules to canonical docs.
 
 ## Project Goal
@@ -18,7 +16,7 @@ Build a fast, accessible, content-driven **demo site** for Ghostbusters Virginia
 
 ## Non-Negotiable Constraints
 
-- Static Astro site + Keystatic CMS.
+- Static Astro site with file-based content collections.
 - No backend/database/SSR unless a PRD explicitly requires it.
 - Astro-first components; avoid client JS unless clearly necessary.
 - Be mindful of motion; always respect `prefers-reduced-motion`.

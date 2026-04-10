@@ -12,12 +12,12 @@ vi.mock("astro:content", () => ({
 import { getSiteSettings } from "../src/lib/settings";
 import { getPageCopy } from "../src/lib/page-copy";
 
-describe("site settings (no dynamic CMS pages)", () => {
+describe("site settings (no dynamic generated pages)", () => {
   beforeEach(() => {
     getCollectionMock.mockReset();
   });
 
-  it("returns core nav items from CMS settings without dynamic page merging", async () => {
+  it("returns core nav items from settings content without dynamic page merging", async () => {
     getCollectionMock.mockImplementation(async (name: string) => {
       if (name === "settings") {
         return [
@@ -40,11 +40,11 @@ describe("site settings (no dynamic CMS pages)", () => {
     });
 
     const settings = await getSiteSettings();
-    // No more dynamic CMS pages appended — only core nav items
+    // No more dynamic generated pages appended — only core nav items
     expect(settings.navItems.map((item) => item.href)).toEqual(["/about", "/donate"]);
   });
 
-  it("throws when CMS settings collection is empty", async () => {
+  it("throws when settings collection is empty", async () => {
     getCollectionMock.mockResolvedValue([]);
 
     await expect(getSiteSettings()).rejects.toThrow("[settings] Missing required site settings");
@@ -74,7 +74,7 @@ describe("site settings (no dynamic CMS pages)", () => {
     expect(settings.navLogo).toBe("/images/logo.png");
   });
 
-  it("falls back to default footer logos when all CMS logo paths are invalid", async () => {
+  it("falls back to default footer logos when all settings logo paths are invalid", async () => {
     getCollectionMock.mockImplementation(async (name: string) => {
       if (name === "settings") {
         return [

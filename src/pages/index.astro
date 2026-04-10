@@ -11,7 +11,7 @@ import LightboxImageTrigger from "../components/ui/LightboxImageTrigger.astro";
 import { getCollection } from "astro:content";
 import { splitEventsByStatus } from "../lib/events";
 import { getResponsiveImageAttrs } from "../lib/images";
-import { getSafeCmsHref, getSafeImageAssetPath, isSafeExternalUrl } from "../lib/links";
+import { getSafeHref, getSafeImageAssetPath, isSafeExternalUrl } from "../lib/links";
 import { getPageCopy } from "../lib/page-copy";
 import { getSiteSettings } from "../lib/settings";
 
@@ -23,7 +23,7 @@ const allEvents = await getCollection("events");
 const { upcoming } = splitEventsByStatus(allEvents);
 const gallery = await getCollection("gallery");
 
-/* ── CMS-driven copy ── */
+/* ── Content-driven copy ── */
 const heroTitleText = String(copy.heroTitleText || "Bustin' Means");
 const heroTitleAccent = String(copy.heroTitleAccent || "Doing Good");
 const heroTagline = String(
@@ -81,7 +81,7 @@ const supportCtaLabel = "Donate Today";
 const supportCardText =
   donateCopy.donationText ||
   "Ghostbusters Virginia is a volunteer-run, community-focused franchise. Your generous donations help us fund charitable events, maintain the Ecto, purchase supplies for community outreach, and keep the franchise running strong.";
-const defaultPaypalDonateUrl = "https://www.paypal.com/donate/";
+const defaultPaypalDonateUrl = "https://www.paypal.com/US/fundraiser/charity/4434256";
 const defaultMakeAWishDonateUrl =
   "https://secure2.wish.org/site/TR;jsessionid=00000000.app20002b?team_id=58435&fr_id=7464&pg=team&NONCE_TOKEN=16AE47C509ECB858ECB963CD3D174802";
 const safeHeroPrimaryCtaHref = isSafeExternalUrl(settings.paypalUrl)
@@ -90,9 +90,9 @@ const safeHeroPrimaryCtaHref = isSafeExternalUrl(settings.paypalUrl)
 const safeHeroSecondaryCtaHref = isSafeExternalUrl(settings.donateUrl)
   ? settings.donateUrl
   : defaultMakeAWishDonateUrl;
-const safeEventsCtaHref = getSafeCmsHref(eventsCtaHref) || "/events";
-const safeNoUpcomingEventsContactHref = getSafeCmsHref(noUpcomingEventsContactHref) || "/contact";
-const safeJoinCtaHref = getSafeCmsHref(joinCtaHref) || "/join";
+const safeEventsCtaHref = getSafeHref(eventsCtaHref) || "/events";
+const safeNoUpcomingEventsContactHref = getSafeHref(noUpcomingEventsContactHref) || "/contact";
+const safeJoinCtaHref = getSafeHref(joinCtaHref) || "/join";
 const safeSupportCtaHref = "/donate";
 const galleryCtaLabel = "See All Media";
 const galleryCtaHref = "/media";

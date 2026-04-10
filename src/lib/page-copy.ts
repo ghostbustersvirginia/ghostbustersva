@@ -1,5 +1,5 @@
 /**
- * CMS page copy helper — loads page-specific editable text from
+ * Page copy helper — loads page-specific editable text from
  * the `pageCopy` content collection.
  */
 import { getCollection } from "astro:content";

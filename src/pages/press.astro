@@ -16,6 +16,17 @@ const copy = await getPageCopy("press");
 
 const gallery = await getCollection("gallery");
 const news = await getCollection("news");
+const videos = await getCollection("videos");
+
+const YOUTUBE_ID_PATTERN = /^[A-Za-z0-9_-]{11}$/;
+
+const safeVideos = [...videos]
+  .filter((video) => YOUTUBE_ID_PATTERN.test(video.data.youtubeId))
+  .sort((a, b) => {
+    const aTime = a.data.date ? new Date(a.data.date).getTime() : 0;
+    const bTime = b.data.date ? new Date(b.data.date).getTime() : 0;
+    return bTime - aTime;
+  });
 
 const sortedNews = [...news].sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
 const safeSortedNews = sortedNews.filter((article) => isSafeExternalUrl(article.data.url));
@@ -74,6 +85,7 @@ const showMoreGalleryLabel = copy.showMoreGalleryLabel || "Show More";
 const showLessGalleryLabel = copy.showLessGalleryLabel || "Show Less";
 const showMoreNewsLabel = copy.showMoreNewsLabel || "Show More";
 const showLessNewsLabel = copy.showLessNewsLabel || "Show Less";
+const videosHeading = "Videos";
 const metaTitle = copy.metaTitle || "Press";
 const metaDescription =
   copy.metaDescription ||
@@ -291,6 +303,34 @@ const ogImage = copy.ogImage || "/images/ghostbusters-virginia-full-team-photo.j
                 </Button>
               </div>
             )}
+          </div>
+        </div>
+      )
+    }
+
+    {/* ── Videos ── */}
+    {
+      safeVideos.length > 0 && (
+        <div class="page-band page-band--white">
+          <div class="container">
+            <SectionHeading id="videos">{videosHeading}</SectionHeading>
+            <ul class="video-grid" role="list">
+              {safeVideos.map((video) => (
+                <li class="video-card" role="listitem">
+                  <div class="video-frame">
+                    <iframe
+                      src={`https://www.youtube.com/embed/${video.data.youtubeId}`}
+                      title={video.data.title}
+                      loading="lazy"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                      referrerpolicy="strict-origin-when-cross-origin"
+                      allowfullscreen
+                    />
+                  </div>
+                  <p class="video-title">{video.data.title}</p>
+                </li>
+              ))}
+            </ul>
           </div>
         </div>
       )
@@ -543,5 +583,55 @@ const ogImage = copy.ogImage || "/images/ghostbusters-virginia-full-team-photo.j
     color: var(--color-text-muted);
     margin-top: 0.15rem;
     flex-shrink: 0;
+  }
+
+  .video-grid {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-lg);
+  }
+
+  @media (min-width: 768px) {
+    .video-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (min-width: 1100px) {
+    .video-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+
+  .video-card {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-panel);
+    overflow: hidden;
+  }
+
+  .video-frame {
+    aspect-ratio: 16 / 9;
+    background: #000;
+  }
+
+  .video-frame iframe {
+    width: 100%;
+    height: 100%;
+    border: 0;
+    display: block;
+  }
+
+  .video-title {
+    margin: 0;
+    padding: var(--space-md);
+    font-family: var(--font-brand-title);
+    font-size: var(--text-base);
+    color: var(--color-accent);
+    line-height: var(--leading-snug);
   }
 </style>
