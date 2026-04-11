@@ -1,5 +1,20 @@
-interface ResponsiveImageOptions {
+import { getImage } from "astro:assets";
+
+interface LocalImageSource {
   src: string;
+  width: number;
+  height: number;
+}
+
+const contentImageModules = import.meta.glob<{ default: LocalImageSource }>(
+  "../content/images/**/*.{avif,gif,jpg,jpeg,png,webp,svg}",
+  { eager: true },
+);
+
+type ResponsiveImageSource = string | LocalImageSource;
+
+interface ResponsiveImageOptions {
+  src: ResponsiveImageSource;
   widths: number[];
   sizes: string;
   width: number;
@@ -30,9 +45,100 @@ function normalizeImageUrl(src: string): string {
   return `/${src}`;
 }
 
-function buildAstroImageUrl(src: string, width: number, quality: number): string {
-  const imageUrl = encodeURIComponent(normalizeImageUrl(src));
-  return `/_image?href=${imageUrl}&w=${width}&q=${quality}`;
+function isImageMetadata(src: ResponsiveImageSource): src is LocalImageSource {
+  return typeof src === "object" && src !== null && "src" in src && "width" in src;
+}
+
+function resolveLocalImageSource(src: string): LocalImageSource | undefined {
+  const normalizedSrc = normalizeImageUrl(src);
+  const cleanPath = normalizedSrc.split("?")[0]?.split("#")[0] ?? normalizedSrc;
+
+  if (!cleanPath.startsWith("/images/")) {
+    return undefined;
+  }
+
+  const relativePath = cleanPath.slice("/images/".length);
+  const moduleKey = `../content/images/${relativePath}`;
+  return contentImageModules[moduleKey]?.default;
+}
+
+async function getResponsiveAttrsFromMetadata({
+  source,
+  widths,
+  sizes,
+  width,
+  height,
+  quality,
+  format,
+}: {
+  source: LocalImageSource;
+  widths: number[];
+  sizes: string;
+  width: number;
+  height: number;
+  quality: number;
+  format?: "webp" | "avif";
+}): Promise<ResponsiveImageAttrs> {
+  const extension = getFileExtension(source.src);
+  const isTransformable = extension !== "svg" && extension !== "gif";
+
+  if (!isTransformable) {
+    return {
+      src: source.src,
+      sizes,
+      width,
+      height,
+    };
+  }
+
+  const responsiveWidths = [...new Set([...widths, width])]
+    .filter((candidate) => Number.isFinite(candidate) && candidate > 0)
+    .map((candidate) => Math.round(candidate))
+    .filter((candidate) => candidate <= source.width)
+    .sort((a, b) => a - b);
+
+  if (responsiveWidths.length > 0) {
+    const variants = await Promise.all(
+      responsiveWidths.map(async (candidateWidth) => ({
+        candidateWidth,
+        image: await getImage({
+          src: source as Parameters<typeof getImage>[0]["src"],
+          width: candidateWidth,
+          quality,
+          ...(format ? { format } : {}),
+        }),
+      })),
+    );
+
+    const srcset = variants
+      .map((variant) => `${variant.image.src} ${variant.candidateWidth}w`)
+      .join(", ");
+    const largestVariant = variants[variants.length - 1]?.image;
+
+    if (largestVariant) {
+      return {
+        src: largestVariant.src,
+        srcset,
+        sizes,
+        width,
+        height,
+      };
+    }
+  }
+
+  const baseImage = await getImage({
+    src: source as Parameters<typeof getImage>[0]["src"],
+    width: Math.min(width, source.width),
+    quality,
+    ...(format ? { format } : {}),
+  });
+
+  return {
+    src: baseImage.src,
+    sizes,
+    width,
+    height,
+  };
 }
 
 export async function getResponsiveImageAttrs({
@@ -42,43 +148,36 @@ export async function getResponsiveImageAttrs({
   width,
   height,
   quality = 75,
+  format,
 }: ResponsiveImageOptions): Promise<ResponsiveImageAttrs> {
-  const extension = getFileExtension(src);
-  const isTransformable =
-    src.length > 0 && !src.startsWith("/_image?") && extension !== "svg" && extension !== "gif";
-
-  if (!isTransformable) {
-    return {
-      src,
+  if (isImageMetadata(src)) {
+    return getResponsiveAttrsFromMetadata({
+      source: src,
+      widths,
       sizes,
       width,
       height,
-    };
+      quality,
+      format,
+    });
   }
 
-  const responsiveWidths = [...new Set([...widths, width])]
-    .filter((candidate) => Number.isFinite(candidate) && candidate > 0)
-    .sort((a, b) => a - b);
-
-  if (responsiveWidths.length === 0) {
-    return {
-      src,
+  const localImageSource = resolveLocalImageSource(src);
+  if (localImageSource) {
+    return getResponsiveAttrsFromMetadata({
+      source: localImageSource,
+      widths,
       sizes,
       width,
       height,
-    };
+      quality,
+      format,
+    });
   }
 
-  const srcset = responsiveWidths
-    .map(
-      (candidateWidth) => `${buildAstroImageUrl(src, candidateWidth, quality)} ${candidateWidth}w`,
-    )
-    .join(", ");
-  const largestWidth = responsiveWidths[responsiveWidths.length - 1] ?? width;
-
+  // String paths (for /public and external URLs) are served directly.
   return {
-    src: buildAstroImageUrl(src, largestWidth, quality),
-    srcset,
+    src: normalizeImageUrl(src),
     sizes,
     width,
     height,

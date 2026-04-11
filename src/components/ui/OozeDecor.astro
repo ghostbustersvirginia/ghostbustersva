@@ -1,0 +1,49 @@
+---
+import { getResponsiveImageAttrs } from "../../lib/images";
+
+interface Props {
+  class?: string;
+  src?: string;
+  widths?: number[];
+  sizes?: string;
+  width?: number;
+  height?: number;
+  quality?: number;
+  loading?: "lazy" | "eager";
+  decoding?: "async" | "sync" | "auto";
+}
+
+const {
+  class: className,
+  src = "/images/slime.png",
+  widths = [96, 160, 240],
+  sizes = "(max-width: 768px) 96px, 160px",
+  width = 160,
+  height = 107,
+  quality = 80,
+  loading = "lazy",
+  decoding = "async",
+} = Astro.props;
+
+const image = await getResponsiveImageAttrs({
+  src,
+  widths,
+  sizes,
+  width,
+  height,
+  quality,
+});
+---
+
+<img
+  src={image.src}
+  srcset={image.srcset}
+  sizes={image.sizes}
+  alt=""
+  aria-hidden="true"
+  class={className}
+  loading={loading}
+  decoding={decoding}
+  width={image.width}
+  height={image.height}
+/>

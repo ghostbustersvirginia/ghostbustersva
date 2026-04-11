@@ -231,7 +231,7 @@ const joinImage = await getResponsiveImageAttrs({
               <li class="home-gallery-item">
                 <LightboxImageTrigger
                   group="home-gallery"
-                  src={item.data.image}
+                  src={item.data.image.src}
                   alt={item.data.alt}
                   caption={item.data.title}
                   buttonClass="gallery-slide"
@@ -304,7 +304,7 @@ const joinImage = await getResponsiveImageAttrs({
       <div class="join-layout">
         <LightboxImageTrigger
           group="home-join"
-          src={joinImagePath}
+          src={joinImage.src}
           alt={joinImageAlt}
           caption={joinHeading}
           buttonClass="join-image-wrapper"
@@ -569,6 +569,11 @@ const joinImage = await getResponsiveImageAttrs({
     font-weight: 700;
     color: var(--color-accent);
     line-height: 1;
+    transition: color var(--transition-base);
+  }
+
+  .impact-stat:hover .impact-stat__number {
+    color: var(--color-gb-green);
   }
 
   .impact-stat__label {

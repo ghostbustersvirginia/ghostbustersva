@@ -8,6 +8,7 @@ import Lightbox from "../components/ui/Lightbox.astro";
 import LightboxImageTrigger from "../components/ui/LightboxImageTrigger.astro";
 import PageHeader from "../components/ui/PageHeader.astro";
 import SectionHeading from "../components/ui/SectionHeading.astro";
+import OozeDecor from "../components/ui/OozeDecor.astro";
 import { getResponsiveImageAttrs } from "../lib/images";
 import { getSafeHref, isSafeExternalUrl } from "../lib/links";
 import { getSiteSettings } from "../lib/settings";
@@ -158,7 +159,7 @@ const initiativeImage = await getResponsiveImageAttrs({
         <div class="donation-layout">
           <LightboxImageTrigger
             group="donate-gallery"
-            src={donationImageSrc}
+            src={donationImage.src}
             alt={donationImageAlt}
             buttonClass="page-image-lightbox"
             overlayClass="page-image-lightbox__overlay"
@@ -174,7 +175,7 @@ const initiativeImage = await getResponsiveImageAttrs({
           <div class="donation-card">
             <h4 class="donation-card__title">
               {donationCardHeading}
-              <img src="/images/slime.png" alt="" aria-hidden="true" class="donation-card__ooze" />
+              <OozeDecor class="donation-card__ooze" />
             </h4>
             <ul class="donation-list" role="list">
               {donationItems.map((item) => <li>{item}</li>)}
@@ -196,7 +197,7 @@ const initiativeImage = await getResponsiveImageAttrs({
           <div class="zigzag__media">
             <LightboxImageTrigger
               group="donate-gallery"
-              src={communityImageSrc}
+              src={communityImage.src}
               alt={communityImageAlt}
               buttonClass="page-image-lightbox"
               overlayClass="page-image-lightbox__overlay"
@@ -231,7 +232,7 @@ const initiativeImage = await getResponsiveImageAttrs({
           <div class="zigzag__media">
             <LightboxImageTrigger
               group="donate-gallery"
-              src={volunteerImageSrc}
+              src={volunteerImage.src}
               alt={volunteerImageAlt}
               buttonClass="page-image-lightbox"
               overlayClass="page-image-lightbox__overlay"
@@ -268,7 +269,7 @@ const initiativeImage = await getResponsiveImageAttrs({
               <div class="initiative-card__image-wrap">
                 <LightboxImageTrigger
                   group="donate-gallery"
-                  src={initiativeImageSrc}
+                  src={initiativeImage.src}
                   alt={initiativeImageAlt}
                   buttonClass="page-image-lightbox"
                   overlayClass="page-image-lightbox__overlay"
@@ -365,7 +366,7 @@ const initiativeImage = await getResponsiveImageAttrs({
     overflow: visible;
   }
 
-  .donation-card__ooze {
+  :global(.donation-card__ooze) {
     position: absolute;
     bottom: 0;
     right: -4px;

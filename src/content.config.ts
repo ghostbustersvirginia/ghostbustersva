@@ -32,49 +32,51 @@ const safeHref = z
 
 const events = defineCollection({
   type: "content",
-  schema: z.object({
-    title: z.string(),
-    /** ISO date string, e.g. "2026-04-15" */
-    date: z.coerce.date(),
-    /** Optional end date for multi-day events */
-    endDate: z.coerce.date().optional(),
-    /** Short summary shown in list views */
-    summary: z.string(),
-    /** Optional location / venue */
-    location: z.string().optional(),
-    /** Optional street address */
-    address: z.string().optional(),
-    /** Optional image path relative to /images */
-    image: z.string().optional(),
-    /** Optional external URL for the event (http/https only) */
-    url: safeExternalUrl.optional(),
-    /**
-     * Optional explicit event status override.
-     * If omitted or empty, status is derived from date/endDate at build time.
-     * Empty string is treated as undefined.
-     */
-    status: z
-      .union([z.enum(["upcoming", "past"]), z.literal("")])
-      .optional()
-      .transform((val) => (val === "" ? undefined : val)),
-    /**
-     * Legacy status flag retained for backwards compatibility.
-     * Prefer `status` for explicit overrides.
-     */
-    past: z.boolean().optional(),
-  }),
+  schema: ({ image }) =>
+    z.object({
+      title: z.string(),
+      /** ISO date string, e.g. "2026-04-15" */
+      date: z.coerce.date(),
+      /** Optional end date for multi-day events */
+      endDate: z.coerce.date().optional(),
+      /** Short summary shown in list views */
+      summary: z.string(),
+      /** Optional location / venue */
+      location: z.string().optional(),
+      /** Optional street address */
+      address: z.string().optional(),
+      /** Optional local content image (Astro image() schema) */
+      image: image().optional(),
+      /** Optional external URL for the event (http/https only) */
+      url: safeExternalUrl.optional(),
+      /**
+       * Optional explicit event status override.
+       * If omitted or empty, status is derived from date/endDate at build time.
+       * Empty string is treated as undefined.
+       */
+      status: z
+        .union([z.enum(["upcoming", "past"]), z.literal("")])
+        .optional()
+        .transform((val) => (val === "" ? undefined : val)),
+      /**
+       * Legacy status flag retained for backwards compatibility.
+       * Prefer `status` for explicit overrides.
+       */
+      past: z.boolean().optional(),
+    }),
 });
 
 const gallery = defineCollection({
   type: "content",
-  schema: z.object({
-    title: z.string(),
-    /** Image path relative to /images */
-    image: z.string(),
-    alt: z.string(),
-    /** Optional date the photo was taken */
-    date: z.coerce.date().optional(),
-  }),
+  schema: ({ image }) =>
+    z.object({
+      title: z.string(),
+      /** Local content image (Astro image() schema) */
+      image: image(),
+      alt: z.string(),
+      /** Optional date the photo was taken */
+      date: z.coerce.date().optional(),
+    }),
 });
 
 /** Site settings singleton stored as JSON at src/content/settings/site.json. */

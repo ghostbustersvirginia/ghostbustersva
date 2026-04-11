@@ -10,6 +10,8 @@ import Button from "../components/ui/Button.astro";
 import LEDScrollbar from "../components/LEDScrollbar.astro";
 import Lightbox from "../components/ui/Lightbox.astro";
 import LightboxImageTrigger from "../components/ui/LightboxImageTrigger.astro";
+import OozeDecor from "../components/ui/OozeDecor.astro";
+import StyledDropdown from "../components/ui/StyledDropdown.astro";
 import { getResponsiveImageAttrs } from "../lib/images";
 import { isSafeExternalUrl } from "../lib/links";
 import { getSiteSettings } from "../lib/settings";
@@ -176,7 +178,7 @@ const bookingImage = await getResponsiveImageAttrs({
         <div class="booking-layout">
           <LightboxImageTrigger
             group="contact-gallery"
-            src={bookingImageSrc}
+            src={bookingImage.src}
             alt={bookingImageAlt}
             buttonClass="page-image-lightbox"
             overlayClass="page-image-lightbox__overlay"
@@ -190,7 +192,9 @@ const bookingImage = await getResponsiveImageAttrs({
             />
           </LightboxImageTrigger>
           <div class="highlight-card contact-form-card">
-            <p class="prose-text contact-form-description">{contactFormDescription}</p>
+            <p class="prose-text prose-text--centered contact-form-description">
+              {contactFormDescription}
+            </p>
             <form action={formspreeAction} method="POST" class="contact-form">
               <label class="contact-form__field">
                 <span>Name</span>
@@ -204,17 +208,22 @@ const bookingImage = await getResponsiveImageAttrs({
                 <span>Email</span>
                 <input type="email" name="email" autocomplete="email" required />
               </label>
-              <label class="contact-form__field contact-form__field--full">
-                <span>Inquiry Type</span>
-                <select name="inquiryType" required aria-required="true">
-                  <option value="" disabled selected>Select an option</option>
-                  <option value="General Inquiry">General Inquiry</option>
-                  <option value="Schedule Event">Schedule Event</option>
-                  <option value="Joining Questions">Joining Questions</option>
-                  <option value="Media or Press">Media or Press</option>
-                  <option value="Other">Other</option>
-                </select>
-              </label>
+              <div class="contact-form__field contact-form__field--full">
+                <StyledDropdown
+                  id="inquiryType"
+                  name="inquiryType"
+                  label="Inquiry Type"
+                  required
+                  placeholder="Select an option"
+                  options={[
+                    { value: "General Inquiry", label: "General Inquiry" },
+                    { value: "Schedule Event", label: "Schedule Event" },
+                    { value: "Joining Questions", label: "Joining Questions" },
+                    { value: "Media or Press", label: "Media or Press" },
+                    { value: "Other", label: "Other" },
+                  ]}
+                />
+              </div>
               <label class="contact-form__field contact-form__field--full" data-event-field hidden>
                 <span>Location</span>
                 <input type="text" name="location" autocomplete="address-level2" data-event-input />
@@ -281,7 +290,7 @@ const bookingImage = await getResponsiveImageAttrs({
                 <Button type="submit" variant="primary">{contactFormSubmitLabel}</Button>
               </div>
             </form>
-            <img src="/images/slime.png" alt="" aria-hidden="true" class="contact-form-ooze" />
+            <OozeDecor class="contact-form-ooze" />
           </div>
         </div>
       </div>
@@ -511,7 +520,7 @@ const bookingImage = await getResponsiveImageAttrs({
     margin-top: 0;
   }
 
-  .contact-form-ooze {
+  :global(.contact-form-ooze) {
     position: absolute;
     bottom: 0;
     right: -4px;
@@ -859,7 +868,7 @@ const bookingImage = await getResponsiveImageAttrs({
       grid-template-columns: 1fr;
     }
 
-    .contact-form-ooze {
+    :global(.contact-form-ooze) {
       width: 60px;
       transform: translate(0, 100%);
     }

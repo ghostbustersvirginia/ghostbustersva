@@ -4,12 +4,22 @@
  * Counts down to event start, shows "Event In Progress" during,
  * and then switches to an informational completed state.
  */
+import { getResponsiveImageAttrs } from "../lib/images";
+
 interface Props {
   startDate: Date;
   endDate: Date;
 }
 
 const { startDate, endDate } = Astro.props;
+const countdownOozeImage = await getResponsiveImageAttrs({
+  src: "/images/slime.png",
+  widths: [136],
+  sizes: "68px",
+  width: 136,
+  height: 91,
+  quality: 80,
+});
 // "End" means the end of the last day → midnight of the next day
 const endTimestamp = new Date(endDate.getTime() + 86400000).toISOString();
 ---
@@ -18,6 +28,7 @@ const endTimestamp = new Date(endDate.getTime() + 86400000).toISOString();
   class="event-countdown"
   data-countdown-start={startDate.toISOString()}
   data-countdown-end={endTimestamp}
+  data-countdown-ooze-src={countdownOozeImage.src}
 >
   <div class="countdown-timer">
     <div class="countdown-segment">
@@ -48,6 +59,7 @@ const endTimestamp = new Date(endDate.getTime() + 86400000).toISOString();
     document.querySelectorAll<HTMLElement>(".event-countdown").forEach((el) => {
       const startStr = el.getAttribute("data-countdown-start");
       const endStr = el.getAttribute("data-countdown-end");
+      const countdownOozeImageSrc = el.getAttribute("data-countdown-ooze-src") || "";
       if (!startStr || !endStr) return;
 
       const start = new Date(startStr);
@@ -79,7 +91,7 @@ const endTimestamp = new Date(endDate.getTime() + 86400000).toISOString();
               // Inject slime accent into the countdown timer box
               if (!timer.querySelector(".card-ooze")) {
                 const img = document.createElement("img");
-                img.src = "/images/slime.png";
+                img.src = countdownOozeImageSrc;
                 img.alt = "";
                 img.setAttribute("aria-hidden", "true");
                 img.className = "card-ooze";
@@ -112,7 +124,7 @@ const endTimestamp = new Date(endDate.getTime() + 86400000).toISOString();
         const timer = el.querySelector(".countdown-timer");
         if (timer && !timer.querySelector(".card-ooze")) {
           const img = document.createElement("img");
-          img.src = "/images/slime.png";
+          img.src = countdownOozeImageSrc;
           img.alt = "";
           img.setAttribute("aria-hidden", "true");
           img.className = "card-ooze";

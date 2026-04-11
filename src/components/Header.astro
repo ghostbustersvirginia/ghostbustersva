@@ -8,6 +8,7 @@
  * Reads logo, title, and nav items from site settings.
  */
 import { getSiteSettings } from "../lib/settings";
+import { getResponsiveImageAttrs } from "../lib/images";
 
 const settings = await getSiteSettings();
 const currentPath = Astro.url.pathname;
@@ -32,6 +33,14 @@ const isActivePage = (href: string) => {
 const navItems = settings.navItems;
 const primaryNavItems = navItems.filter((link) => link.group !== "more");
 const moreDropdownItems = navItems.filter((link) => link.group === "more");
+const navLogoImage = await getResponsiveImageAttrs({
+  src: settings.navLogo,
+  widths: [44, 88],
+  sizes: "44px",
+  width: 44,
+  height: 44,
+  quality: 82,
+});
 const navTitle = settings.navTitle?.trim() || "Ghostbusters";
 const navSubtitle = settings.navSubtitle?.trim() || "Virginia";
 const logoIndex = navTitle.toLowerCase().indexOf("o");
@@ -48,7 +57,17 @@ const useLogoAsO = logoIndex >= 0;
           {titleBeforeLogo}
           {
             useLogoAsO && (
-              <img src={settings.navLogo} alt="" width="44" height="44" class="logo-o" />
+              <img
+                src={navLogoImage.src}
+                srcset={navLogoImage.srcset}
+                sizes={navLogoImage.sizes}
+                alt=""
+                width={navLogoImage.width}
+                height={navLogoImage.height}
+                class="logo-o"
+                loading="eager"
+                decoding="async"
+              />
             )
           }
           {titleAfterLogo}

@@ -13,6 +13,7 @@ import Lightbox from "../components/ui/Lightbox.astro";
 import PageHeader from "../components/ui/PageHeader.astro";
 import SectionHeading from "../components/ui/SectionHeading.astro";
 import LightboxImageTrigger from "../components/ui/LightboxImageTrigger.astro";
+import OozeDecor from "../components/ui/OozeDecor.astro";
 import { getResponsiveImageAttrs } from "../lib/images";
 import { getPageCopy } from "../lib/page-copy";
 
@@ -147,7 +148,7 @@ const missionCtaHref = copy.missionCtaHref || "/press";
           <div class="zigzag__media">
             <LightboxImageTrigger
               group="about-gallery"
-              src={teamImageSrc}
+              src={teamImage.src}
               alt={teamImageAlt}
               buttonClass="zigzag__thumb"
               overlayClass="zigzag__overlay"
@@ -175,7 +176,7 @@ const missionCtaHref = copy.missionCtaHref || "/press";
           <div class="zigzag__media zigzag__media--portrait">
             <LightboxImageTrigger
               group="about-gallery"
-              src={divisionsImageSrc}
+              src={divisionsImage.src}
               alt={divisionsImageAlt}
               buttonClass="zigzag__thumb"
               overlayClass="zigzag__overlay"
@@ -203,7 +204,7 @@ const missionCtaHref = copy.missionCtaHref || "/press";
           <div class="zigzag__media">
             <LightboxImageTrigger
               group="about-gallery"
-              src={communityImageSrc}
+              src={communityImage.src}
               alt={communityImageAlt}
               buttonClass="zigzag__thumb"
               overlayClass="zigzag__overlay"
@@ -231,7 +232,7 @@ const missionCtaHref = copy.missionCtaHref || "/press";
           <div class="zigzag__media">
             <LightboxImageTrigger
               group="about-gallery"
-              src={togetherImageSrc}
+              src={togetherImage.src}
               alt={togetherImageAlt}
               buttonClass="zigzag__thumb"
               overlayClass="zigzag__overlay"
@@ -259,7 +260,7 @@ const missionCtaHref = copy.missionCtaHref || "/press";
         <div class="mission-card">
           <h4 class="mission-card__title">
             {missionCardTitle}
-            <img src="/images/slime.png" alt="" aria-hidden="true" class="mission-card__ooze" />
+            <OozeDecor class="mission-card__ooze" />
           </h4>
           <ul class="mission-list" role="list">
             {missionItems.map((item) => <li class="mission-list__item">{item}</li>)}
@@ -273,209 +274,209 @@ const missionCtaHref = copy.missionCtaHref || "/press";
 
     <Lightbox id="about-lightbox" label="About page image viewer" lightboxGroup="about-gallery" />
   </section>
-</BaseLayout>
 
-<style is:global>
-  /* --- Zigzag layout --- */
-  .zigzag {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: var(--space-xl);
-    align-items: start;
-  }
-
-  @media (min-width: 769px) {
+  <style is:global>
+    /* --- Zigzag layout --- */
     .zigzag {
-      grid-template-columns: 1fr 1fr;
-      gap: var(--space-3xl);
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: var(--space-xl);
+      align-items: start;
     }
 
-    .zigzag--reverse .zigzag__media {
-      order: 2;
+    @media (min-width: 769px) {
+      .zigzag {
+        grid-template-columns: 1fr 1fr;
+        gap: var(--space-3xl);
+      }
+
+      .zigzag--reverse .zigzag__media {
+        order: 2;
+      }
+
+      .zigzag--reverse .zigzag__text {
+        order: 1;
+      }
     }
 
-    .zigzag--reverse .zigzag__text {
-      order: 1;
+    /* --- Thumbnail button (lightbox trigger) --- */
+    .zigzag__thumb {
+      position: relative;
+      display: block;
+      width: 100%;
+      background: none;
+      border: none;
+      border-radius: var(--radius-md);
+      padding: 0;
+      cursor: pointer;
+      overflow: hidden;
+      transition: box-shadow 0.2s ease;
     }
-  }
 
-  /* --- Thumbnail button (lightbox trigger) --- */
-  .zigzag__thumb {
-    position: relative;
-    display: block;
-    width: 100%;
-    background: none;
-    border: none;
-    border-radius: var(--radius-md);
-    padding: 0;
-    cursor: pointer;
-    overflow: hidden;
-    transition: box-shadow 0.2s ease;
-  }
+    .zigzag__thumb:hover,
+    .zigzag__thumb:focus-visible {
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    }
 
-  .zigzag__thumb:hover,
-  .zigzag__thumb:focus-visible {
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
-  }
+    .zigzag__thumb:focus-visible {
+      outline: 2px solid var(--color-focus);
+      outline-offset: 2px;
+    }
 
-  .zigzag__thumb:focus-visible {
-    outline: 2px solid var(--color-focus);
-    outline-offset: 2px;
-  }
+    .zigzag__thumb:hover .zigzag__img {
+      transform: scale(1.03);
+    }
 
-  .zigzag__thumb:hover .zigzag__img {
-    transform: scale(1.03);
-  }
+    /* --- Dark overlay with expand icon --- */
+    .zigzag__overlay {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0, 0, 0, 0.4);
+      color: #fff;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+      pointer-events: none;
+      border-radius: var(--radius-md);
+    }
 
-  /* --- Dark overlay with expand icon --- */
-  .zigzag__overlay {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: rgba(0, 0, 0, 0.4);
-    color: #fff;
-    opacity: 0;
-    transition: opacity 0.2s ease;
-    pointer-events: none;
-    border-radius: var(--radius-md);
-  }
+    .zigzag__thumb:hover .zigzag__overlay,
+    .zigzag__thumb:focus-visible .zigzag__overlay {
+      opacity: 1;
+    }
 
-  .zigzag__thumb:hover .zigzag__overlay,
-  .zigzag__thumb:focus-visible .zigzag__overlay {
-    opacity: 1;
-  }
+    /* --- Image styles --- */
+    .zigzag__img {
+      width: 100%;
+      height: auto;
+      object-fit: cover;
+      border-radius: var(--radius-md);
+      display: block;
+      transition: transform 0.2s ease;
+    }
 
-  /* --- Image styles --- */
-  .zigzag__img {
-    width: 100%;
-    height: auto;
-    object-fit: cover;
-    border-radius: var(--radius-md);
-    display: block;
-    transition: transform 0.2s ease;
-  }
+    /* Landscape images: cap height so they don't overpower text */
+    .zigzag__media:not(.zigzag__media--portrait) .zigzag__img {
+      aspect-ratio: 4 / 3;
+    }
 
-  /* Landscape images: cap height so they don't overpower text */
-  .zigzag__media:not(.zigzag__media--portrait) .zigzag__img {
-    aspect-ratio: 4 / 3;
-  }
+    /* Portrait images: use natural tall ratio, capped for balance */
+    .zigzag__media--portrait .zigzag__img {
+      aspect-ratio: 3 / 4;
+      max-height: 480px;
+    }
 
-  /* Portrait images: use natural tall ratio, capped for balance */
-  .zigzag__media--portrait .zigzag__img {
-    aspect-ratio: 3 / 4;
-    max-height: 480px;
-  }
+    /* Text column */
+    .zigzag__text {
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      padding-top: var(--space-xs);
+    }
 
-  /* Text column */
-  .zigzag__text {
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    padding-top: var(--space-xs);
-  }
+    /* --- Wider container for zigzag rows --- */
+    .container--wide {
+      max-width: 960px;
+      margin-inline: auto;
+      padding-inline: var(--space-xl);
+    }
 
-  /* --- Wider container for zigzag rows --- */
-  .container--wide {
-    max-width: 960px;
-    margin-inline: auto;
-    padding-inline: var(--space-xl);
-  }
+    /* --- Prose text (shared) --- */
+    .prose-text {
+      color: var(--color-text-muted);
+      font-family: var(--font-body);
+      font-size: var(--text-base);
+      line-height: var(--leading-loose);
+    }
 
-  /* --- Prose text (shared) --- */
-  .prose-text {
-    color: var(--color-text-muted);
-    font-family: var(--font-body);
-    font-size: var(--text-base);
-    line-height: var(--leading-loose);
-  }
+    /* --- Mission card --- */
+    .mission-card {
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      box-shadow: var(--shadow-panel);
+      max-width: 760px;
+      margin-inline: auto;
+    }
 
-  /* --- Mission card --- */
-  .mission-card {
-    display: flex;
-    flex-direction: column;
-    position: relative;
-    background: var(--color-surface);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-lg);
-    overflow: hidden;
-    box-shadow: var(--shadow-panel);
-    max-width: 760px;
-    margin-inline: auto;
-  }
+    .mission-card__title {
+      font-family: var(--font-display);
+      font-size: var(--text-lg);
+      font-weight: var(--weight-bold);
+      letter-spacing: var(--tracking-wide);
+      text-transform: uppercase;
+      color: var(--color-text);
+      margin: 0;
+      padding: var(--space-lg) var(--space-2xl);
+      background: var(--color-bg);
+      border-bottom: 1px solid var(--color-border);
+      position: relative;
+      overflow: visible;
+    }
 
-  .mission-card__title {
-    font-family: var(--font-display);
-    font-size: var(--text-lg);
-    font-weight: var(--weight-bold);
-    letter-spacing: var(--tracking-wide);
-    text-transform: uppercase;
-    color: var(--color-text);
-    margin: 0;
-    padding: var(--space-lg) var(--space-2xl);
-    background: var(--color-bg);
-    border-bottom: 1px solid var(--color-border);
-    position: relative;
-    overflow: visible;
-  }
+    .mission-card__ooze {
+      position: absolute;
+      bottom: 0;
+      right: -4px;
+      width: 68px;
+      height: auto;
+      pointer-events: none;
+      z-index: 1;
+      transform: translateY(100%);
+      opacity: 0.75;
+    }
 
-  .mission-card__ooze {
-    position: absolute;
-    bottom: 0;
-    right: -4px;
-    width: 68px;
-    height: auto;
-    pointer-events: none;
-    z-index: 1;
-    transform: translateY(100%);
-    opacity: 0.75;
-  }
+    .mission-list {
+      list-style: none;
+      padding: var(--space-xl) var(--space-2xl) var(--space-2xl);
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-sm);
+    }
 
-  .mission-list {
-    list-style: none;
-    padding: var(--space-xl) var(--space-2xl) var(--space-2xl);
-    margin: 0;
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-sm);
-  }
+    .mission-list__item {
+      position: relative;
+      padding-left: 2rem;
+      padding-block: var(--space-xs);
+      color: var(--color-text-muted);
+      font-family: var(--font-body);
+      font-size: var(--text-base);
+      line-height: var(--leading-normal);
+      cursor: default;
+      transition: color var(--transition-base);
+    }
 
-  .mission-list__item {
-    position: relative;
-    padding-left: 2rem;
-    padding-block: var(--space-xs);
-    color: var(--color-text-muted);
-    font-family: var(--font-body);
-    font-size: var(--text-base);
-    line-height: var(--leading-normal);
-    cursor: default;
-    transition: color var(--transition-base);
-  }
+    .mission-list__item:hover {
+      color: var(--color-text);
+    }
 
-  .mission-list__item:hover {
-    color: var(--color-text);
-  }
+    .mission-list__item::before {
+      content: "✔";
+      position: absolute;
+      left: 0.25rem;
+      top: var(--space-xs);
+      color: var(--color-gb-green);
+      font-weight: var(--weight-bold);
+      font-size: var(--text-base);
+      display: inline-block;
+      transition: transform var(--transition-base);
+    }
 
-  .mission-list__item::before {
-    content: "✔";
-    position: absolute;
-    left: 0.25rem;
-    top: var(--space-xs);
-    color: var(--color-gb-green);
-    font-weight: var(--weight-bold);
-    font-size: var(--text-base);
-    display: inline-block;
-    transition: transform var(--transition-base);
-  }
+    .mission-list__item:hover::before {
+      transform: scale(1.4);
+    }
 
-  .mission-list__item:hover::before {
-    transform: scale(1.4);
-  }
-
-  .mission-cta {
-    display: flex;
-    justify-content: center;
-    margin-top: var(--space-xl);
-  }
-</style>
+    .mission-cta {
+      display: flex;
+      justify-content: center;
+      margin-top: var(--space-xl);
+    }
+  </style>
+</BaseLayout>

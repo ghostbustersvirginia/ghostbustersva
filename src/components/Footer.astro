@@ -7,6 +7,7 @@ import { siteConfig } from "../config";
 import { getSiteSettings } from "../lib/settings";
 import SocialLinks from "./ui/SocialLinks.astro";
 import { getSafeHref, isSafeExternalUrl } from "../lib/links";
+import { getResponsiveImageAttrs } from "../lib/images";
 
 const settings = await getSiteSettings();
 const leftLogo = settings.footerLogos[0];
@@ -22,6 +23,26 @@ const reducedMotionToggleLabel = settings.reducedMotionToggleLabel || "Reduce mo
 const reducedMotionToggleTitle = settings.reducedMotionToggleTitle || reducedMotionToggleLabel;
 const reducedMotionToggleEnabledLabel =
   settings.reducedMotionToggleEnabledLabel || "Motion reduced";
+const leftLogoImage = leftLogo
+  ? await getResponsiveImageAttrs({
+      src: leftLogo.src,
+      widths: [240, 380, 760],
+      sizes: "(max-width: 768px) 240px, 380px",
+      width: 380,
+      height: 104,
+      quality: 78,
+    })
+  : null;
+const rightLogoImage = rightLogo
+  ? await getResponsiveImageAttrs({
+      src: rightLogo.src,
+      widths: [240, 380, 760],
+      sizes: "(max-width: 768px) 240px, 380px",
+      width: 380,
+      height: 104,
+      quality: 78,
+    })
+  : null;
 
 const socialLinks = settings.socialLinks
   .map((social) => {
@@ -70,13 +91,15 @@ const socialLinks = settings.socialLinks
 
       <div class="footer-credentials" role="group" aria-label="Franchise and nonprofit credentials">
         {
-          leftLogo && (
+          leftLogo && leftLogoImage && (
             <div class="footer-logo footer-logo--left">
               <img
-                src={leftLogo.src}
+                src={leftLogoImage.src}
+                srcset={leftLogoImage.srcset}
+                sizes={leftLogoImage.sizes}
                 alt={leftLogo.alt}
-                width="380"
-                height="104"
+                width={leftLogoImage.width}
+                height={leftLogoImage.height}
                 loading="lazy"
                 decoding="async"
               />
@@ -95,13 +118,15 @@ const socialLinks = settings.socialLinks
         />
 
         {
-          rightLogo && (
+          rightLogo && rightLogoImage && (
             <div class="footer-logo footer-logo--right">
               <img
-                src={rightLogo.src}
+                src={rightLogoImage.src}
+                srcset={rightLogoImage.srcset}
+                sizes={rightLogoImage.sizes}
                 alt={rightLogo.alt}
-                width="380"
-                height="104"
+                width={rightLogoImage.width}
+                height={rightLogoImage.height}
                 loading="lazy"
                 decoding="async"
               />

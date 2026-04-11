@@ -8,6 +8,7 @@ import LightboxImageTrigger from "../components/ui/LightboxImageTrigger.astro";
 import PageHeader from "../components/ui/PageHeader.astro";
 import SectionHeading from "../components/ui/SectionHeading.astro";
 import Button from "../components/ui/Button.astro";
+import OozeDecor from "../components/ui/OozeDecor.astro";
 import { getResponsiveImageAttrs } from "../lib/images";
 import { getSafeHref } from "../lib/links";
 import { getPageCopy } from "../lib/page-copy";
@@ -124,7 +125,7 @@ const whatWeLookForImage = await getResponsiveImageAttrs({
         <div class="gear-layout">
           <LightboxImageTrigger
             group="join-gallery"
-            src={whatWeLookForImageSrc}
+            src={whatWeLookForImage.src}
             alt={whatWeLookForImageAlt}
             buttonClass="page-image-lightbox"
             overlayClass="page-image-lightbox__overlay"
@@ -140,7 +141,7 @@ const whatWeLookForImage = await getResponsiveImageAttrs({
           <div class="gear-card">
             <h4 class="gear-card__title">
               {requiredGearHeading}
-              <img src="/images/slime.png" alt="" aria-hidden="true" class="gear-card__ooze" />
+              <OozeDecor class="gear-card__ooze" />
             </h4>
             <ul class="check-list" role="list">
               {
@@ -168,7 +169,7 @@ const whatWeLookForImage = await getResponsiveImageAttrs({
         <SectionHeading>{howToApplyHeading}</SectionHeading>
         <LightboxImageTrigger
           group="join-gallery"
-          src={heroImageSrc}
+          src={heroImage.src}
           alt={heroImageAlt}
           buttonClass="page-image-lightbox page-join-hero"
           overlayClass="page-image-lightbox__overlay"
@@ -258,7 +259,7 @@ const whatWeLookForImage = await getResponsiveImageAttrs({
     box-shadow: var(--shadow-panel);
   }
 
-  .gear-card__ooze {
+  :global(.gear-card__ooze) {
     position: absolute;
     bottom: 0;
     right: -4px;
