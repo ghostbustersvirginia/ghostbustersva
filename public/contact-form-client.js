@@ -1,4 +1,33 @@
-const eventInquiryValues = new Set(["Schedule Event"]);
+const DEFAULT_EVENT_INQUIRY_VALUES = [];
+
+const resolveEventInquiryValues = () => {
+  if (typeof document === "undefined") {
+    return new Set(DEFAULT_EVENT_INQUIRY_VALUES);
+  }
+
+  const form = document.querySelector("form.contact-form[data-event-inquiry-allowlist]");
+  const serializedAllowlist = form?.getAttribute("data-event-inquiry-allowlist") || "";
+
+  if (!serializedAllowlist.trim()) {
+    return new Set(DEFAULT_EVENT_INQUIRY_VALUES);
+  }
+
+  try {
+    const parsed = JSON.parse(serializedAllowlist);
+
+    if (!Array.isArray(parsed)) {
+      return new Set(DEFAULT_EVENT_INQUIRY_VALUES);
+    }
+
+    const normalized = parsed
+      .map((value) => (typeof value === "string" ? value.trim() : ""))
+      .filter((value) => value.length > 0);
+
+    return new Set(normalized.length > 0 ? normalized : DEFAULT_EVENT_INQUIRY_VALUES);
+  } catch {
+    return new Set(DEFAULT_EVENT_INQUIRY_VALUES);
+  }
+};
 const loadFlatpickr = async () => {
   if (typeof window !== "undefined" && window.flatpickr) {
     return window.flatpickr;
@@ -30,7 +59,8 @@ const loadFlatpickr = async () => {
     });
   }
 };
-const shouldShowEventFields = (inquiryType) => eventInquiryValues.has((inquiryType || "").trim());
+const shouldShowEventFields = (inquiryType, eventInquiryValues) =>
+  eventInquiryValues.has((inquiryType || "").trim());
 
 async function initContactForm() {
   if (typeof document === "undefined") {
@@ -40,6 +70,7 @@ async function initContactForm() {
   const inquirySelect = document.querySelector("select[name='inquiryType']");
   const dateInput = document.querySelector("[data-date-input]");
   const dateEndInput = document.querySelector("[data-date-end-input]");
+  const eventInquiryValues = resolveEventInquiryValues();
 
   if (!inquirySelect || !dateInput || !dateEndInput) {
     console.warn("initContactForm: missing contact form elements", {
@@ -77,7 +108,7 @@ async function initContactForm() {
   };
 
   const setEventFieldsVisibility = (selectedValue) => {
-    const showEventFields = shouldShowEventFields(selectedValue);
+    const showEventFields = shouldShowEventFields(selectedValue, eventInquiryValues);
 
     eventFieldRows.forEach((field) => {
       field.hidden = !showEventFields;

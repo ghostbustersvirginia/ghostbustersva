@@ -183,30 +183,30 @@ const externalAttrs = external ? { target: "_blank", rel: "noopener noreferrer" 
     position: relative;
   }
 
-  .btn[data-trailing-icon] {
-    padding-left: 2.95rem;
-    padding-right: 2.45rem;
-  }
-
   .btn-trailing-icon {
-    position: absolute;
-    right: 0.65rem;
-    top: 50%;
-    transform: translateY(-50%) translateX(-4px);
-    opacity: 0;
+    position: static;
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    width: 0;
+    margin-left: 0;
+    overflow: hidden;
+    opacity: 0;
     pointer-events: none;
+    transform: scale(0.9);
     transition:
+      width var(--transition-fast),
+      margin-left var(--transition-fast),
       opacity var(--transition-fast),
       transform var(--transition-fast);
   }
 
   .btn:hover .btn-trailing-icon,
   .btn:focus-visible .btn-trailing-icon {
+    width: 1.05em;
+    margin-left: 0.4rem;
     opacity: 1;
-    transform: translateY(-50%) translateX(0);
+    transform: scale(1);
   }
 
   @keyframes heart-wiggle-inline {
@@ -230,35 +230,6 @@ const externalAttrs = external ? { target: "_blank", rel: "noopener noreferrer" 
     transform-origin: 50% 60%;
   }
 
-  .btn[data-trailing-icon="heart"] {
-    padding-left: 1.5rem;
-    padding-right: 1.5rem;
-  }
-
-  .btn[data-trailing-icon="heart"] .btn-trailing-icon {
-    position: static;
-    right: auto;
-    top: auto;
-    width: 0;
-    margin-left: 0;
-    opacity: 0;
-    overflow: hidden;
-    transform: scale(0.94);
-    transition:
-      width var(--transition-fast),
-      margin-left var(--transition-fast),
-      opacity var(--transition-fast),
-      transform var(--transition-fast);
-  }
-
-  .btn[data-trailing-icon="heart"]:hover .btn-trailing-icon,
-  .btn[data-trailing-icon="heart"]:focus-visible .btn-trailing-icon {
-    width: 1.05em;
-    margin-left: 0.4rem;
-    opacity: 1;
-    transform: scale(1);
-  }
-
   /* Primary — solid fill */
   .btn--primary {
     background: var(--color-action-primary);
@@ -278,18 +249,19 @@ const externalAttrs = external ? { target: "_blank", rel: "noopener noreferrer" 
     transform: translateY(0);
   }
 
-  /* Secondary — outlined */
+  /* Secondary — light green tint + green border */
   .btn--secondary {
-    background: transparent;
+    background: var(--color-action-secondary-bg);
     color: var(--color-text);
-    border-color: var(--color-border);
+    border-color: var(--color-action-secondary-border);
   }
 
   .btn--secondary:hover,
   .btn--secondary:focus-visible {
-    border-color: var(--color-action-secondary-hover);
+    border-color: var(--color-action-secondary-hover-border);
     color: var(--color-text);
-    background: var(--color-action-secondary-hover);
+    background: var(--color-action-secondary-hover-bg);
+    box-shadow: 0 2px 8px var(--color-glow-green);
     transform: translateY(-1px);
   }
 
@@ -297,19 +269,19 @@ const externalAttrs = external ? { target: "_blank", rel: "noopener noreferrer" 
     transform: translateY(0);
   }
 
-  /* Secondary-alt — filled white, for use on tinted/alt backgrounds */
+  /* Secondary-alt — light green tint, for use on tinted/alt backgrounds */
   .btn--secondary-alt {
-    background: var(--color-surface);
+    background: var(--color-action-secondary-bg);
     color: var(--color-text);
-    border-color: var(--color-border);
+    border-color: var(--color-action-secondary-border);
   }
 
   .btn--secondary-alt:hover,
   .btn--secondary-alt:focus-visible {
-    border-color: var(--color-border);
+    border-color: var(--color-action-secondary-hover-border);
     color: var(--color-text);
-    background: var(--color-surface);
-    box-shadow: var(--shadow-hover);
+    background: var(--color-action-secondary-hover-bg);
+    box-shadow: 0 2px 8px var(--color-glow-green);
     transform: translateY(-1px);
   }
 
@@ -335,16 +307,6 @@ const externalAttrs = external ? { target: "_blank", rel: "noopener noreferrer" 
   .btn--lg {
     padding: 0.75rem 1.75rem;
     font-size: var(--text-base);
-  }
-
-  .btn--lg[data-trailing-icon] {
-    padding-left: 3.2rem;
-    padding-right: 3.2rem;
-  }
-
-  .btn--lg[data-trailing-icon="heart"] {
-    padding-left: 1.75rem;
-    padding-right: 1.75rem;
   }
 
   /* Hidden — respect the native hidden attribute */

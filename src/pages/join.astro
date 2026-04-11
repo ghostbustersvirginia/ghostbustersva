@@ -8,9 +8,8 @@ import LightboxImageTrigger from "../components/ui/LightboxImageTrigger.astro";
 import PageHeader from "../components/ui/PageHeader.astro";
 import SectionHeading from "../components/ui/SectionHeading.astro";
 import Button from "../components/ui/Button.astro";
-import OozeDecor from "../components/ui/OozeDecor.astro";
+import CardListPanel from "../components/ui/CardListPanel.astro";
 import { getResponsiveImageAttrs } from "../lib/images";
-import { getSafeHref } from "../lib/links";
 import { getPageCopy } from "../lib/page-copy";
 
 const copy = await getPageCopy("join");
@@ -45,18 +44,11 @@ const showBeltGizmoSublist = copy.showBeltGizmoSublist ?? true;
 const beltGizmoParentIndex = requiredGear.findIndex((item) => /belt gizmo/i.test(item));
 const beltGizmoNestIndex =
   beltGizmoParentIndex >= 0 ? beltGizmoParentIndex : requiredGear.length - 1;
-const applyText =
-  copy.applyText ||
-  "Got all your gear and ready to show us you ain't afraid of no ghosts? Head to our contact page and choose the method that works for you; we’ll send the membership survey link and notify you of results after Membership Liaison Officer verification.";
 const notePrefix = copy.notePrefix || "Please Note:";
 const noteText =
   copy.noteText ||
   "We ask all applicants be able to pass a high-level background check to verify no felonies are on their record; this includes a verification with no results found on the national sex offender registry.";
-const applyLinkLabel = copy.applyLinkLabel || "Contact Us today";
-const applyLinkUrl = copy.applyLinkUrl || "/contact";
-const safeApplyLinkUrl = getSafeHref(applyLinkUrl) || "/contact";
 const whatWeLookForHeading = copy.whatWeLookForHeading || "What We Look For";
-const howToApplyHeading = copy.howToApplyHeading || "How to Apply";
 const requiredGearHeading = copy.requiredGearHeading || "Required Gear";
 const metaTitle = copy.metaTitle || "Join";
 const metaDescription =
@@ -67,19 +59,6 @@ const ogDescriptionVal =
   copy.ogDescription ||
   "Suit up with Ghostbusters Virginia and become part of our statewide nonprofit franchise.";
 const ogImage = copy.ogImage || "/images/ghostbusters-virginia-movie-premiere.jpg";
-
-const heroImageSrc = copy.heroImage || "/images/ghostbusters-virginia-slimer-stay-puft.jpg";
-const heroImageAlt =
-  copy.heroImageAlt ||
-  "Slimer and Stay Puft Marshmallow Man figures at a Ghostbusters Virginia event";
-const heroImage = await getResponsiveImageAttrs({
-  src: heroImageSrc,
-  widths: [640, 960, 1200],
-  sizes: "(max-width: 768px) 100vw, 864px",
-  width: 1200,
-  height: 675,
-  quality: 75,
-});
 
 const whatWeLookForImageSrc = copy.whatWeLookForImage || "/images/gbv-community-photo.jpg";
 const whatWeLookForImageAlt =
@@ -121,7 +100,9 @@ const whatWeLookForImage = await getResponsiveImageAttrs({
     <div class="page-band page-band--white">
       <div class="container container--mid">
         <SectionHeading>{whatWeLookForHeading}</SectionHeading>
-        <p class="prose-text">{whatWeLookForText}</p>
+        <p class="prose-text">
+          {whatWeLookForText}
+        </p>
         <div class="gear-layout">
           <LightboxImageTrigger
             group="join-gallery"
@@ -138,12 +119,8 @@ const whatWeLookForImage = await getResponsiveImageAttrs({
               decoding="async"
             />
           </LightboxImageTrigger>
-          <div class="gear-card">
-            <h4 class="gear-card__title">
-              {requiredGearHeading}
-              <OozeDecor class="gear-card__ooze" />
-            </h4>
-            <ul class="check-list" role="list">
+          <div class="gear-card-column">
+            <CardListPanel title={requiredGearHeading} listClass="card-list-panel__list--gear">
               {
                 requiredGear.map((item, index) => (
                   <li>
@@ -158,39 +135,13 @@ const whatWeLookForImage = await getResponsiveImageAttrs({
                   </li>
                 ))
               }
-            </ul>
+            </CardListPanel>
+            <div class="join-cta-wrapper">
+              <Button variant="secondary-alt" href="/contact">Join Today</Button>
+            </div>
           </div>
         </div>
-      </div>
-    </div>
-
-    <div class="page-band page-band--alt">
-      <div class="container container--mid">
-        <SectionHeading>{howToApplyHeading}</SectionHeading>
-        <LightboxImageTrigger
-          group="join-gallery"
-          src={heroImage.src}
-          alt={heroImageAlt}
-          buttonClass="page-image-lightbox page-join-hero"
-          overlayClass="page-image-lightbox__overlay"
-          ariaLabel={`View full image: ${heroImageAlt}`}
-          buttonStyle="margin-top: var(--space-xl); margin-bottom: var(--space-xl);"
-        >
-          <img
-            {...heroImage}
-            alt={heroImageAlt}
-            class="section-image"
-            loading="lazy"
-            decoding="async"
-          />
-        </LightboxImageTrigger>
-        <p class="prose-text" style="margin-bottom: var(--space-lg);">{applyText}</p>
-        <div class="join-cta-wrapper">
-          <Button variant="secondary-alt" href={safeApplyLinkUrl}>
-            {applyLinkLabel}
-          </Button>
-        </div>
-        <div class="callout">
+        <div class="callout" style="margin-top: var(--space-3xl);">
           <p>
             <strong>{notePrefix}</strong>
             {noteText}
@@ -211,6 +162,12 @@ const whatWeLookForImage = await getResponsiveImageAttrs({
     line-height: var(--leading-loose);
   }
 
+  @media (max-width: 767px) {
+    .prose-text {
+      text-align: center;
+    }
+  }
+
   .quote-block {
     width: 100%;
     max-width: var(--content-width-mid);
@@ -218,7 +175,7 @@ const whatWeLookForImage = await getResponsiveImageAttrs({
   }
 
   .join-cta-wrapper {
-    margin-top: var(--space-xl);
+    margin-top: var(--space-2xl);
     text-align: center;
   }
 
@@ -248,94 +205,17 @@ const whatWeLookForImage = await getResponsiveImageAttrs({
     display: block;
   }
 
-  .gear-card {
-    display: flex;
-    flex-direction: column;
-    position: relative;
-    background: var(--color-surface);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-lg);
-    overflow: hidden;
-    box-shadow: var(--shadow-panel);
-  }
-
-  :global(.gear-card__ooze) {
-    position: absolute;
-    bottom: 0;
-    right: -4px;
-    width: 68px;
-    height: auto;
-    pointer-events: none;
-    z-index: 1;
-    transform: translateY(100%);
-    opacity: 0.75;
-  }
-
-  .gear-card__title {
-    font-family: var(--font-display);
-    font-size: var(--text-lg);
-    font-weight: var(--weight-bold);
-    letter-spacing: var(--tracking-wide);
-    text-transform: uppercase;
-    color: var(--color-text);
-    margin: 0;
-    padding: var(--space-lg) var(--space-2xl);
-    background: var(--color-surface-alt);
-    border-bottom: 1px solid var(--color-border);
-    position: relative;
-    overflow: visible;
-  }
-
-  /* ---- Green-checkmark list ---- */
-  .check-list {
-    list-style: none;
-    padding: var(--space-xl) var(--space-2xl) var(--space-2xl);
-    margin: 0;
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-sm);
-  }
-
-  .check-list > li {
-    position: relative;
-    padding-left: 2rem;
-    padding-block: var(--space-xs);
-    font-family: var(--font-body);
-    font-size: var(--text-base);
-    line-height: var(--leading-normal);
-    color: var(--color-text-muted);
+  :global(.card-list-panel__list--gear > li) {
     text-transform: capitalize;
-    cursor: default;
-    transition: color var(--transition-base);
   }
 
-  .check-list > li:hover {
-    color: var(--color-text);
-  }
-
-  .check-list > li::before {
-    content: "\2714";
-    position: absolute;
-    left: 0.25rem;
-    top: var(--space-xs);
-    font-weight: var(--weight-bold);
-    font-size: var(--text-base);
-    color: var(--color-gb-green);
-    display: inline-block;
-    transition: transform var(--transition-base);
-  }
-
-  .check-list > li:hover::before {
-    transform: scale(1.4);
-  }
-
-  .check-list > li:last-child {
+  :global(.card-list-panel__list--gear > li:last-child) {
     margin-top: var(--space-md);
     padding-top: var(--space-md);
     border-top: 1px solid var(--color-border);
   }
 
-  .check-list > li:last-child::before {
+  :global(.card-list-panel__list--gear > li:last-child::before) {
     top: var(--space-md);
   }
 
@@ -399,24 +279,6 @@ const whatWeLookForImage = await getResponsiveImageAttrs({
     color: var(--color-accent);
     text-decoration: underline;
     text-underline-offset: 2px;
-  }
-
-  /* Page-specific fixes for the join hero image to avoid bottom overlap */
-  .page-join-hero {
-    overflow: hidden;
-    border-radius: var(--radius-md);
-  }
-
-  .page-join-hero .section-image {
-    margin-bottom: 0;
-    display: block;
-    width: 100%;
-  }
-
-  /* Use padding on the following callout instead of image margin to avoid overlap */
-  .page-join-hero + .callout {
-    /* padding-top: var(--space-lg); */
-    margin-bottom: unset !important;
   }
 
   a:hover,

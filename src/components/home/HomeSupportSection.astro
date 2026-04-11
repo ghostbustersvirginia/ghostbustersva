@@ -1,0 +1,84 @@
+---
+import Button from "../ui/Button.astro";
+
+interface ImageAttrs {
+  src: string;
+  srcset?: string;
+  sizes?: string;
+  width?: number;
+  height?: number;
+}
+
+interface Props {
+  heading: string;
+  subtitle: string;
+  supportDonateImage: ImageAttrs;
+  supportDonateImageAlt: string;
+  supportCardText: string;
+  supportCtaHref: string;
+  supportCtaLabel: string;
+  protonPetsImage: ImageAttrs;
+  protonPetsImageAlt: string;
+  supportCardDetail: string;
+  protonPetsCtaHref: string;
+  protonPetsCtaLabel: string;
+}
+
+const {
+  heading,
+  subtitle,
+  supportDonateImage,
+  supportDonateImageAlt,
+  supportCardText,
+  supportCtaHref,
+  supportCtaLabel,
+  protonPetsImage,
+  protonPetsImageAlt,
+  supportCardDetail,
+  protonPetsCtaHref,
+  protonPetsCtaLabel,
+} = Astro.props as Props;
+---
+
+<section class="section hp-section--white support-section" aria-labelledby="support-heading">
+  <div class="container">
+    <h2 id="support-heading" class="section-heading">
+      {heading}
+    </h2>
+    <p class="section-subtitle">{subtitle}</p>
+    <div class="support-cards">
+      <div class="support-card">
+        <div class="support-card__img-wrap">
+          <img
+            {...supportDonateImage}
+            alt={supportDonateImageAlt}
+            class="support-card__img"
+            loading="lazy"
+            decoding="async"
+          />
+        </div>
+        <div class="support-card__body">
+          <h3 class="support-card__heading">Fund the Franchise</h3>
+          <p class="support-card__text">{supportCardText}</p>
+          <Button variant="primary" href={supportCtaHref}>{supportCtaLabel}</Button>
+        </div>
+      </div>
+      <div class="support-card support-card--pets">
+        <div class="support-card__img-wrap">
+          <img
+            {...protonPetsImage}
+            alt={protonPetsImageAlt}
+            class="support-card__img"
+            loading="lazy"
+            decoding="async"
+          />
+        </div>
+        <div class="support-card__body">
+          <h3 class="support-card__heading support-card__heading--pets">Proton Pets</h3>
+          <p class="support-card__text">{supportCardDetail}</p>
+          <Button variant="secondary-alt" href={protonPetsCtaHref}>{protonPetsCtaLabel}</Button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

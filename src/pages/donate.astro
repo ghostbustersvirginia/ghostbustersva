@@ -8,7 +8,8 @@ import Lightbox from "../components/ui/Lightbox.astro";
 import LightboxImageTrigger from "../components/ui/LightboxImageTrigger.astro";
 import PageHeader from "../components/ui/PageHeader.astro";
 import SectionHeading from "../components/ui/SectionHeading.astro";
-import OozeDecor from "../components/ui/OozeDecor.astro";
+import DonationMeter from "../components/DonationMeter.astro";
+import CardListPanel from "../components/ui/CardListPanel.astro";
 import { getResponsiveImageAttrs } from "../lib/images";
 import { getSafeHref, isSafeExternalUrl } from "../lib/links";
 import { getSiteSettings } from "../lib/settings";
@@ -38,12 +39,12 @@ const donationItems = copy.donationItems || [
   "Books and educational toys",
   "Sports balls and outdoor play items",
 ];
-const donationCtaLabel = copy.donationCtaLabel || "Donate to Make-A-Wish";
 const donationImageSrc =
   copy.donationImage || "/images/ghostbusters-virginia-toys-for-tots-drive.jpg";
 const donationImageAlt =
   copy.donationImageAlt ||
   "Ghostbusters Virginia members supporting a Toys for Tots donation drive";
+const donationCtaLabel = copy.donationCtaLabel || "Donate to Make-A-Wish";
 const communityHeading = copy.communityHeading || "Community Partners";
 const communityText =
   copy.communityText ||
@@ -62,29 +63,10 @@ const volunteerParagraphs = String(volunteerText)
   .filter(Boolean);
 const volunteerCtaLabel = copy.volunteerCtaLabel || "Join the Team";
 const volunteerCtaHref = copy.volunteerCtaHref || "/join";
-const initiativeHeading = copy.initiativeHeading || "Community Initiatives";
-const initiativeTitle = copy.initiativeTitle || "Proton Pets";
-const initiativeText =
-  copy.initiativeText ||
-  "Proton Pets, spearheaded by Ghostbusters Virginia, is a worldwide initiative supporting pets and animal welfare through pet food drives, outreach, and pantry support in local communities.";
-const initiativeDetailText =
-  copy.initiativeDetailText ||
-  "Pet pantries help families facing financial hardship keep their pets healthy and at home by providing essential food and supplies. This support helps prevent shelter surrenders and protects the bond between pets and the people who love them.";
-const initiativeDescription = `${initiativeText} ${initiativeDetailText}`;
-const initiativeLinkLabel = copy.initiativeLinkLabel || "Learn About Proton Pets";
-const initiativeLinkUrl = copy.initiativeLinkUrl || "https://whoyagonnacall.org/proton-pets";
-const initiativeImageSrc =
-  copy.initiativeImage || "/images/news/ghostbusters-virginia-proton-pets-rescue.jpeg";
-const initiativeImageAlt =
-  copy.initiativeImageAlt ||
-  "Proton Pets — Ghostbusters Virginia community fundraiser for local pet shelters";
 const communityCtaLabel = copy.communityCtaLabel || "Contact Us";
 const communityCtaHref = copy.communityCtaHref || "/contact";
 const safeCommunityCtaHref = getSafeHref(communityCtaHref) || "/contact";
 const safeVolunteerCtaHref = getSafeHref(volunteerCtaHref) || "/join";
-const safeInitiativeLinkUrl = isSafeExternalUrl(initiativeLinkUrl)
-  ? initiativeLinkUrl
-  : "https://whoyagonnacall.org/proton-pets";
 const communityImageSrc =
   copy.communityImage || "/images/ghostbusters-virginia-toys-for-tots-drive.jpg";
 const communityImageAlt =
@@ -122,18 +104,18 @@ const volunteerImage = await getResponsiveImageAttrs({
 const donationImage = await getResponsiveImageAttrs({
   src: donationImageSrc,
   widths: [640, 960, 1200],
-  sizes: "(max-width: 768px) 100vw, 432px",
+  sizes: "(max-width: 768px) 100vw, 440px",
   width: 1200,
   height: 1200,
   quality: 75,
 });
-const initiativeImage = await getResponsiveImageAttrs({
-  src: initiativeImageSrc,
-  widths: [640, 960, 1200],
-  sizes: "(max-width: 768px) 100vw, 864px",
-  width: 1200,
-  height: 675,
-  quality: 75,
+const mtftfLogo = await getResponsiveImageAttrs({
+  src: "/images/MTFTF-Official-Logo-Transparent-background.png",
+  widths: [360, 560, 760],
+  sizes: "(max-width: 768px) 75vw, 420px",
+  width: 760,
+  height: 760,
+  quality: 90,
 });
 ---
 
@@ -154,16 +136,48 @@ const initiativeImage = await getResponsiveImageAttrs({
 
     <div class="page-band page-band--alt">
       <div class="container container--mid">
+        <div class="meter-top">
+          <DonationMeter />
+          <p class="meter-caption">
+            The needle shows our team&rsquo;s total raised for Make-A-Wish Greater Virginia since
+            2021, measured against the current campaign goal.
+          </p>
+        </div>
+        <div class="impact-stats">
+          <div class="impact-stat">
+            <span class="impact-stat__value">Wish Your Way</span>
+            <span class="impact-stat__label"
+              >Make-A-Wish's peer-to-peer fundraising challenge. Teams form around a shared personal
+              goal&mdash;a run, a cosplay weekend, a community event&mdash;and raise money in its
+              honor. We bring the Ecto-1, the suits, and the commitment.</span
+            >
+          </div>
+          <div class="impact-stat">
+            <span class="impact-stat__value">Since 2021</span>
+            <span class="impact-stat__label"
+              >Ghostbusters Virginia has been a registered fundraising team in the Make-A-Wish
+              Greater Virginia chapter since 2021. Every appearance, every dollar, and every fan
+              interaction is part of that effort.</span
+            >
+          </div>
+          <div class="impact-stat">
+            <span class="impact-stat__value">Make-A-Wish VA</span>
+            <span class="impact-stat__label"
+              >Make-A-Wish Greater Virginia grants life-changing wishes to children facing critical
+              illnesses across the Commonwealth. Each wish is funded entirely by community
+              giving&mdash;no government support.</span
+            >
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="page-band page-band--white">
+      <div class="container container--mid">
         <SectionHeading>{donationHeading}</SectionHeading>
-        <p class="prose-text">{donationText}</p>
+        <p class="prose-text prose-text--centered-mobile">{donationText}</p>
         <div class="donation-layout">
-          <LightboxImageTrigger
-            group="donate-gallery"
-            src={donationImage.src}
-            alt={donationImageAlt}
-            buttonClass="page-image-lightbox"
-            overlayClass="page-image-lightbox__overlay"
-          >
+          <div class="donation-layout__image-col">
             <img
               {...donationImage}
               alt={donationImageAlt}
@@ -171,26 +185,31 @@ const initiativeImage = await getResponsiveImageAttrs({
               loading="lazy"
               decoding="async"
             />
-          </LightboxImageTrigger>
-          <div class="donation-card">
-            <h4 class="donation-card__title">
-              {donationCardHeading}
-              <OozeDecor class="donation-card__ooze" />
-            </h4>
-            <ul class="donation-list" role="list">
+          </div>
+
+          <div class="donation-support-block">
+            <CardListPanel title={donationCardHeading}>
               {donationItems.map((item) => <li>{item}</li>)}
-            </ul>
-            <div class="donate-cta donate-cta--card">
-              <Button variant="secondary" href={safeDonateUrl} external>
-                {donationCtaLabel}
-              </Button>
-            </div>
+              <div slot="footer" class="donate-cta donate-cta--card">
+                <Button variant="secondary" href={safeDonateUrl} external>
+                  {donationCtaLabel}
+                </Button>
+              </div>
+            </CardListPanel>
+
+            <img
+              {...mtftfLogo}
+              class="donation-support-block__logo"
+              alt="MTFTF official logo"
+              loading="lazy"
+              decoding="async"
+            />
           </div>
         </div>
       </div>
     </div>
 
-    <div class="page-band page-band--white">
+    <div class="page-band page-band--alt">
       <div class="container container--wide">
         <SectionHeading>{communityHeading}</SectionHeading>
         <div class="zigzag">
@@ -225,7 +244,7 @@ const initiativeImage = await getResponsiveImageAttrs({
       </div>
     </div>
 
-    <div class="page-band page-band--alt">
+    <div class="page-band page-band--white">
       <div class="container container--wide">
         <SectionHeading>{volunteerHeading}</SectionHeading>
         <div class="zigzag zigzag--reverse">
@@ -260,44 +279,6 @@ const initiativeImage = await getResponsiveImageAttrs({
       </div>
     </div>
 
-    <div class="page-band page-band--white">
-      <div class="container container--wide">
-        <SectionHeading>{initiativeHeading}</SectionHeading>
-        <ul class="initiative-list" role="list">
-          <li class="initiative-item">
-            <article class="initiative-card">
-              <div class="initiative-card__image-wrap">
-                <LightboxImageTrigger
-                  group="donate-gallery"
-                  src={initiativeImage.src}
-                  alt={initiativeImageAlt}
-                  buttonClass="page-image-lightbox"
-                  overlayClass="page-image-lightbox__overlay"
-                >
-                  <img
-                    {...initiativeImage}
-                    alt={initiativeImageAlt}
-                    class="initiative-card__image"
-                    loading="lazy"
-                    decoding="async"
-                  />
-                </LightboxImageTrigger>
-              </div>
-              <div class="initiative-card__body">
-                <h3 class="initiative-card__title">{initiativeTitle}</h3>
-                <p class="prose-text">{initiativeDescription}</p>
-                <div class="donate-cta donate-cta--initiative">
-                  <Button variant="secondary" href={safeInitiativeLinkUrl} external>
-                    {initiativeLinkLabel}
-                  </Button>
-                </div>
-              </div>
-            </article>
-          </li>
-        </ul>
-      </div>
-    </div>
-
     <Lightbox
       id="donate-lightbox"
       label="Donate page image viewer"
@@ -312,9 +293,6 @@ const initiativeImage = await getResponsiveImageAttrs({
     font-family: var(--font-body);
     font-size: var(--text-base);
     line-height: var(--leading-loose);
-  }
-
-  .prose-text {
     margin-bottom: 0;
   }
 
@@ -324,105 +302,106 @@ const initiativeImage = await getResponsiveImageAttrs({
     margin-top: var(--space-xl);
   }
 
-  .donation-layout {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: var(--space-3xl);
+  .donate-cta--card {
+    margin-top: var(--space-lg);
+  }
+
+  .meter-caption {
+    margin-top: var(--space-md);
+    font-family: var(--font-body);
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+    line-height: var(--leading-loose);
+    text-align: center;
+  }
+
+  .meter-top {
+    margin-top: 0;
+  }
+
+  .impact-stats {
     margin-top: var(--space-xl);
-    align-items: start;
+    display: grid;
+    gap: var(--space-md);
   }
 
-  .donation-layout__image {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    border-radius: var(--radius-md);
-    display: block;
-  }
-
-  .donation-card {
-    display: flex;
-    flex-direction: column;
-    position: relative;
+  .impact-stat {
     background: var(--color-surface);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
-    overflow: hidden;
+    padding: var(--space-xl) var(--space-lg);
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
     box-shadow: var(--shadow-panel);
+    transition:
+      border-color var(--transition-base),
+      box-shadow var(--transition-base),
+      transform var(--transition-base);
   }
 
-  .donation-card__title {
+  .impact-stat:hover {
+    border-color: var(--color-hover-border);
+    box-shadow: var(--shadow-elevated-soft);
+    transform: translateY(-2px);
+  }
+
+  .impact-stat:hover .impact-stat__value {
+    color: var(--color-accent);
+  }
+
+  .impact-stat__value {
     font-family: var(--font-display);
-    font-size: var(--text-lg);
+    font-size: var(--text-xl);
     font-weight: var(--weight-bold);
     letter-spacing: var(--tracking-wide);
     text-transform: uppercase;
     color: var(--color-text);
-    margin: 0;
-    padding: var(--space-lg) var(--space-2xl);
-    background: var(--color-bg);
-    border-bottom: 1px solid var(--color-border);
-    position: relative;
-    overflow: visible;
-  }
-
-  :global(.donation-card__ooze) {
-    position: absolute;
-    bottom: 0;
-    right: -4px;
-    width: 68px;
-    height: auto;
-    pointer-events: none;
-    z-index: 1;
-    transform: translateY(100%);
-    opacity: 0.75;
-  }
-
-  .donation-list {
-    list-style: none;
-    margin: 0;
-    padding: var(--space-xl) var(--space-2xl);
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-sm);
-  }
-
-  .donation-list li {
-    position: relative;
-    padding-left: 2rem;
-    padding-block: var(--space-xs);
-    font-family: var(--font-body);
-    font-size: var(--text-base);
-    line-height: var(--leading-normal);
-    color: var(--color-text-muted);
-    cursor: default;
     transition: color var(--transition-base);
   }
 
-  .donation-list li:hover {
-    color: var(--color-text);
+  .impact-stat__label {
+    font-family: var(--font-body);
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+    line-height: var(--leading-normal);
   }
 
-  .donation-list li::before {
-    content: "\2714";
-    position: absolute;
-    left: 0.25rem;
-    top: var(--space-xs);
-    font-weight: var(--weight-bold);
-    font-size: var(--text-base);
-    color: var(--color-gb-green);
-    display: inline-block;
-    transition: transform var(--transition-base);
+  .donation-layout {
+    margin-top: var(--space-xl);
+    display: grid;
+    gap: var(--space-xl);
+    align-items: start;
   }
 
-  .donation-list li:hover::before {
-    transform: scale(1.4);
+  .donation-layout__image-col {
+    overflow: hidden;
+    border-radius: var(--radius-md);
   }
 
-  .donate-cta--card {
-    margin-top: 0;
-    padding: 0 var(--space-2xl) var(--space-2xl);
-    justify-content: center;
+  .donation-layout__image {
+    width: 100%;
+    height: auto;
+    display: block;
+    object-fit: cover;
+    object-position: top;
+  }
+
+  .donation-support-block {
+    max-width: 440px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-lg);
+    margin-inline: auto;
+  }
+
+  .donation-support-block__logo {
+    width: min(100%, 420px);
+    height: auto;
+    object-fit: contain;
+    display: block;
   }
 
   .zigzag {
@@ -463,74 +442,6 @@ const initiativeImage = await getResponsiveImageAttrs({
     justify-content: flex-end;
   }
 
-  .initiative-list {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-  }
-
-  .initiative-item {
-    background: var(--color-surface);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
-    overflow: hidden;
-    transition:
-      border-color var(--transition-base),
-      box-shadow var(--transition-base);
-  }
-
-  .initiative-item:hover {
-    border-color: var(--color-hover-border);
-    box-shadow: var(--shadow-hover);
-  }
-
-  .initiative-card {
-    display: flex;
-    gap: var(--space-xl);
-    align-items: flex-start;
-    padding: var(--space-xl);
-  }
-
-  .initiative-card__image-wrap {
-    flex-shrink: 0;
-    width: 360px;
-    border-radius: var(--radius-sm);
-    overflow: hidden;
-  }
-
-  .initiative-card__image {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-    aspect-ratio: 16 / 10;
-  }
-
-  .initiative-card__body {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-md);
-    flex: 1;
-  }
-
-  .initiative-card__body .prose-text {
-    margin: 0;
-  }
-
-  .initiative-card__title {
-    margin: 0;
-    font-family: var(--font-display);
-    font-size: var(--text-2xl);
-    font-weight: var(--weight-bold);
-    color: var(--color-text);
-    line-height: var(--leading-tight);
-  }
-
-  .donate-cta--initiative {
-    justify-content: flex-end;
-    margin-top: 0;
-  }
-
   .container--wide {
     max-width: 960px;
     margin-inline: auto;
@@ -538,8 +449,30 @@ const initiativeImage = await getResponsiveImageAttrs({
   }
 
   @media (min-width: 769px) {
+    .impact-stats {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: var(--space-lg);
+    }
+
     .donation-layout {
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 440px);
+      gap: var(--space-2xl);
+      align-items: start;
+    }
+
+    .donation-layout__image-col {
+      align-self: stretch;
+      position: relative;
+      min-height: 200px;
+    }
+
+    .donation-layout__image-col .donation-layout__image {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: top;
     }
 
     .zigzag {
@@ -557,24 +490,20 @@ const initiativeImage = await getResponsiveImageAttrs({
   }
 
   @media (max-width: 768px) {
+    .prose-text--centered-mobile {
+      text-align: center;
+    }
+
+    .zigzag__copy .prose-text {
+      text-align: center;
+    }
+
     .zigzag__text .donate-cta {
       justify-content: center;
     }
 
-    .initiative-card {
-      flex-direction: column;
-      gap: var(--space-lg);
-      padding: var(--space-lg);
-    }
-
-    .initiative-card__image-wrap {
-      width: 100%;
-      max-height: 220px;
-    }
-
-    .donate-cta--initiative {
-      justify-content: flex-start;
-      width: 100%;
+    .donation-layout__image-col {
+      max-height: 300px;
     }
   }
 </style>

@@ -1,0 +1,243 @@
+---
+import SocialLinks from "../ui/SocialLinks.astro";
+
+interface SocialLink {
+  platform: string;
+  url: string;
+}
+
+interface Props {
+  contactPhone: string;
+  contactEmail: string;
+  socialLinks: SocialLink[];
+}
+
+const { contactPhone, contactEmail, socialLinks } = Astro.props as Props;
+const phoneHref = `tel:${contactPhone.replace(/[^+\d]/g, "")}`;
+---
+
+<div class="contact-methods-card" role="group" aria-label="Booking contact methods">
+  <div class="contact-methods" role="list" aria-label="Booking contact methods">
+    <div class="contact-prop" role="listitem">
+      <span class="contact-prop__icon" aria-hidden="true">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          ><path
+            d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"
+          ></path></svg
+        >
+      </span>
+      <span class="contact-prop__content">
+        <span class="contact-prop__label">Phone</span>
+        <a href={phoneHref} class="contact-prop__value" aria-label={`Call ${contactPhone}`}>
+          {contactPhone}
+        </a>
+      </span>
+    </div>
+    <span class="contact-methods__divider" aria-hidden="true"></span>
+    <div class="contact-prop" role="listitem">
+      <span class="contact-prop__icon" aria-hidden="true">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          ><rect width="20" height="16" x="2" y="4" rx="2"></rect><path
+            d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path></svg
+        >
+      </span>
+      <span class="contact-prop__content">
+        <span class="contact-prop__label">Email</span>
+        <a
+          href={`mailto:${contactEmail}`}
+          class="contact-prop__value"
+          aria-label={`Email ${contactEmail}`}
+        >
+          {contactEmail}
+        </a>
+      </span>
+    </div>
+  </div>
+</div>
+
+{
+  socialLinks.length > 0 && (
+    <SocialLinks links={socialLinks} containerClass="social-icons" linkClass="social-icon-link" />
+  )
+}
+
+<style>
+  .contact-methods-card {
+    margin-top: var(--space-lg);
+    width: 100%;
+    max-width: 42rem;
+    margin-inline: auto;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-overlay-surface-soft);
+    padding: var(--space-md) var(--space-xl);
+  }
+
+  .contact-methods {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    align-items: center;
+    gap: var(--space-xl);
+  }
+
+  .contact-methods__divider {
+    width: 1px;
+    height: 2.9rem;
+    background: var(--color-border);
+    align-self: center;
+  }
+
+  .contact-prop {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    gap: var(--space-sm);
+    min-width: 0;
+    text-align: left;
+  }
+
+  .contact-prop__icon {
+    width: 2.1rem;
+    height: 2.1rem;
+    border-radius: var(--radius-full);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-gb-green);
+    border: 1px solid var(--color-border);
+    background: var(--color-surface-alt);
+    flex-shrink: 0;
+  }
+
+  .contact-prop__content {
+    display: grid;
+    gap: 0.1rem;
+    min-width: 0;
+  }
+
+  .contact-prop__label {
+    font-family: var(--font-heading);
+    font-size: var(--text-xs);
+    letter-spacing: var(--tracking-wide);
+    color: var(--color-text-muted);
+    font-weight: var(--weight-semibold);
+    line-height: var(--leading-tight);
+  }
+
+  .contact-prop__value {
+    display: inline-flex;
+    align-items: center;
+    font-family: var(--font-body);
+    font-size: clamp(var(--text-base), 1.8vw, var(--text-lg));
+    font-weight: var(--weight-semibold);
+    line-height: var(--leading-tight);
+    color: var(--color-text);
+    text-decoration: none;
+    overflow-wrap: anywhere;
+    transition:
+      color var(--transition-base),
+      text-decoration-color var(--transition-base);
+  }
+
+  .contact-prop__value:hover,
+  .contact-prop__value:focus-visible {
+    color: var(--color-accent-hover);
+    text-decoration: underline;
+    text-decoration-color: currentColor;
+    text-underline-offset: 2px;
+  }
+
+  :global(.social-icons) {
+    display: flex;
+    justify-content: center;
+    gap: var(--space-xl);
+    margin-top: var(--space-xl);
+  }
+
+  :global(.social-icon-link) {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: var(--radius-md);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    color: var(--color-text-muted);
+    transition:
+      color var(--transition-base),
+      background var(--transition-base),
+      border-color var(--transition-base),
+      box-shadow var(--transition-base);
+  }
+
+  :global(.social-icon-link:hover),
+  :global(.social-icon-link:focus-visible) {
+    color: var(--color-gb-green);
+    background: var(--color-surface);
+    border-color: var(--color-gb-green);
+    box-shadow: var(--shadow-social-hover);
+    animation: wiggle 0.5s ease-in-out;
+  }
+
+  :global(.reduce-motion .social-icon-link) {
+    transition: none;
+  }
+
+  :global(.reduce-motion .social-icon-link:hover),
+  :global(.reduce-motion .social-icon-link:focus-visible) {
+    animation: none;
+  }
+
+  :global(.social-icon-link svg) {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+
+  @media (max-width: 640px) {
+    .contact-methods-card {
+      padding: var(--space-md);
+    }
+
+    .contact-methods {
+      grid-template-columns: 1fr;
+      gap: var(--space-sm);
+    }
+
+    .contact-methods__divider {
+      width: 100%;
+      height: 1px;
+    }
+
+    .contact-prop {
+      grid-template-columns: auto auto;
+      justify-content: center;
+    }
+
+    .contact-prop__content {
+      text-align: center;
+    }
+
+    .contact-prop__value {
+      font-size: clamp(var(--text-base), 4.5vw, var(--text-lg));
+    }
+  }
+</style>

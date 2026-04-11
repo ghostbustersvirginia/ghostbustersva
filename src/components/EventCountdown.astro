@@ -159,9 +159,9 @@ const endTimestamp = new Date(endDate.getTime() + 86400000).toISOString();
     margin-left: calc(var(--space-xl) * -1);
     margin-top: var(--space-md);
     padding: var(--space-md) var(--space-xl);
-    background: rgba(61, 134, 61, 0.07);
-    border-top: 1px solid rgba(61, 134, 61, 0.2);
-    border-bottom: 1px solid rgba(61, 134, 61, 0.2);
+    background: var(--color-live-band-bg);
+    border-top: 1px solid var(--color-live-band-border);
+    border-bottom: 1px solid var(--color-live-band-border);
   }
 
   @media (max-width: 768px) {
@@ -178,12 +178,12 @@ const endTimestamp = new Date(endDate.getTime() + 86400000).toISOString();
     justify-content: center;
     gap: var(--space-xs);
     position: relative;
-    background: var(--color-surface, #ffffff);
-    border: 1px solid var(--color-border, #d1d5db);
-    border-radius: var(--radius-md, 0.5rem);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
     border-bottom-right-radius: 0;
     padding: var(--space-lg) var(--space-2xl);
-    box-shadow: var(--shadow-panel, 0 1px 3px rgba(8, 9, 9, 0.06));
+    box-shadow: var(--shadow-panel);
     width: fit-content;
     margin-inline: auto;
     overflow: visible;
@@ -230,7 +230,7 @@ const endTimestamp = new Date(endDate.getTime() + 86400000).toISOString();
     font-family: var(--font-brand-title, "Elan Bold", "Graduate", sans-serif);
     font-size: var(--text-xl, 1.25rem);
     font-weight: var(--weight-bold, 700);
-    color: var(--color-gb-green, #3d863d);
+    color: var(--color-gb-green);
     text-transform: uppercase;
     letter-spacing: var(--tracking-wide, 0.025em);
     padding: 0;
@@ -253,6 +253,6 @@ const endTimestamp = new Date(endDate.getTime() + 86400000).toISOString();
     font-family: var(--font-body, sans-serif);
     font-size: var(--text-sm, 0.875rem);
     font-weight: var(--weight-medium, 500);
-    color: var(--color-text-muted, #4a4f54);
+    color: var(--color-text-muted);
   }
 </style>

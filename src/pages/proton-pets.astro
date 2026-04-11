@@ -1,0 +1,442 @@
+---
+/**
+ * Proton Pets page — dedicated hub for GBVA's pet pantry initiative.
+ */
+import { getCollection } from "astro:content";
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Button from "../components/ui/Button.astro";
+import EventCountdown from "../components/EventCountdown.astro";
+import Lightbox from "../components/ui/Lightbox.astro";
+import LightboxImageTrigger from "../components/ui/LightboxImageTrigger.astro";
+import PageHeader from "../components/ui/PageHeader.astro";
+import SectionHeading from "../components/ui/SectionHeading.astro";
+import ProtonSupportCardsSection from "../components/proton-pets/ProtonSupportCardsSection.astro";
+import ProtonEventsPanel from "../components/proton-pets/ProtonEventsPanel.astro";
+import { splitEventsByStatus } from "../lib/events";
+import { getResponsiveImageAttrs } from "../lib/images";
+
+const pageTitle = "Proton Pets";
+const pageIntro =
+  "A Ghostbusters Virginia initiative focused on helping local pet pantries and shelters keep families and their animals together.";
+
+const overviewHeading = "What is Proton Pets?";
+const overviewParagraphs = [
+  "Proton Pets, spearheaded by Ghostbusters Virginia, is a worldwide initiative dedicated to supporting pets and animal welfare in our communities. Through pet food drives and outreach, the program works to make a real difference for pets and the people who care for them.",
+  "Pet pantries play a vital role in keeping pets healthy and in loving homes. When the cost of pet food becomes overwhelming, pantries help relieve that burden, keeping animals well cared for and preventing them from being surrendered to shelters.",
+];
+
+const supportHeading = "How You Can Help";
+const supportCards = [
+  {
+    icon: "food",
+    title: "Donate Pet Food",
+    body: "Contribute unopened, unexpired dog and cat food. Dry food, canned food, and specialty items can all make a real difference.",
+  },
+  {
+    icon: "community",
+    title: "Host or Volunteer at a Drive",
+    body: "Gather friends, family, or coworkers to collect donations, or volunteer to sort, stock, and distribute supplies at a local pantry.",
+  },
+  {
+    icon: "fundraise",
+    title: "Make a Monetary Donation",
+    body: "Financial donations help pet pantries and shelters purchase the food and supplies they need most.",
+  },
+  {
+    icon: "share",
+    title: "Spread the Word",
+    body: "Share information about Proton Pets, pet pantries, and no-kill shelters with your network and on social media.",
+  },
+] as const;
+
+const joinHeading = "Join the Proton Pets Initiative";
+const joinParagraphs = [
+  "By supporting Proton Pets, you can make a meaningful contribution to animal welfare in your community. Together, we can help ensure that pets have access to the food they need to thrive.",
+  "Registration is open now through the end of April. Whether you're a Ghostbusters franchise, a fan group, or just someone who wants to help, everyone is welcome to sign up and participate.",
+];
+const signupBody = "Let's show the world that bustin' makes a difference.";
+const signupUrl = "https://forms.gle/zaEETAoJBBxnCRrY7";
+const registrationDeadline = new Date("2026-04-30");
+const registrationStart = new Date("2026-04-30");
+
+const badgeImageAlt = "Proton Pets 2026 fundraiser participation badge";
+const badgeImageCaption =
+  "Badges will appear on team pages who participate in this year's Proton Pets fundraiser.";
+const badgeImage = await getResponsiveImageAttrs({
+  src: "/images/ProtonPets2026.jpg",
+  widths: [120, 200],
+  sizes: "120px",
+  width: 500,
+  height: 700,
+  quality: 80,
+});
+
+const etsyHeading = "Proton Pets Etsy Shop";
+const etsyParagraphs = [
+  "Proton Pets merchandise features artwork from two incredible artists: the 2026 design by Rob Bursk of Rob's Occult and the 2025 design by Bridget Soledad.",
+  "All net proceeds from the sale of these items go directly to supporting local pet shelters across Virginia, helping provide food, care, and resources for animals in need.",
+  "Etsy shop organized by Ghostbusters Virginia.",
+];
+const etsyShopUrl = "https://www.etsy.com/shop/EctoFox";
+const illustrationImageAlt = "Proton Pets 2026 illustrated artwork by Rob Bursk";
+const illustrationImageCaption = "Illustration by Rob Bursk of Ghostbusters, Virginia.";
+const illustrationImage = await getResponsiveImageAttrs({
+  src: "/images/proton-pets-2026-750-trim.png",
+  widths: [320, 480],
+  sizes: "(max-width: 768px) 72vw, 320px",
+  width: 750,
+  height: 766,
+  quality: 80,
+});
+
+const allEvents = await getCollection("events");
+const protonEvents = allEvents.filter((event) => {
+  const searchable = `${event.data.title} ${event.data.summary}`.toLowerCase();
+  return searchable.includes("proton pets");
+});
+const { upcoming: upcomingProtonEvents, past: pastProtonEvents } =
+  splitEventsByStatus(protonEvents);
+const recentPastProtonEvents = pastProtonEvents.slice(0, 3);
+
+const featureImageAlt = "Ghostbusters Virginia member posing with a Proton Pets pup";
+const featureImage = await getResponsiveImageAttrs({
+  src: "/images/ghostbusters-virginia-members-slimer-pup.jpg",
+  widths: [640, 960, 1200],
+  sizes: "(max-width: 768px) 100vw, 540px",
+  width: 1200,
+  height: 675,
+  quality: 75,
+});
+
+const metaTitle = "Proton Pets";
+const metaDescription =
+  "Learn how Ghostbusters Virginia's Proton Pets initiative supports local pet pantries through drives, outreach, volunteer action, and fundraiser participation.";
+const ogTitleVal = "Proton Pets | Ghostbusters Virginia";
+const ogDescriptionVal =
+  "Support pet pantry access in Virginia through Proton Pets events, donations, and community partnerships.";
+const ogImage = "/images/ghostbusters-virginia-members-slimer-pup.jpg";
+---
+
+<BaseLayout
+  title={metaTitle}
+  description={metaDescription}
+  canonical="/proton-pets"
+  ogTitle={ogTitleVal}
+  ogDescription={ogDescriptionVal}
+  ogImage={ogImage}
+>
+  <section class="page" aria-labelledby="proton-pets-title">
+    <div class="page-band page-band--white">
+      <div class="container container--mid">
+        <PageHeader id="proton-pets-title" title={pageTitle} subtitle={pageIntro} />
+      </div>
+    </div>
+
+    <div class="page-band page-band--alt">
+      <div class="container container--wide">
+        <div class="overview-layout">
+          <div class="overview-layout__media">
+            <LightboxImageTrigger
+              group="proton-pets-gallery"
+              src={featureImage.src}
+              alt={featureImageAlt}
+              buttonClass="page-image-lightbox"
+              overlayClass="page-image-lightbox__overlay"
+            >
+              <img
+                {...featureImage}
+                alt={featureImageAlt}
+                class="feature-image"
+                loading="eager"
+                decoding="async"
+              />
+            </LightboxImageTrigger>
+          </div>
+
+          <div class="overview-layout__copy">
+            <SectionHeading>{overviewHeading}</SectionHeading>
+            <div class="overview-copy">
+              {overviewParagraphs.map((paragraph) => <p class="prose-text">{paragraph}</p>)}
+            </div>
+            <div class="button-row button-row--right">
+              <Button variant="secondary-alt" href="/donate">Support the Mission</Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="page-band page-band--white">
+      <div class="container container--wide">
+        <SectionHeading>{joinHeading}</SectionHeading>
+
+        <div class="join-layout">
+          <div class="join-layout__copy">
+            {joinParagraphs.map((p) => <p class="prose-text">{p}</p>)}
+            <p class="prose-text prose-text--accent">{signupBody}</p>
+            <div class="button-group">
+              <div class="button-row">
+                <Button variant="primary" href={signupUrl} external>Register Today</Button>
+              </div>
+              <p class="badge-caption">* {badgeImageCaption}</p>
+            </div>
+          </div>
+
+          <div class="join-layout__badge">
+            <figure class="badge-figure">
+              <img
+                {...badgeImage}
+                alt={badgeImageAlt}
+                class="badge-image"
+                loading="lazy"
+                decoding="async"
+              />
+            </figure>
+          </div>
+        </div>
+
+        <div class="countdown-row">
+          <EventCountdown startDate={registrationStart} endDate={registrationDeadline} />
+        </div>
+      </div>
+    </div>
+
+    <ProtonSupportCardsSection heading={supportHeading} cards={supportCards} />
+
+    <div class="page-band page-band--white">
+      <div class="container container--wide">
+        <SectionHeading>{etsyHeading}</SectionHeading>
+
+        <div class="etsy-layout">
+          <div class="etsy-layout__copy">
+            {etsyParagraphs.map((paragraph) => <p class="prose-text">{paragraph}</p>)}
+            <div class="button-row">
+              <Button variant="secondary-alt" href={etsyShopUrl} external>
+                Visit Proton Pets Etsy Shop
+              </Button>
+            </div>
+          </div>
+
+          <figure class="media-figure">
+            <img
+              {...illustrationImage}
+              alt={illustrationImageAlt}
+              class="media-image"
+              loading="lazy"
+              decoding="async"
+            />
+            <figcaption class="media-caption media-caption--muted">
+              {illustrationImageCaption}
+            </figcaption>
+          </figure>
+        </div>
+      </div>
+    </div>
+
+    <ProtonEventsPanel
+      upcomingEvents={upcomingProtonEvents}
+      recentEvents={recentPastProtonEvents}
+    />
+
+    <Lightbox
+      id="proton-pets-lightbox"
+      label="Proton Pets page image viewer"
+      lightboxGroup="proton-pets-gallery"
+    />
+  </section>
+</BaseLayout>
+
+<style>
+  .prose-text {
+    color: var(--color-text-muted);
+    font-family: var(--font-body);
+    font-size: var(--text-base);
+    line-height: var(--leading-loose);
+    margin-bottom: 0;
+  }
+
+  .overview-layout {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-2xl);
+    align-items: start;
+  }
+
+  .overview-copy {
+    display: grid;
+    gap: var(--space-md);
+  }
+
+  .feature-image {
+    width: 100%;
+    height: 100%;
+    display: block;
+    border-radius: var(--radius-md);
+    object-fit: cover;
+  }
+
+  .button-row {
+    margin-top: var(--space-xl);
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-md);
+  }
+
+  .button-row--centered {
+    justify-content: center;
+  }
+
+  .button-row--right {
+    justify-content: flex-end;
+  }
+
+  .prose-text--centered {
+    text-align: center;
+  }
+
+  .prose-text--accent {
+    font-weight: var(--weight-semibold);
+    color: var(--color-text);
+  }
+
+  .join-layout {
+    margin-top: var(--space-xl);
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-xl);
+    align-items: start;
+  }
+
+  .join-layout__copy {
+    display: grid;
+    gap: var(--space-md);
+    text-align: center;
+  }
+
+  .etsy-layout .button-row--right {
+    justify-content: center;
+  }
+
+  .countdown-row {
+    display: flex;
+    justify-content: center;
+    margin-top: var(--space-xl);
+  }
+
+  .button-group {
+    display: grid;
+    gap: 4px;
+  }
+
+  .badge-caption {
+    margin-top: var(--space-sm);
+    font-style: italic;
+    opacity: 0.72;
+    color: var(--color-text-muted);
+    font-family: var(--font-body);
+    font-size: var(--text-sm);
+    line-height: var(--leading-normal);
+  }
+
+  .join-layout__badge {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-lg);
+  }
+
+  .badge-figure {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-md);
+    max-width: 200px;
+  }
+
+  .badge-image {
+    width: 140px;
+    height: auto;
+    display: block;
+    border-radius: var(--radius-md);
+    object-fit: cover;
+  }
+
+  .etsy-layout {
+    margin-top: var(--space-xl);
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-xl);
+    align-items: start;
+  }
+
+  .etsy-layout__copy {
+    display: grid;
+    gap: var(--space-md);
+    text-align: center;
+  }
+
+  .media-figure {
+    margin: 0;
+    display: grid;
+    gap: var(--space-sm);
+  }
+
+  .media-image {
+    width: 100%;
+    max-width: 320px;
+    height: auto;
+    display: block;
+    border-radius: var(--radius-md);
+    object-fit: cover;
+  }
+
+  .media-caption {
+    margin: 0;
+    color: var(--color-text-muted);
+    font-family: var(--font-body);
+    font-size: var(--text-sm);
+    line-height: var(--leading-normal);
+  }
+
+  .media-caption--muted {
+    font-style: italic;
+    opacity: 0.72;
+  }
+
+  @media (max-width: 768px) {
+    .button-row,
+    .button-row--right {
+      justify-content: center;
+    }
+
+    .overview-copy {
+      text-align: center;
+    }
+  }
+
+  @media (min-width: 769px) {
+    .overview-layout {
+      grid-template-columns: 1.1fr 1fr;
+      gap: var(--space-3xl);
+    }
+
+    .join-layout {
+      grid-template-columns: 1fr 200px;
+      gap: var(--space-2xl);
+    }
+
+    .join-layout__copy {
+      text-align: left;
+    }
+
+    .etsy-layout__copy {
+      text-align: left;
+    }
+
+    .etsy-layout {
+      grid-template-columns: 1fr auto;
+      gap: var(--space-2xl);
+    }
+  }
+</style>

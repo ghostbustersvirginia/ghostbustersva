@@ -39,8 +39,8 @@ const {
   pixelHeight = 9,
   scrollRate = 40,
   font = "Elan Bold",
-  ledColor = "#00e676",
-  ledGlow = "rgba(0, 230, 118, 0.6)",
+  ledColor = "var(--color-led-pixel)",
+  ledGlow = "var(--color-led-pixel-glow)",
   pixelSize = "3px",
   pixelGap = "0.1em",
   desktopMaxWidth = "42rem",
@@ -54,28 +54,29 @@ const {
     --readyled-pixel-size: ${pixelSize};
     --readyled-pixel-gap: ${pixelGap};
     --readyled-pixel-color: ${ledColor};
-    --readyled-pixel-off-color: #121212;
+    --readyled-pixel-off-color: var(--color-led-pixel-off);
     --readyled-pixel-glow: ${ledGlow};
-    --readyled-bg-color: #080808;`}
+    --readyled-bg-color: var(--color-led-display-bg);`}
   data-led-text={text}
   data-led-pixel-height={String(pixelHeight)}
   data-led-scroll-rate={String(scrollRate)}
   data-led-font={font}
   role="img"
   aria-label={text.trim()}
-></div>
+>
+</div>
 
 <!-- Scoped: outer housing only -->
 <style>
   .led-scrollbar {
-    background: #080808;
-    border: 2px solid #1a1a1a;
+    background: var(--color-led-display-bg);
+    border: 2px solid var(--color-led-frame-border);
     border-radius: var(--radius-md, 6px);
     overflow: hidden;
     box-sizing: border-box;
     width: 100%;
     padding: 6px 0;
-    box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.9);
+    box-shadow: var(--shadow-led-inset);
     position: relative;
   }
 
@@ -129,11 +130,9 @@ const {
     });
   }
 
-  document
-    .querySelectorAll<HTMLElement>(".led-scrollbar")
-    .forEach((el) => {
-      void initLEDScrollbar(el).catch((error) => {
-        console.error("Failed to initialise LED scrollbar", error);
-      });
+  document.querySelectorAll<HTMLElement>(".led-scrollbar").forEach((el) => {
+    void initLEDScrollbar(el).catch((error) => {
+      console.error("Failed to initialise LED scrollbar", error);
     });
+  });
 </script>

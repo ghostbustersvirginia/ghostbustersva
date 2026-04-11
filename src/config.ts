@@ -13,6 +13,7 @@ export const siteConfig = {
   nav: [
     { label: "About", href: "/about" },
     { label: "Join", href: "/join" },
+    { label: "Proton Pets", href: "/proton-pets" },
     { label: "Events", href: "/events" },
     { label: "Press", href: "/press" },
     { label: "Contact", href: "/contact" },

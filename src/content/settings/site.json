@@ -34,7 +34,9 @@
     { "label": "Events", "href": "/events", "external": false, "group": "primary" },
     { "label": "Contact", "href": "/contact", "external": false, "group": "primary" },
     { "label": "About", "href": "/about", "external": false, "group": "more" },
-    { "label": "Press", "href": "/press", "external": false, "group": "primary" }
+    { "label": "Proton Pets", "href": "/proton-pets", "external": false, "group": "more" },
+    { "label": "Press", "href": "/press", "external": false, "group": "primary" },
+    { "label": "Code of Conduct", "href": "/code-of-conduct", "external": false, "group": "more" }
   ],
   "footerCopyrightText": "",
   "codeOfConductUrl": "/code-of-conduct",

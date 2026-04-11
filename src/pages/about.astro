@@ -13,7 +13,7 @@ import Lightbox from "../components/ui/Lightbox.astro";
 import PageHeader from "../components/ui/PageHeader.astro";
 import SectionHeading from "../components/ui/SectionHeading.astro";
 import LightboxImageTrigger from "../components/ui/LightboxImageTrigger.astro";
-import OozeDecor from "../components/ui/OozeDecor.astro";
+import CardListPanel from "../components/ui/CardListPanel.astro";
 import { getResponsiveImageAttrs } from "../lib/images";
 import { getPageCopy } from "../lib/page-copy";
 
@@ -112,6 +112,10 @@ const whoWeAreBodyThree =
 const whoWeAreBodyFour =
   copy.whoWeAreBodyFour ||
   "From charity fundraisers and hospital visits to local parades and fan events, we bring people together through creativity, service, and a shared love of Ghostbusters. Every appearance is a chance to lift up our neighbors and leave each community stronger than we found it.";
+const whoWeAreHeadingOne = "A Community-Built Nonprofit";
+const whoWeAreHeadingTwo = "Statewide Chapters, One Mission";
+const whoWeAreHeadingThree = "Many Ways to Show Up";
+const whoWeAreHeadingFour = "Making Local Impact Together";
 
 const missionHeading = copy.missionHeading || "Our Mission";
 const missionCardTitle = copy.missionCardTitle || "Mission Priorities";
@@ -163,6 +167,7 @@ const missionCtaHref = copy.missionCtaHref || "/press";
             </LightboxImageTrigger>
           </div>
           <div class="zigzag__text">
+            <h2 class="about-section-title">{whoWeAreHeadingOne}</h2>
             <p class="prose-text">{whoWeAreBodyOne}</p>
           </div>
         </div>
@@ -191,6 +196,7 @@ const missionCtaHref = copy.missionCtaHref || "/press";
             </LightboxImageTrigger>
           </div>
           <div class="zigzag__text">
+            <h2 class="about-section-title">{whoWeAreHeadingTwo}</h2>
             <p class="prose-text">{whoWeAreBodyTwo}</p>
           </div>
         </div>
@@ -219,6 +225,7 @@ const missionCtaHref = copy.missionCtaHref || "/press";
             </LightboxImageTrigger>
           </div>
           <div class="zigzag__text">
+            <h2 class="about-section-title">{whoWeAreHeadingThree}</h2>
             <p class="prose-text">{whoWeAreBodyThree}</p>
           </div>
         </div>
@@ -247,6 +254,7 @@ const missionCtaHref = copy.missionCtaHref || "/press";
             </LightboxImageTrigger>
           </div>
           <div class="zigzag__text">
+            <h2 class="about-section-title">{whoWeAreHeadingFour}</h2>
             <p class="prose-text">{whoWeAreBodyFour}</p>
           </div>
         </div>
@@ -257,15 +265,9 @@ const missionCtaHref = copy.missionCtaHref || "/press";
     <div class="page-band page-band--alt">
       <div class="container container--mid">
         <SectionHeading>{missionHeading}</SectionHeading>
-        <div class="mission-card">
-          <h4 class="mission-card__title">
-            {missionCardTitle}
-            <OozeDecor class="mission-card__ooze" />
-          </h4>
-          <ul class="mission-list" role="list">
-            {missionItems.map((item) => <li class="mission-list__item">{item}</li>)}
-          </ul>
-        </div>
+        <CardListPanel title={missionCardTitle}>
+          {missionItems.map((item) => <li>{item}</li>)}
+        </CardListPanel>
         <div class="mission-cta">
           <Button variant="secondary" href={missionCtaHref}>{missionCtaLabel}</Button>
         </div>
@@ -315,7 +317,7 @@ const missionCtaHref = copy.missionCtaHref || "/press";
 
     .zigzag__thumb:hover,
     .zigzag__thumb:focus-visible {
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+      box-shadow: var(--shadow-media-soft);
     }
 
     .zigzag__thumb:focus-visible {
@@ -334,8 +336,8 @@ const missionCtaHref = copy.missionCtaHref || "/press";
       display: flex;
       align-items: center;
       justify-content: center;
-      background: rgba(0, 0, 0, 0.4);
-      color: #fff;
+      background: var(--color-overlay-dark-soft);
+      color: var(--color-text-inverse);
       opacity: 0;
       transition: opacity 0.2s ease;
       pointer-events: none;
@@ -376,9 +378,20 @@ const missionCtaHref = copy.missionCtaHref || "/press";
       padding-top: var(--space-xs);
     }
 
+    .about-section-title {
+      margin: 0 0 var(--space-lg);
+      color: var(--color-heading-section);
+      font-family: var(--font-display);
+      font-size: clamp(var(--text-xl), 2.2vw, var(--text-2xl));
+      font-weight: var(--weight-bold);
+      letter-spacing: var(--tracking-wide);
+      line-height: var(--leading-tight);
+      text-transform: uppercase;
+    }
+
     /* --- Wider container for zigzag rows --- */
     .container--wide {
-      max-width: 960px;
+      max-width: var(--content-width-wide);
       margin-inline: auto;
       padding-inline: var(--space-xl);
     }
@@ -391,86 +404,18 @@ const missionCtaHref = copy.missionCtaHref || "/press";
       line-height: var(--leading-loose);
     }
 
-    /* --- Mission card --- */
-    .mission-card {
-      display: flex;
-      flex-direction: column;
-      position: relative;
-      background: var(--color-surface);
-      border: 1px solid var(--color-border);
-      border-radius: var(--radius-lg);
-      overflow: hidden;
-      box-shadow: var(--shadow-panel);
-      max-width: 760px;
-      margin-inline: auto;
-    }
+    @media (max-width: 768px) {
+      .zigzag__text {
+        text-align: center;
+      }
 
-    .mission-card__title {
-      font-family: var(--font-display);
-      font-size: var(--text-lg);
-      font-weight: var(--weight-bold);
-      letter-spacing: var(--tracking-wide);
-      text-transform: uppercase;
-      color: var(--color-text);
-      margin: 0;
-      padding: var(--space-lg) var(--space-2xl);
-      background: var(--color-bg);
-      border-bottom: 1px solid var(--color-border);
-      position: relative;
-      overflow: visible;
-    }
+      .about-section-title {
+        text-align: center;
+      }
 
-    .mission-card__ooze {
-      position: absolute;
-      bottom: 0;
-      right: -4px;
-      width: 68px;
-      height: auto;
-      pointer-events: none;
-      z-index: 1;
-      transform: translateY(100%);
-      opacity: 0.75;
-    }
-
-    .mission-list {
-      list-style: none;
-      padding: var(--space-xl) var(--space-2xl) var(--space-2xl);
-      margin: 0;
-      display: flex;
-      flex-direction: column;
-      gap: var(--space-sm);
-    }
-
-    .mission-list__item {
-      position: relative;
-      padding-left: 2rem;
-      padding-block: var(--space-xs);
-      color: var(--color-text-muted);
-      font-family: var(--font-body);
-      font-size: var(--text-base);
-      line-height: var(--leading-normal);
-      cursor: default;
-      transition: color var(--transition-base);
-    }
-
-    .mission-list__item:hover {
-      color: var(--color-text);
-    }
-
-    .mission-list__item::before {
-      content: "✔";
-      position: absolute;
-      left: 0.25rem;
-      top: var(--space-xs);
-      color: var(--color-gb-green);
-      font-weight: var(--weight-bold);
-      font-size: var(--text-base);
-      display: inline-block;
-      transition: transform var(--transition-base);
-    }
-
-    .mission-list__item:hover::before {
-      transform: scale(1.4);
+      .prose-text {
+        text-align: center;
+      }
     }
 
     .mission-cta {

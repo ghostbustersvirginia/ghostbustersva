@@ -1,0 +1,141 @@
+---
+interface SupportCard {
+  icon: string;
+  title: string;
+  body: string;
+}
+
+interface Props {
+  heading: string;
+  cards: readonly SupportCard[];
+}
+
+const { heading, cards } = Astro.props as Props;
+---
+
+<div class="page-band page-band--alt">
+  <div class="container container--wide">
+    <h2 class="section-heading">{heading}</h2>
+    <ul class="support-grid" role="list">
+      {
+        cards.map((card) => (
+          <li>
+            <article class="support-card">
+              <span class="support-card__icon" aria-hidden="true">
+                {card.icon === "food" && (
+                  <svg viewBox="0 0 24 24" focusable="false" role="img">
+                    <path d="M4 8h16v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8Zm3-4a2 2 0 0 1 2 2v2H7V6a2 2 0 0 1 2-2Zm8 0a2 2 0 0 1 2 2v2h-2V6a2 2 0 0 1 2-2Z" />
+                  </svg>
+                )}
+                {card.icon === "community" && (
+                  <svg viewBox="0 0 24 24" focusable="false" role="img">
+                    <path d="M12 4a3 3 0 1 1 0 6 3 3 0 0 1 0-6Zm-7 4a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5Zm14 0a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5ZM3 19v-1a4 4 0 0 1 4-4h1.2a5 5 0 0 0 7.6 0H17a4 4 0 0 1 4 4v1H3Z" />
+                  </svg>
+                )}
+                {card.icon === "fundraise" && (
+                  <svg viewBox="0 0 24 24" focusable="false" role="img">
+                    <path d="M12 3a7 7 0 0 1 2.7 13.5V19h2a1 1 0 1 1 0 2h-3.7a1 1 0 0 1-1-1v-3.5H10a4 4 0 0 1 0-8h5a2 2 0 1 0 0-4h-1V3h-2Zm0 8H9a2 2 0 0 0 0 4h3v-4Z" />
+                  </svg>
+                )}
+                {card.icon === "share" && (
+                  <svg viewBox="0 0 24 24" focusable="false" role="img">
+                    <path d="M18 16a3 3 0 0 0-2.2.9l-6.1-3.2a3.4 3.4 0 0 0 0-1.2l6.1-3.2a3 3 0 1 0-.8-1.8L9 10.7a3 3 0 1 0 0 2.6l6 3.2A3 3 0 1 0 18 16Z" />
+                  </svg>
+                )}
+              </span>
+              <h3 class="support-card__title">{card.title}</h3>
+              <p class="support-card__body">{card.body}</p>
+            </article>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</div>
+
+<style>
+  .support-grid {
+    list-style: none;
+    padding: 0;
+    margin: var(--space-xl) 0 0;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-lg);
+  }
+
+  .support-card {
+    height: 100%;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-panel);
+    padding: var(--space-xl);
+    display: grid;
+    gap: var(--space-md);
+    justify-items: center;
+    text-align: center;
+  }
+
+  .support-card__icon {
+    width: 3rem;
+    height: 3rem;
+    border-radius: var(--radius-full);
+    background: var(--color-glow-green);
+    color: var(--color-gb-green);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transform-origin: center;
+    transition:
+      color var(--transition-base),
+      background var(--transition-base),
+      border-color var(--transition-base),
+      box-shadow var(--transition-base);
+  }
+
+  .support-card:hover .support-card__icon,
+  .support-card:focus-within .support-card__icon {
+    color: var(--color-gb-green);
+    background: var(--color-surface);
+    border: 1px solid var(--color-gb-green);
+    box-shadow: var(--shadow-social-hover);
+    animation: wiggle 0.5s ease-in-out;
+  }
+
+  :global(.reduce-motion) .support-card__icon {
+    transition: none;
+  }
+
+  :global(.reduce-motion) .support-card:hover .support-card__icon,
+  :global(.reduce-motion) .support-card:focus-within .support-card__icon {
+    animation: none;
+  }
+
+  .support-card__icon svg {
+    width: 1.5rem;
+    height: 1.5rem;
+    fill: currentColor;
+  }
+
+  .support-card__title {
+    margin: 0;
+    font-family: var(--font-heading);
+    font-size: var(--text-xl);
+    line-height: var(--leading-tight);
+    color: var(--color-text);
+  }
+
+  .support-card__body {
+    margin: 0;
+    color: var(--color-text-muted);
+    font-family: var(--font-body);
+    font-size: var(--text-base);
+    line-height: var(--leading-loose);
+  }
+
+  @media (min-width: 769px) {
+    .support-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+</style>

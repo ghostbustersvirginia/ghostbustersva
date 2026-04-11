@@ -33,6 +33,7 @@ const isActivePage = (href: string) => {
 const navItems = settings.navItems;
 const primaryNavItems = navItems.filter((link) => link.group !== "more");
 const moreDropdownItems = navItems.filter((link) => link.group === "more");
+const isMoreActive = moreDropdownItems.some((link) => isActivePage(link.href));
 const navLogoImage = await getResponsiveImageAttrs({
   src: settings.navLogo,
   widths: [44, 88],
@@ -99,7 +100,11 @@ const useLogoAsO = logoIndex >= 0;
             <li class="desktop-nav__group">
               <button
                 type="button"
-                class="desktop-nav__link desktop-nav__more-button"
+                class:list={[
+                  "desktop-nav__link",
+                  "desktop-nav__more-button",
+                  { "desktop-nav__more-button--active": isMoreActive },
+                ]}
                 aria-expanded="false"
                 aria-controls="more-submenu-desktop"
                 data-submenu-toggle="more-submenu-desktop"
@@ -176,56 +181,19 @@ const useLogoAsO = logoIndex >= 0;
             ))
           }
           {
-            moreDropdownItems.length > 0 && (
-              <li class="mobile-nav__group">
-                <button
-                  type="button"
-                  class="mobile-nav__link mobile-nav__more-button"
-                  aria-expanded="false"
-                  aria-controls="more-submenu-mobile"
-                  data-submenu-toggle="more-submenu-mobile"
+            moreDropdownItems.map((link) => (
+              <li>
+                <a
+                  href={link.href}
+                  class="mobile-nav__link"
+                  aria-current={isActivePage(link.href) ? "page" : undefined}
+                  {...(link.external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
                 >
-                  More
-                  <svg
-                    class="mobile-nav__caret"
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="14"
-                    height="14"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    aria-hidden="true"
-                  >
-                    <polyline points="6 9 12 15 18 9" />
-                  </svg>
-                </button>
-                <ul
-                  id="more-submenu-mobile"
-                  class="mobile-nav__submenu"
-                  aria-label="More menu"
-                  hidden
-                >
-                  {moreDropdownItems.map((subLink) => (
-                    <li>
-                      <a
-                        href={subLink.href}
-                        class="mobile-nav__submenu-link"
-                        aria-current={isActivePage(subLink.href) ? "page" : undefined}
-                        {...(subLink.external
-                          ? { target: "_blank", rel: "noopener noreferrer" }
-                          : {})}
-                      >
-                        {subLink.label}
-                        {subLink.external && <span class="sr-only"> (opens in new tab)</span>}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
+                  {link.label}
+                  {link.external && <span class="sr-only"> (opens in new tab)</span>}
+                </a>
               </li>
-            )
+            ))
           }
         </ul>
       </nav>
@@ -309,7 +277,7 @@ const useLogoAsO = logoIndex >= 0;
     margin-inline: 0;
     transform: translateY(0.03em);
     flex-shrink: 0;
-    filter: var(--shadow-logo-drop);
+    filter: var(--shadow-logo-default);
   }
 
   .desktop-nav {
@@ -355,18 +323,12 @@ const useLogoAsO = logoIndex >= 0;
   .desktop-nav__link:hover,
   .desktop-nav__link:focus-visible {
     color: var(--color-accent);
-    background-color: var(--color-action-secondary-hover, rgba(0, 0, 0, 0.05));
+    background-color: var(--color-action-secondary-hover);
   }
 
   .desktop-nav__link[aria-current="page"] {
     color: var(--color-accent);
-    background-color: var(--color-action-secondary-hover, rgba(0, 0, 0, 0.05));
-  }
-
-  .desktop-nav__link--group {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
+    background-color: var(--color-action-secondary-hover);
   }
 
   /* More button - styled as nav link but with button reset */
@@ -399,14 +361,19 @@ const useLogoAsO = logoIndex >= 0;
   }
 
   .desktop-nav__more-button:hover,
-  .desktop-nav__more-button:focus-visible {
+  .desktop-nav__more-button:focus-visible,
+  .desktop-nav__more-button--active {
     color: var(--color-accent);
-    background-color: var(--color-action-secondary-hover, rgba(0, 0, 0, 0.05));
+    background-color: var(--color-action-secondary-hover);
+  }
+
+  .desktop-nav__more-button--active .desktop-nav__caret {
+    color: var(--color-accent);
   }
 
   .desktop-nav__more-button[aria-expanded="true"] {
     color: var(--color-accent);
-    background-color: var(--color-action-secondary-hover, rgba(0, 0, 0, 0.05));
+    background-color: var(--color-action-secondary-hover);
   }
 
   .desktop-nav__more-button:hover .desktop-nav__caret,
@@ -418,7 +385,7 @@ const useLogoAsO = logoIndex >= 0;
     width: 14px;
     height: 14px;
     flex-shrink: 0;
-    transition: transform var(--transition-normal, 0.2s) ease-in-out;
+    transition: transform var(--transition-base);
   }
 
   .desktop-nav__more-button[aria-expanded="true"] .desktop-nav__caret {
@@ -436,7 +403,7 @@ const useLogoAsO = logoIndex >= 0;
     background: var(--color-surface);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-md);
-    box-shadow: var(--shadow-nav);
+    box-shadow: var(--shadow-panel);
     display: flex;
     flex-direction: column;
     gap: 0;
@@ -482,7 +449,7 @@ const useLogoAsO = logoIndex >= 0;
   .desktop-nav__submenu-link:hover,
   .desktop-nav__submenu-link:focus-visible {
     color: var(--color-accent);
-    background-color: var(--color-action-secondary-hover, rgba(0, 0, 0, 0.05));
+    background-color: var(--color-action-secondary-hover);
   }
 
   .desktop-nav__submenu-link[aria-current="page"] {
@@ -552,7 +519,7 @@ const useLogoAsO = logoIndex >= 0;
     border-radius: var(--radius-md);
     padding: var(--space-md) var(--space-sm);
     min-width: 12rem;
-    box-shadow: var(--shadow-nav);
+    box-shadow: var(--shadow-panel);
     z-index: 200;
     overflow: visible;
   }
@@ -577,24 +544,23 @@ const useLogoAsO = logoIndex >= 0;
     white-space: nowrap;
     color: var(--color-text-muted);
     padding: var(--space-sm) var(--space-lg);
-    border-bottom: 3px solid transparent;
     border-radius: var(--radius-sm);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     transition:
       color var(--transition-fast),
-      border-color var(--transition-fast);
+      background-color var(--transition-fast);
   }
 
   .mobile-nav__link:hover,
   .mobile-nav__link:focus-visible {
     color: var(--color-accent);
-    border-bottom-color: var(--color-accent);
+    background-color: var(--color-action-secondary-hover);
   }
 
   .mobile-nav__link[aria-current="page"] {
     color: var(--color-accent);
-    border-bottom-color: var(--color-accent);
+    background-color: var(--color-action-secondary-hover);
   }
 
   /* More button styled as a nav link for mobile */
@@ -618,7 +584,8 @@ const useLogoAsO = logoIndex >= 0;
 
   .mobile-nav__more-button:hover,
   .mobile-nav__more-button:focus-visible,
-  .mobile-nav__group[data-open="true"] .mobile-nav__more-button {
+  .mobile-nav__group[data-open="true"] .mobile-nav__more-button,
+  .mobile-nav__more-button--active {
     color: var(--color-accent);
     border-bottom-color: var(--color-accent);
   }
@@ -627,7 +594,7 @@ const useLogoAsO = logoIndex >= 0;
     width: 14px;
     height: 14px;
     flex-shrink: 0;
-    transition: transform var(--transition-normal, 0.2s) ease-in-out;
+    transition: transform var(--transition-base);
   }
 
   .mobile-nav__more-button[aria-expanded="true"] .mobile-nav__caret {
@@ -680,7 +647,7 @@ const useLogoAsO = logoIndex >= 0;
   .mobile-nav__submenu-link:hover,
   .mobile-nav__submenu-link:focus-visible {
     color: var(--color-accent);
-    background-color: var(--color-action-secondary-hover, rgba(0, 0, 0, 0.05));
+    background-color: var(--color-action-secondary-hover);
   }
 
   .mobile-nav__submenu-link[aria-current="page"] {

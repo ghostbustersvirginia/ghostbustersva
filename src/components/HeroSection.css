@@ -55,12 +55,7 @@
   position: absolute;
   inset: -15%;
   border-radius: 50%;
-  background: radial-gradient(
-    circle,
-    rgba(61, 134, 61, 0.18) 0%,
-    rgba(0, 0, 255, 0.06) 50%,
-    transparent 75%
-  );
+  background: var(--gradient-logo-glow);
   filter: blur(20px);
   animation: glow-breathe 4s ease-in-out infinite;
   pointer-events: none;
@@ -121,7 +116,7 @@
   object-fit: contain;
   display: block;
   flex-shrink: 0;
-  filter: drop-shadow(0 8px 24px rgba(0, 0, 0, 0.15)) drop-shadow(0 2px 8px rgba(0, 0, 0, 0.08));
+  filter: var(--shadow-logo-default);
   transition:
     transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94),
     filter 0.5s ease;
@@ -135,7 +130,7 @@
 
 .hero-logo:hover {
   transform: scale(1.08) rotate(-3deg);
-  filter: drop-shadow(0 12px 32px rgba(0, 0, 0, 0.2)) drop-shadow(0 4px 12px rgba(0, 0, 0, 0.1));
+  filter: var(--shadow-logo-hover);
 }
 
 @media (min-width: 768px) {
@@ -248,18 +243,16 @@
 }
 
 .hero-cta .btn--donate-hero {
-  background-image: linear-gradient(135deg, #0000ff 0%, #2e2eff 48%, #1479ff 100%);
+  background-image: var(--gradient-accent-primary);
   background-size: 170% 170%;
-  border-color: #0000ff;
-  box-shadow: 0 1px 6px rgba(0, 0, 255, 0.2);
+  border-color: var(--color-accent);
+  box-shadow: var(--shadow-accent-button);
 }
 
 .hero-cta .btn--donate-hero:hover,
 .hero-cta .btn--donate-hero:focus-visible {
   background-position: 100% 50%;
-  box-shadow:
-    0 8px 20px rgba(0, 0, 255, 0.22),
-    0 0 0 1px rgba(255, 255, 255, 0.18) inset;
+  box-shadow: var(--shadow-accent-button-hover), var(--shadow-inset-contrast-ring);
   transform: translateY(-2px);
 }
 

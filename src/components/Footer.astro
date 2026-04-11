@@ -6,7 +6,7 @@
 import { siteConfig } from "../config";
 import { getSiteSettings } from "../lib/settings";
 import SocialLinks from "./ui/SocialLinks.astro";
-import { getSafeHref, isSafeExternalUrl } from "../lib/links";
+import { isSafeExternalUrl } from "../lib/links";
 import { getResponsiveImageAttrs } from "../lib/images";
 
 const settings = await getSiteSettings();
@@ -15,7 +15,6 @@ const rightLogo = settings.footerLogos[1];
 const navItems = settings.navItems;
 const footerCopyright = settings.footerCopyrightText || siteConfig.copyright;
 const tagline = settings.siteDescription || siteConfig.description;
-const safeCodeOfConductUrl = getSafeHref(settings.codeOfConductUrl) || "/code-of-conduct";
 const footerDisclaimerText =
   settings.footerDisclaimerText ||
   "Ghostbusters and all related trademarks are property of Sony Pictures Entertainment Inc. GBVA is an independent fan group with no commercial affiliation.";
@@ -82,10 +81,6 @@ const socialLinks = settings.socialLinks
               ))
             }
           </ul>
-        </nav>
-
-        <nav class="footer-legal" aria-label="Legal links">
-          <a href={safeCodeOfConductUrl}>{settings.codeOfConductLabel}</a>
         </nav>
       </div>
 
@@ -204,7 +199,7 @@ const socialLinks = settings.socialLinks
     max-width: 36rem;
     font-size: var(--text-sm);
     line-height: var(--leading-normal);
-    color: rgba(255, 255, 255, 0.85);
+    color: var(--color-footer-text);
   }
 
   .footer-nav ul {
@@ -223,10 +218,11 @@ const socialLinks = settings.socialLinks
     font-weight: var(--weight-medium);
     text-decoration: none;
     letter-spacing: var(--tracking-wide);
-    color: #ffffff;
+    color: var(--color-text-inverse);
     transition: color var(--transition-fast);
     padding: 0.25rem 0.35rem;
     border-radius: var(--radius-sm);
+    white-space: nowrap;
   }
 
   .footer-nav a:hover,
@@ -234,41 +230,14 @@ const socialLinks = settings.socialLinks
     color: var(--color-gb-caution);
   }
 
-  .footer-legal {
-    display: flex;
-    justify-content: center;
-  }
-
-  .footer-legal a {
-    font-size: var(--text-sm);
-    text-decoration: none;
-    color: rgba(255, 255, 255, 0.72);
-    transition: color var(--transition-fast);
-  }
-
-  .footer-legal a:hover,
-  .footer-legal a:focus-visible {
-    color: #ffffff;
-  }
-
   :global(.site-footer .footer-nav a:link),
   :global(.site-footer .footer-nav a:visited) {
-    color: #ffffff !important;
+    color: var(--color-text-inverse) !important;
   }
 
   :global(.site-footer .footer-nav a:hover),
   :global(.site-footer .footer-nav a:focus-visible) {
     color: var(--color-gb-caution) !important;
-  }
-
-  :global(.site-footer .footer-legal a:link),
-  :global(.site-footer .footer-legal a:visited) {
-    color: rgba(255, 255, 255, 0.72) !important;
-  }
-
-  :global(.site-footer .footer-legal a:hover),
-  :global(.site-footer .footer-legal a:focus-visible) {
-    color: #ffffff !important;
   }
 
   :global(.footer-social) {
@@ -285,8 +254,8 @@ const socialLinks = settings.socialLinks
     width: 2.75rem;
     height: 2.75rem;
     border-radius: var(--radius-md);
-    color: rgba(255, 255, 255, 0.9);
-    background: rgba(255, 255, 255, 0.08);
+    color: var(--color-text-inverse-emphasis);
+    background: var(--color-overlay-inverse-subtle);
     transition:
       color var(--transition-fast),
       background var(--transition-fast);
@@ -294,8 +263,8 @@ const socialLinks = settings.socialLinks
 
   :global(.footer-social-link:hover),
   :global(.footer-social-link:focus-visible) {
-    color: #ffffff;
-    background: rgba(255, 255, 255, 0.2);
+    color: var(--color-text-inverse);
+    background: var(--color-overlay-inverse-medium);
   }
 
   :global(.footer-social-link svg) {
@@ -329,10 +298,10 @@ const socialLinks = settings.socialLinks
   .copyright {
     margin: 0;
     font-size: 0.75rem;
-    color: rgba(255, 255, 255, 0.55);
+    color: var(--color-footer-text-muted);
     text-align: center;
     padding-top: var(--space-md);
-    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    border-top: 1px solid var(--color-border-inverse-subtle);
   }
 
   .footer-disclaimer {
@@ -342,7 +311,7 @@ const socialLinks = settings.socialLinks
     text-align: center;
     font-size: 0.6875rem;
     line-height: 1.45;
-    color: rgba(255, 255, 255, 0.45);
+    color: var(--color-text-inverse-faint);
   }
 
   @media (min-width: 768px) {
@@ -368,6 +337,7 @@ const socialLinks = settings.socialLinks
 
     .footer-nav ul {
       gap: var(--space-sm) var(--space-lg);
+      flex-wrap: nowrap;
     }
 
     .footer-credentials {
@@ -414,10 +384,10 @@ const socialLinks = settings.socialLinks
     gap: 0.35rem;
     margin-top: var(--space-sm);
     padding: 0.3rem 0.6rem;
-    border: 1px solid rgba(255, 255, 255, 0.15);
+    border: 1px solid var(--color-border-inverse-soft);
     border-radius: var(--radius-sm);
     background: transparent;
-    color: rgba(255, 255, 255, 0.5);
+    color: var(--color-text-inverse-dim);
     font-family: var(--font-body);
     font-size: 0.7rem;
     cursor: pointer;
@@ -430,8 +400,8 @@ const socialLinks = settings.socialLinks
 
   .reduced-motion-toggle:hover,
   .reduced-motion-toggle:focus-visible {
-    color: rgba(255, 255, 255, 0.85);
-    border-color: rgba(255, 255, 255, 0.35);
+    color: var(--color-text-inverse-default);
+    border-color: var(--color-border-inverse-strong);
   }
 
   .reduced-motion-toggle[aria-pressed="true"] {

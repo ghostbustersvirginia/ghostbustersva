@@ -1,0 +1,121 @@
+---
+/**
+ * CardListPanel — shared titled card with checklist styling.
+ * Used by About, Join, and Donate pages for mission/gear/donation blocks.
+ */
+import OozeDecor from "./OozeDecor.astro";
+
+interface Props {
+  title: string;
+  panelClass?: string;
+  listClass?: string;
+}
+
+const { title, panelClass, listClass } = Astro.props;
+---
+
+<div class:list={["card-list-panel", panelClass]}>
+  <h4 class="card-list-panel__title">
+    {title}
+    <OozeDecor class="card-list-panel__ooze" />
+  </h4>
+
+  <ul class:list={["card-list-panel__list", listClass]} role="list">
+    <slot />
+  </ul>
+
+  {
+    Astro.slots.has("footer") && (
+      <div class="card-list-panel__footer">
+        <slot name="footer" />
+      </div>
+    )
+  }
+</div>
+
+<style is:global>
+  .card-list-panel {
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-panel);
+    max-width: 760px;
+    margin-inline: auto;
+  }
+
+  .card-list-panel__title {
+    font-family: var(--font-display);
+    font-size: var(--text-lg);
+    font-weight: var(--weight-bold);
+    letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
+    color: var(--color-text);
+    margin: 0;
+    padding: var(--space-lg) var(--space-2xl);
+    background: var(--color-bg);
+    border-bottom: 1px solid var(--color-border);
+    position: relative;
+    overflow: visible;
+  }
+
+  .card-list-panel__ooze {
+    position: absolute;
+    bottom: 0;
+    right: -4px;
+    width: 68px;
+    height: auto;
+    pointer-events: none;
+    z-index: 1;
+    transform: translateY(100%);
+    opacity: 0.75;
+  }
+
+  .card-list-panel__list {
+    list-style: none;
+    margin: 0;
+    padding: var(--space-xl) var(--space-2xl) var(--space-2xl);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+  }
+
+  .card-list-panel__list > li {
+    position: relative;
+    padding-left: 2rem;
+    padding-block: var(--space-xs);
+    font-family: var(--font-body);
+    font-size: var(--text-base);
+    line-height: var(--leading-normal);
+    color: var(--color-text-muted);
+    cursor: default;
+    transition: color var(--transition-base);
+  }
+
+  .card-list-panel__list > li:hover {
+    color: var(--color-text);
+  }
+
+  .card-list-panel__list > li::before {
+    content: "\2714";
+    position: absolute;
+    left: 0.25rem;
+    top: var(--space-xs);
+    font-weight: var(--weight-bold);
+    font-size: var(--text-base);
+    color: var(--color-gb-green);
+    display: inline-block;
+    transition: transform var(--transition-base);
+  }
+
+  .card-list-panel__list > li:hover::before {
+    transform: scale(1.4);
+  }
+
+  .card-list-panel__footer {
+    padding: 0 var(--space-2xl) var(--space-2xl);
+  }
+</style>

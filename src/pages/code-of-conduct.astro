@@ -4,7 +4,6 @@
  */
 import BaseLayout from "../layouts/BaseLayout.astro";
 import PageHeader from "../components/ui/PageHeader.astro";
-import SectionHeading from "../components/ui/SectionHeading.astro";
 import { getPageCopy } from "../lib/page-copy";
 
 const copy = await getPageCopy("code-of-conduct");
@@ -52,7 +51,7 @@ const defaultSections: CocSection[] = [
 const pageTitle = copy.pageTitle || "Code of Conduct";
 const pageIntro =
   copy.pageIntro || "The standards that keep our franchise strong and our community welcoming.";
-const sections = copy.sections || defaultSections;
+const sections: CocSection[] = copy.sections || defaultSections;
 const metaTitle = copy.metaTitle || "Code of Conduct";
 const metaDescription =
   copy.metaDescription ||
@@ -79,24 +78,132 @@ const ogImage = copy.ogImage || "";
       </div>
     </div>
 
-    {
-      sections.map((section, index) => (
-        <div class:list={["page-band", index % 2 === 0 ? "page-band--alt" : "page-band--white"]}>
-          <div class="container container--mid">
-            <SectionHeading level={2}>{section.heading}</SectionHeading>
-            <p class="prose-text">{section.body}</p>
-          </div>
-        </div>
-      ))
-    }
+    <div class="page-band page-band--alt">
+      <div class="container container--wide">
+        <ul class="coc-grid" role="list">
+          {
+            sections.map((section, i) => (
+              <li>
+                <article class="coc-card">
+                  <span class="coc-card__number" aria-hidden="true">
+                    {i + 1}
+                  </span>
+                  <h2 class="coc-card__title">{section.heading}</h2>
+                  <p class="coc-card__body">{section.body}</p>
+                </article>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+    </div>
   </section>
-</BaseLayout>
 
-<style>
-  .prose-text {
-    color: var(--color-text-muted);
-    font-family: var(--font-body);
-    font-size: var(--text-base);
-    line-height: var(--leading-loose);
-  }
-</style>
+  <style>
+    .container--wide {
+      max-width: var(--content-width-wide);
+      margin-inline: auto;
+      padding-inline: var(--space-xl);
+    }
+
+    .coc-grid {
+      list-style: none;
+      padding: 0;
+      margin: var(--space-xl) 0 0;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: var(--space-lg);
+    }
+
+    .coc-card {
+      height: 100%;
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-panel);
+      padding: var(--space-xl);
+      display: grid;
+      gap: var(--space-md);
+      justify-items: center;
+      text-align: center;
+      transition:
+        border-color var(--transition-base),
+        box-shadow var(--transition-base),
+        transform var(--transition-base);
+    }
+
+    .coc-card:hover {
+      border-color: var(--color-hover-border);
+      box-shadow: var(--shadow-elevated-soft);
+      transform: translateY(-2px);
+    }
+
+    .coc-card:hover .coc-card__title {
+      color: var(--color-accent);
+    }
+
+    .coc-card__number {
+      width: 3rem;
+      height: 3rem;
+      border-radius: var(--radius-full);
+      background: var(--color-glow-green);
+      color: var(--color-gb-green);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-family: var(--font-display);
+      font-size: var(--text-xl);
+      font-weight: var(--weight-bold);
+      line-height: 1;
+      transition:
+        color var(--transition-base),
+        background var(--transition-base),
+        border-color var(--transition-base),
+        box-shadow var(--transition-base);
+    }
+
+    .coc-card:hover .coc-card__number,
+    .coc-card:focus-within .coc-card__number {
+      color: var(--color-gb-green);
+      background: var(--color-surface);
+      border: 1px solid var(--color-gb-green);
+      box-shadow: var(--shadow-social-hover);
+      animation: wiggle 0.5s ease-in-out;
+    }
+
+    :global(.reduce-motion) .coc-card__number {
+      transition: none;
+    }
+
+    :global(.reduce-motion) .coc-card:hover .coc-card__number,
+    :global(.reduce-motion) .coc-card:focus-within .coc-card__number {
+      animation: none;
+    }
+
+    .coc-card__title {
+      margin: 0;
+      font-family: var(--font-display);
+      font-size: var(--text-xl);
+      font-weight: var(--weight-bold);
+      letter-spacing: var(--tracking-wide);
+      line-height: var(--leading-tight);
+      text-transform: uppercase;
+      color: var(--color-heading-section);
+    }
+
+    .coc-card__body {
+      margin: 0;
+      color: var(--color-text-muted);
+      font-family: var(--font-body);
+      font-size: var(--text-base);
+      line-height: var(--leading-loose);
+    }
+
+    @media (min-width: 769px) {
+      .coc-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+  </style>
+</BaseLayout>

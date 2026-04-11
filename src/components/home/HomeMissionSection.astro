@@ -1,0 +1,48 @@
+---
+interface ImpactStat {
+  value: string;
+  label: string;
+  countTarget?: string;
+  countSuffix?: string;
+}
+
+interface Props {
+  heading: string;
+  subtitle: string;
+  body: string;
+  impactStats: ImpactStat[];
+  impactStatsAriaLabel: string;
+}
+
+const { heading, subtitle, body, impactStats, impactStatsAriaLabel } = Astro.props as Props;
+---
+
+<section class="section hp-section--white mission-section" aria-labelledby="mission-heading">
+  <div class="container">
+    <h2 id="mission-heading" class="section-heading">{heading}</h2>
+    <p class="section-subtitle">
+      {subtitle}
+    </p>
+
+    <div class="impact-stats" role="list" aria-label={impactStatsAriaLabel}>
+      {
+        impactStats.map((stat) => (
+          <div class="impact-stat" role="listitem">
+            <span
+              class="impact-stat__number"
+              {...(stat.countTarget ? { "data-count-target": stat.countTarget } : {})}
+              {...(stat.countSuffix ? { "data-count-suffix": stat.countSuffix } : {})}
+            >
+              {stat.value}
+            </span>
+            <span class="impact-stat__label">{stat.label}</span>
+          </div>
+        ))
+      }
+    </div>
+
+    <p class="mission-body">
+      {body}
+    </p>
+  </div>
+</section>

@@ -6,6 +6,8 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 import Button from "../components/ui/Button.astro";
 import EventCard from "../components/EventCard.astro";
 import HeroSection from "../components/HeroSection.astro";
+import HomeMissionSection from "../components/home/HomeMissionSection.astro";
+import HomeSupportSection from "../components/home/HomeSupportSection.astro";
 import Lightbox from "../components/ui/Lightbox.astro";
 import LightboxImageTrigger from "../components/ui/LightboxImageTrigger.astro";
 import { getCollection } from "astro:content";
@@ -18,6 +20,10 @@ import { getSiteSettings } from "../lib/settings";
 const copy = await getPageCopy("home");
 const donateCopy = await getPageCopy("donate");
 const settings = await getSiteSettings();
+const homeCopy = copy as typeof copy & {
+  supportSubtitle?: string;
+  supportProtonPetsDetail?: string;
+};
 
 const allEvents = await getCollection("events");
 const { upcoming } = splitEventsByStatus(allEvents);
@@ -77,10 +83,26 @@ const joinQuoteLineTwo =
 const joinCtaLabel = copy.joinCtaLabel || "Join Now";
 const joinCtaHref = copy.joinCtaHref || "/join";
 const supportSectionHeading = copy.supportHeading || "Support the Mission";
+const supportSubtitle =
+  homeCopy.supportSubtitle ||
+  "Every dollar and every drive helps us keep showing up. Donate to the franchise or explore our Proton Pets initiative focused on pet pantry and shelter support.";
 const supportCtaLabel = "Donate Today";
+const protonPetsCtaLabel = "Explore Proton Pets";
 const supportCardText =
   donateCopy.donationText ||
   "Ghostbusters Virginia is a volunteer-run, community-focused franchise. Your generous donations help us fund charitable events, maintain the Ecto, purchase supplies for community outreach, and keep the franchise running strong.";
+const supportCardDetail =
+  homeCopy.supportProtonPetsDetail ||
+  "Proton Pets is our focused initiative for pet food access, donation drives, and local shelter support. Show up for the animals who can\u2019t speak for themselves.";
+const supportDonateImagePath =
+  getSafeImageAssetPath(donateCopy.donationImage) ||
+  "/images/ghostbusters-virginia-toys-for-tots-drive.jpg";
+const supportDonateImageAlt = String(
+  donateCopy.donationImageAlt ||
+    "Ghostbusters Virginia members supporting a Toys for Tots donation drive",
+);
+const protonPetsImagePath = "/images/ProtonPets2026.jpg";
+const protonPetsImageAlt = "Proton Pets — pet pantry and shelter support initiative";
 const defaultPaypalDonateUrl = "https://www.paypal.com/US/fundraiser/charity/4434256";
 const defaultMakeAWishDonateUrl =
   "https://secure2.wish.org/site/TR;jsessionid=00000000.app20002b?team_id=58435&fr_id=7464&pg=team&NONCE_TOKEN=16AE47C509ECB858ECB963CD3D174802";
@@ -94,6 +116,7 @@ const safeEventsCtaHref = getSafeHref(eventsCtaHref) || "/events";
 const safeNoUpcomingEventsContactHref = getSafeHref(noUpcomingEventsContactHref) || "/contact";
 const safeJoinCtaHref = getSafeHref(joinCtaHref) || "/join";
 const safeSupportCtaHref = "/donate";
+const safeProtonPetsCtaHref = "/proton-pets";
 const galleryCtaLabel = copy.galleryCtaLabel || "See All Media";
 const galleryCtaHref = copy.galleryCtaHref || "/press#gallery";
 const safeGalleryCtaHref = getSafeHref(galleryCtaHref) || "/press#gallery";
@@ -159,6 +182,22 @@ const joinImage = await getResponsiveImageAttrs({
   height: 900,
   quality: 75,
 });
+const supportDonateImage = await getResponsiveImageAttrs({
+  src: supportDonateImagePath,
+  widths: [480, 720, 960],
+  sizes: "(max-width: 768px) 100vw, 50vw",
+  width: 960,
+  height: 640,
+  quality: 75,
+});
+const protonPetsImage = await getResponsiveImageAttrs({
+  src: protonPetsImagePath,
+  widths: [480, 720, 960],
+  sizes: "(max-width: 768px) 100vw, 50vw",
+  width: 960,
+  height: 640,
+  quality: 75,
+});
 ---
 
 <BaseLayout
@@ -186,36 +225,13 @@ const joinImage = await getResponsiveImageAttrs({
     heroLogoImage={heroLogoImage}
   />
 
-  <!-- ───── MISSION / IDENTITY ───── -->
-  <section class="section hp-section--white mission-section" aria-labelledby="mission-heading">
-    <div class="container">
-      <h2 id="mission-heading" class="section-heading">{missionHeading}</h2>
-      <p class="section-subtitle">
-        {missionSubtitle}
-      </p>
-
-      <div class="impact-stats" role="list" aria-label={impactStatsAriaLabel}>
-        {
-          impactStats.map((stat) => (
-            <div class="impact-stat" role="listitem">
-              <span
-                class="impact-stat__number"
-                {...(stat.countTarget ? { "data-count-target": stat.countTarget } : {})}
-                {...(stat.countSuffix ? { "data-count-suffix": stat.countSuffix } : {})}
-              >
-                {stat.value}
-              </span>
-              <span class="impact-stat__label">{stat.label}</span>
-            </div>
-          ))
-        }
-      </div>
-
-      <p class="mission-body">
-        {missionBody}
-      </p>
-    </div>
-  </section>
+  <HomeMissionSection
+    heading={missionHeading}
+    subtitle={missionSubtitle}
+    body={missionBody}
+    impactStats={impactStats}
+    impactStatsAriaLabel={impactStatsAriaLabel}
+  />
 
   <!-- ───── OUT IN THE FIELD ───── -->
   {
@@ -334,18 +350,20 @@ const joinImage = await getResponsiveImageAttrs({
     </div>
   </section>
 
-  <!-- ───── SUPPORT THE MISSION ───── -->
-  <section class="section hp-section--white support-section" aria-labelledby="support-heading">
-    <div class="container">
-      <h2 id="support-heading" class="section-heading">{supportSectionHeading}</h2>
-      <div class="highlight-card highlight-card--centered">
-        <p class="prose-text">{supportCardText}</p>
-        <div class="section-cta">
-          <Button variant="secondary" href={safeSupportCtaHref}>{supportCtaLabel}</Button>
-        </div>
-      </div>
-    </div>
-  </section>
+  <HomeSupportSection
+    heading={supportSectionHeading}
+    subtitle={supportSubtitle}
+    supportDonateImage={supportDonateImage}
+    supportDonateImageAlt={supportDonateImageAlt}
+    supportCardText={supportCardText}
+    supportCtaHref={safeSupportCtaHref}
+    supportCtaLabel={supportCtaLabel}
+    protonPetsImage={protonPetsImage}
+    protonPetsImageAlt={protonPetsImageAlt}
+    supportCardDetail={supportCardDetail}
+    protonPetsCtaHref={safeProtonPetsCtaHref}
+    protonPetsCtaLabel={protonPetsCtaLabel}
+  />
 
   <Lightbox id="home-join-lightbox" label="Join image viewer" lightboxGroup="home-join" />
   <Lightbox
@@ -510,20 +528,112 @@ const joinImage = await getResponsiveImageAttrs({
     line-height: var(--leading-loose);
   }
 
-  .highlight-card {
-    background: var(--color-surface);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
-    padding: var(--space-xl) var(--space-2xl);
-    box-shadow: var(--shadow-panel);
+  /* ── Full-bleed section backgrounds ── */
+  .hp-section--white {
+    background-color: var(--color-surface);
   }
 
-  .highlight-card--centered {
+  .hp-section--alt {
+    background-color: var(--color-surface-alt);
+  }
+
+  .hp-section--dark {
+    background-color: #080909;
+    background-image:
+      radial-gradient(ellipse at 20% 50%, rgba(0, 0, 255, 0.12) 0%, transparent 60%),
+      radial-gradient(ellipse at 80% 50%, rgba(61, 134, 61, 0.1) 0%, transparent 60%);
+  }
+
+  /* Invert heading/subtitle for dark bg */
+  .section-heading--inverse {
+    color: var(--color-text-inverse);
+  }
+
+  .section-heading--inverse::after {
+    background: var(--color-gb-green) !important;
+  }
+
+  .section-subtitle--inverse {
+    color: var(--color-text-inverse-soft);
+  }
+
+  /* ── Support the Mission cards ── */
+  .support-cards {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-2xl);
+    margin-top: var(--space-2xl);
+  }
+
+  @media (min-width: 768px) {
+    .support-cards {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  .support-card {
+    background: var(--color-surface);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-card-dark-panel);
+    display: flex;
+    flex-direction: column;
+    transition:
+      transform var(--transition-base),
+      box-shadow var(--transition-base);
+  }
+
+  .support-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-card-dark-panel-hover);
+  }
+
+  .support-card__img-wrap {
+    position: relative;
+    overflow: hidden;
+    aspect-ratio: 3 / 2;
+  }
+
+  .support-card__img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.4s ease;
+  }
+
+  .support-card:hover .support-card__img {
+    transform: scale(1.04);
+  }
+
+  .support-card__body {
+    padding: var(--space-xl) var(--space-2xl);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-lg);
+    flex: 1;
+    align-items: center;
     text-align: center;
   }
 
-  .highlight-card .prose-text {
-    margin-bottom: 0;
+  .support-card__heading {
+    margin: 0;
+    font-family: var(--font-brand-title);
+    font-size: clamp(var(--text-xl), 2.2vw, var(--text-2xl));
+    color: var(--color-accent);
+    line-height: var(--leading-tight);
+  }
+
+  .support-card__heading--pets {
+    color: var(--color-gb-green);
+  }
+
+  .support-card__text {
+    margin: 0;
+    color: var(--color-text-muted);
+    font-size: var(--text-base);
+    line-height: var(--leading-loose);
+    flex: 1;
   }
 
   /* ── Impact stats row ── */
@@ -681,8 +791,8 @@ const joinImage = await getResponsiveImageAttrs({
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(0, 0, 0, 0.4);
-    color: #fff;
+    background: var(--color-overlay-dark-soft);
+    color: var(--color-text-inverse);
     opacity: 0;
     transition: opacity var(--transition-base);
     pointer-events: none;
@@ -691,15 +801,6 @@ const joinImage = await getResponsiveImageAttrs({
   .join-image-wrapper:hover .join-image-overlay,
   .join-image-wrapper:focus-visible .join-image-overlay {
     opacity: 1;
-  }
-
-  /* ── Full-bleed section backgrounds ── */
-  .hp-section--white {
-    background-color: var(--color-surface);
-  }
-
-  .hp-section--alt {
-    background-color: var(--color-surface-alt);
   }
 
   .home-gallery-grid {
@@ -747,9 +848,7 @@ const joinImage = await getResponsiveImageAttrs({
   }
   .gallery-slide:hover {
     border-color: var(--color-hover-border);
-    box-shadow:
-      0 8px 24px rgba(0, 0, 0, 0.15),
-      0 2px 8px rgba(0, 0, 0, 0.08);
+    box-shadow: var(--shadow-elevated-media);
   }
   .gallery-slide__img {
     width: 100%;
@@ -767,8 +866,8 @@ const joinImage = await getResponsiveImageAttrs({
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(0, 0, 0, 0.4);
-    color: #fff;
+    background: var(--color-overlay-dark-soft);
+    color: var(--color-text-inverse);
     opacity: 0;
     transition: opacity 0.25s ease;
     pointer-events: none;

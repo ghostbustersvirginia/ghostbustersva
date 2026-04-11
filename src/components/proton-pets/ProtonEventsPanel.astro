@@ -1,0 +1,91 @@
+---
+import Button from "../ui/Button.astro";
+import EventCard from "../EventCard.astro";
+import SectionHeading from "../ui/SectionHeading.astro";
+
+interface Props {
+  upcomingEvents: any[];
+  recentEvents: any[];
+}
+
+const { upcomingEvents, recentEvents } = Astro.props as Props;
+---
+
+<div class="page-band page-band--alt" id="proton-events">
+  <div class="container container--wide">
+    <SectionHeading>Proton Pets Events</SectionHeading>
+
+    {
+      upcomingEvents.length > 0 ? (
+        <>
+          <h3 class="events-subtitle">Upcoming</h3>
+          <ul class="event-list" role="list">
+            {upcomingEvents.map((event) => (
+              <EventCard event={event} showCountdown />
+            ))}
+          </ul>
+        </>
+      ) : (
+        <p class="event-empty">
+          No upcoming Proton Pets events are listed right now. Check back soon, or contact us if you
+          want to partner on a local drive.
+        </p>
+      )
+    }
+
+    {
+      recentEvents.length > 0 && (
+        <>
+          <h3 class="events-subtitle">Recent</h3>
+          <ul class="event-list" role="list">
+            {recentEvents.map((event) => (
+              <EventCard event={event} />
+            ))}
+          </ul>
+        </>
+      )
+    }
+
+    <div class="button-row button-row--centered">
+      <Button variant="secondary" href="/contact">Plan a Proton Pets Drive</Button>
+    </div>
+  </div>
+</div>
+
+<style>
+  .events-subtitle {
+    margin: var(--space-xl) 0 var(--space-md);
+    font-family: var(--font-display);
+    font-size: var(--text-xl);
+    letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
+    color: var(--color-text);
+  }
+
+  .event-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: var(--space-lg);
+  }
+
+  .event-empty {
+    margin-top: var(--space-md);
+    color: var(--color-text-muted);
+    font-family: var(--font-body);
+    font-size: var(--text-base);
+    line-height: var(--leading-loose);
+  }
+
+  .button-row {
+    margin-top: var(--space-xl);
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-md);
+  }
+
+  .button-row--centered {
+    justify-content: center;
+  }
+</style>

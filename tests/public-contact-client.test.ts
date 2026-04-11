@@ -78,6 +78,14 @@ describe("public contact-form client", () => {
       readyState: "complete",
       querySelector(selector: string) {
         switch (selector) {
+          case "form.contact-form[data-event-inquiry-allowlist]":
+            return {
+              getAttribute(name: string) {
+                return name === "data-event-inquiry-allowlist"
+                  ? '["Schedule Event","Plan a Proton Pet Drive"]'
+                  : null;
+              },
+            };
           case "select[name='inquiryType']":
             return inquirySelect;
           case "[data-date-input]":
@@ -132,6 +140,83 @@ describe("public contact-form client", () => {
 
     // simulate selecting Schedule Event
     inquirySelect.value = "Schedule Event";
+    inquirySelect.dispatchEvent({ type: "change", bubbles: true });
+
+    expect(eventField1.hidden).toBe(false);
+    expect(eventField2.hidden).toBe(false);
+  });
+
+  it("interaction: selecting 'Plan a Proton Pet Drive' unhides event fields", () => {
+    const inquirySelect = createFakeElement();
+    const dateInput = createFakeElement();
+    const dateEndInput = createFakeElement();
+
+    const eventField1 = createFakeElement();
+    const eventField2 = createFakeElement();
+
+    const fakeDoc: any = {
+      readyState: "complete",
+      querySelector(selector: string) {
+        switch (selector) {
+          case "form.contact-form[data-event-inquiry-allowlist]":
+            return {
+              getAttribute(name: string) {
+                return name === "data-event-inquiry-allowlist"
+                  ? '["Plan a Proton Pet Drive"]'
+                  : null;
+              },
+            };
+          case "select[name='inquiryType']":
+            return inquirySelect;
+          case "[data-date-input]":
+            return dateInput;
+          case "[data-date-end-input]":
+            return dateEndInput;
+          case ".contact-form__status":
+            return { textContent: "" };
+          default:
+            return null;
+        }
+      },
+      querySelectorAll(selector: string) {
+        switch (selector) {
+          case "[data-date-clear]":
+            return [];
+          case "[data-event-field]":
+            return [eventField1, eventField2];
+          case "[data-event-input]":
+            return [];
+          case "[data-event-optional-input]":
+            return [];
+          default:
+            return [];
+        }
+      },
+    };
+
+    const stubFlatpickr = () => ({
+      selectedDates: [],
+      set: () => {},
+      clear: () => {},
+      parseDate: () => null,
+      open: () => {},
+    });
+
+    const context: any = {
+      document: fakeDoc,
+      window: { flatpickr: stubFlatpickr },
+      Event: function Event(t: string, opts?: any) {
+        return { type: t, ...opts };
+      },
+    };
+    const initContactForm = vm.runInNewContext(fileText + "\n; initContactForm;", context);
+
+    initContactForm();
+
+    expect(eventField1.hidden).toBe(true);
+    expect(eventField2.hidden).toBe(true);
+
+    inquirySelect.value = "Plan a Proton Pet Drive";
     inquirySelect.dispatchEvent({ type: "change", bubbles: true });
 
     expect(eventField1.hidden).toBe(false);
