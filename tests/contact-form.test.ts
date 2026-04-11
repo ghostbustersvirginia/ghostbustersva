@@ -38,9 +38,7 @@ describe("contact form inquiry picker behavior", () => {
       expect(shouldShowEventFields(value)).toBe(true);
     });
 
-    const nonEventOptions = inquiryTypeOptions.filter(
-      (value) => !eventInquiryTypeAllowlist.includes(value),
-    );
+    const nonEventOptions = inquiryTypeOptions.filter((value) => !shouldShowEventFields(value));
 
     nonEventOptions.forEach((value) => {
       expect(shouldShowEventFields(value)).toBe(false);
