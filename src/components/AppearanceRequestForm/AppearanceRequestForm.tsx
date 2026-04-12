@@ -15,25 +15,24 @@ import type { FormCopy } from "./types";
 import { AppearanceRequestProvider, useAppearanceRequest } from "./AppearanceRequestContext";
 import StepProgress from "./StepProgress";
 import NavButtons from "./NavButtons";
-import { TOTAL_STEPS, DEFAULT_COPY } from "./constants";
-import Step0EventInformation from "./steps/Step0EventInformation";
-import Step1EventSchedule from "./steps/Step1EventSchedule";
-import Step2Location from "./steps/Step2Location";
-import Step3VehiclesAndParking from "./steps/Step3VehiclesAndParking";
-import Step4TablesAndChairs from "./steps/Step4TablesAndChairs";
-import Step5CharitableDonations from "./steps/Step5CharitableDonations";
-import Step6ContactInformation from "./steps/Step6ContactInformation";
-import Step7AdditionalInformation from "./steps/Step7AdditionalInformation";
+import { DEFAULT_COPY } from "./constants";import EventInformation from "./steps/EventInformation";
+import EventSchedule from "./steps/EventSchedule";
+import Location from "./steps/Location";
+import VehiclesAndParking from "./steps/VehiclesAndParking";
+import TablesAndChairs from "./steps/TablesAndChairs";
+import CharitableDonations from "./steps/CharitableDonations";
+import ContactInformation from "./steps/ContactInformation";
+import AdditionalInformation from "./steps/AdditionalInformation";
 
 const STEP_COMPONENTS: ComponentType[] = [
-  Step0EventInformation,
-  Step1EventSchedule,
-  Step2Location,
-  Step3VehiclesAndParking,
-  Step4TablesAndChairs,
-  Step5CharitableDonations,
-  Step6ContactInformation,
-  Step7AdditionalInformation,
+  EventInformation,
+  EventSchedule,
+  Location,
+  VehiclesAndParking,
+  TablesAndChairs,
+  CharitableDonations,
+  ContactInformation,
+  AdditionalInformation,
 ];
 
 // ------------------------------------------------------------------ //
@@ -58,9 +57,10 @@ function SuccessMessage() {
 // ------------------------------------------------------------------ //
 
 function FormContent() {
-  const { step, submitted, submitError, copy } = useAppearanceRequest();
+  const { step, submitted, submitError, copy, activeStepOriginalIndices } =
+    useAppearanceRequest();
 
-  const stepTitles: string[] = [
+  const allStepTitles: string[] = [
     copy.step0Title,
     copy.step1Title,
     copy.step2Title,
@@ -73,11 +73,17 @@ function FormContent() {
 
   if (submitted) return <SuccessMessage />;
 
-  const StepComponent = STEP_COMPONENTS[step];
+  const originalIndex = activeStepOriginalIndices[step];
+  const StepComponent = STEP_COMPONENTS[originalIndex];
+  const activeStepTitles = activeStepOriginalIndices.map((i) => allStepTitles[i]);
 
   return (
     <div className="arf">
-      <StepProgress step={step} totalSteps={TOTAL_STEPS} stepTitles={stepTitles} />
+      <StepProgress
+        step={step}
+        totalSteps={activeStepOriginalIndices.length}
+        stepTitles={activeStepTitles}
+      />
       <form noValidate onSubmit={(e) => e.preventDefault()}>
         <StepComponent />
         {submitError && (

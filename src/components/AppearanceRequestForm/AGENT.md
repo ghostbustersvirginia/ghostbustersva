@@ -17,16 +17,41 @@ AppearanceRequestForm/
 ├── RadioGroup.tsx                 Renders a group of radio buttons from an options array.
 ├── StepProgress.tsx               Step track + title header (receives step/totalSteps/stepTitles as props).
 ├── NavButtons.tsx                 Back / Next / Submit buttons — prop-free, reads from context.
-└── steps/
-    ├── Step0EventInformation.tsx   eventName, eventType (radio from EVENT_TYPES)
-    ├── Step1EventSchedule.tsx      isScheduled radio; conditionally shows 6 date/time inputs
-    ├── Step2Location.tsx           All address fields — no required validation
-    ├── Step3VehiclesAndParking.tsx requestEctoVehicle; conditional ecto parking fields; memberParkingInfo; paidParkingCovered
-    ├── Step4TablesAndChairs.tsx    tablesProvided; conditional numberOfTables; chairsProvided; conditional numberOfChairs
-    ├── Step5CharitableDonations.tsx charitableDonationsAllowed radio (yes/no/unsure)
-    ├── Step6ContactInformation.tsx contactName (required), contactEmail (required + regex), contactPhone, companyName, companyWebsite
-    └── Step7AdditionalInformation.tsx additionalInfo textarea — no validation
+├── steps/                         One file per wizard step — composed from formSections/.
+│   ├── EventInformation.tsx
+│   ├── EventSchedule.tsx
+│   ├── Location.tsx
+│   ├── VehiclesAndParking.tsx
+│   ├── TablesAndChairs.tsx
+│   ├── CharitableDonations.tsx
+│   ├── ContactInformation.tsx
+│   └── AdditionalInformation.tsx
+└── formSections/                  Focused sub-components imported by steps/.
+    ├── EventName.tsx              eventName text input
+    ├── EventType.tsx              eventType radio; conditional eventTypeOther input
+    ├── IsScheduled.tsx            isScheduled yes/no radio
+    ├── EventDateTime.tsx          eventStartDate, eventEndDate, eventStartTime, eventEndTime
+    ├── EarliestSetup.tsx          earliestSetupTime, requiredLeaveTime
+    ├── PlaceSearch.tsx            Google Maps Places Autocomplete — populates address fields + placeId
+    ├── EctoVehicles.tsx           requestEctoVehicle; conditional ectoVehicleParkingInfo + maxEctoVehicles
+    ├── ParkingInfo.tsx            memberParkingInfo, paidParkingCovered
+    ├── Tables.tsx                 tablesProvided; conditional numberOfTables
+    ├── Chairs.tsx                 chairsProvided; conditional numberOfChairs
+    ├── PersonContact.tsx          contactName (required), contactEmail (required + regex), contactPhone
+    └── CompanyContact.tsx         companyName, companyWebsite
 ```
+
+
+## Google Maps Places integration
+
+`PlaceSearch.tsx` lazy-loads the Maps JS API (key: `AIzaSyDS-qaf3fImTnQBzJoIv--cgGVNB59qb3s`) once
+per page and attaches a `google.maps.places.Autocomplete` widget to its search input. On place
+selection it:
+1. Stores the Google Place ID in `formData.placeId`.
+2. Populates `addressLine1`, `city`, `state`, `zipCode` from `address_components`.
+3. Pre-fills `locationDescription` with the venue name.
+
+The address fields remain manually editable after autocomplete.
 
 ## Data flow
 
@@ -39,6 +64,7 @@ AppearanceRequestProvider (AppearanceRequestContext.tsx)
 ```
 
 Step components **never receive props** — they all call `useAppearanceRequest()` directly.
+Sub-components (e.g. `EventName`, `Tables`) follow the same rule.
 
 ## Key patterns
 
@@ -59,7 +85,7 @@ Step 2 (Location) has **no required fields**. Steps 0, 1, 3, 4, 5, 6 are validat
 
 ### Adding a new step
 1. Add the new fields to `FormData` in `types.ts` and `DEFAULT_FORM_DATA` in `constants.ts`.
-2. Create `steps/StepNName.tsx` following the existing pattern.
+2. Create `steps/MyStep.tsx` following the existing pattern (+ sub-components as needed).
 3. Add validation logic to `validateStep` in `helpers.ts` (new `if (step === N)` block).
 4. Add payload mapping to `buildPayload` in `helpers.ts`.
 5. Append the component to `STEP_COMPONENTS` in `AppearanceRequestForm.tsx`.
@@ -67,7 +93,7 @@ Step 2 (Location) has **no required fields**. Steps 0, 1, 3, 4, 5, 6 are validat
 
 ### Adding a field to an existing step
 1. Add the field to `FormData` in `types.ts` and give it `""` in `DEFAULT_FORM_DATA`.
-2. Add the JSX to the relevant `steps/StepN*.tsx`.
+2. Add the JSX to the relevant step or sub-component.
 3. Add validation in `helpers.ts → validateStep` if the field is required.
 4. Add a payload entry in `helpers.ts → buildPayload`.
 
@@ -87,8 +113,7 @@ All classes use the `arf__` BEM block prefix defined in `AppearanceRequestForm.c
 
 ## What NOT to change
 
-- **Do not pass props to step components** — they all read from context.
-- **Do not add state to step files** — all state lives in `AppearanceRequestContext.tsx`.
+- **Do not pass props to step or sub-components** — they all read from context.
+- **Do not add state to step/sub-component files** — all state lives in `AppearanceRequestContext.tsx`.
 - **Do not add validation inside step components** — validation belongs in `helpers.ts → validateStep`.
 - **`NavButtons` is prop-free by design** — it reads from context so it never needs to be updated when steps change.
-

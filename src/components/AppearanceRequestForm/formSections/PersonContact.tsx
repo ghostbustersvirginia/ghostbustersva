@@ -2,7 +2,8 @@ import { useAppearanceRequest } from "../AppearanceRequestContext";
 import FieldError from "../FieldError";
 import FormLabel from "../FormLabel";
 
-export default function Step6ContactInformation() {
+/** Contact person fields: name, email, phone. */
+export default function PersonContact() {
   const { formData, errors, update, copy } = useAppearanceRequest();
 
   return (
@@ -46,9 +47,7 @@ export default function Step6ContactInformation() {
       </div>
 
       <div className="arf__group">
-        <FormLabel htmlFor="contactPhone">
-          {copy.contactPhoneLabel}
-        </FormLabel>
+        <FormLabel htmlFor="contactPhone">{copy.contactPhoneLabel}</FormLabel>
         <input
           id="contactPhone"
           type="tel"
@@ -58,35 +57,7 @@ export default function Step6ContactInformation() {
           autoComplete="tel"
         />
       </div>
-
-      <div className="arf__group">
-        <FormLabel htmlFor="companyName">
-          {copy.companyNameLabel}
-        </FormLabel>
-        <input
-          id="companyName"
-          type="text"
-          className="arf__input"
-          value={formData.companyName}
-          onChange={(e) => update("companyName", e.target.value)}
-          autoComplete="organization"
-        />
-      </div>
-
-      <div className="arf__group">
-        <FormLabel htmlFor="companyWebsite">
-          {copy.companyWebsiteLabel}
-        </FormLabel>
-        <input
-          id="companyWebsite"
-          type="url"
-          className="arf__input"
-          value={formData.companyWebsite}
-          onChange={(e) => update("companyWebsite", e.target.value)}
-          placeholder={copy.companyWebsitePlaceholder}
-          autoComplete="url"
-        />
-      </div>
     </>
   );
 }
+

@@ -1,7 +1,7 @@
 import { useAppearanceRequest } from "../AppearanceRequestContext";
 import FormLabel from "../FormLabel";
 
-export default function Step7AdditionalInformation() {
+export default function AdditionalInformation() {
   const { formData, update, copy } = useAppearanceRequest();
 
   return (
@@ -18,3 +18,4 @@ export default function Step7AdditionalInformation() {
     </div>
   );
 }
+

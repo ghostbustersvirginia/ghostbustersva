@@ -322,6 +322,118 @@
 }
 
 /* ------------------------------------------------------------------ */
+/* Step selector (shown on Event Information step)                      */
+/* ------------------------------------------------------------------ */
+
+.arf__step-selector {
+  margin-block-start: var(--space-2xl);
+  padding: var(--space-lg) var(--space-xl);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.arf__step-selector-heading {
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wider);
+  margin-block-end: var(--space-lg);
+}
+
+.arf__step-selector-rows {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.arf__step-selector-row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.arf__step-selector-row-label {
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  color: var(--color-text-muted);
+}
+
+/* ------------------------------------------------------------------ */
+/* Chips                                                                */
+/* ------------------------------------------------------------------ */
+
+.arf__chip-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
+}
+
+.arf__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  border: 1.5px solid;
+  white-space: nowrap;
+  line-height: 1.5;
+  transition:
+    background-color var(--transition-fast),
+    border-color var(--transition-fast),
+    color var(--transition-fast);
+}
+
+/* Toggleable chip — currently enabled */
+.arf__chip--active {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: var(--color-text-inverse);
+  cursor: pointer;
+  user-select: none;
+}
+
+.arf__chip--active:hover {
+  filter: brightness(1.1);
+}
+
+/* Toggleable chip — currently disabled */
+.arf__chip--inactive {
+  background: transparent;
+  border-color: var(--color-border);
+  color: var(--color-text-muted);
+  cursor: pointer;
+  user-select: none;
+}
+
+.arf__chip--inactive:hover {
+  border-color: var(--color-accent);
+  color: var(--color-text);
+}
+
+/* Required chip — no interaction */
+.arf__chip--locked {
+  background: transparent;
+  border-color: var(--color-border);
+  color: var(--color-text-muted);
+  cursor: default;
+  opacity: 0.7;
+}
+
+/* Hide the native checkbox; the chip label is the visual control */
+.arf__chip input[type="checkbox"] {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}
+
+/* ------------------------------------------------------------------ */
 /* Responsive                                                           */
 /* ------------------------------------------------------------------ */
 

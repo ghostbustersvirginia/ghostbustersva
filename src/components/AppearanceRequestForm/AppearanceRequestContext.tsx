@@ -1,7 +1,13 @@
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useState, useEffect, useMemo } from "react";
 import type { ReactNode } from "react";
 import type { FormCopy, FormData } from "./types";
-import { SESSION_KEY, FORMSPREE_URL, TOTAL_STEPS, DEFAULT_FORM_DATA } from "./constants";
+import {
+  SESSION_KEY,
+  FORMSPREE_URL,
+  DEFAULT_FORM_DATA,
+  STEP_DEFINITIONS,
+  buildDefaultEnabledSections,
+} from "./constants";
 import { validateStep, buildPayload, loadFromSession, saveToSession, clearSession } from "./helpers";
 
 // ------------------------------------------------------------------ //
@@ -18,7 +24,13 @@ interface AppearanceRequestContextValue {
   isFirst: boolean;
   isLast: boolean;
   copy: FormCopy;
+  /** Optional-section toggle map: enabledSections[originalStepIndex][sectionId] */
+  enabledSections: Record<number, Record<string, boolean>>;
+  /** Original step indices (into STEP_COMPONENTS) for the currently active steps. */
+  activeStepOriginalIndices: number[];
   update: (field: keyof FormData, value: string) => void;
+  /** Toggle an optional section on/off. Required sections silently ignore calls. */
+  toggleSection: (originalStepIndex: number, sectionId: string) => void;
   goNext: () => void;
   goBack: () => void;
   handleSubmit: () => Promise<void>;
@@ -55,6 +67,19 @@ export function AppearanceRequestProvider({
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [submitError, setSubmitError] = useState("");
+  const [enabledSections, setEnabledSections] = useState<
+    Record<number, Record<string, boolean>>
+  >(buildDefaultEnabledSections);
+
+  // Step 0 (Event Information) is always first; remaining steps are active when
+  // they have a required section OR at least one enabled optional section.
+  const activeStepOriginalIndices = useMemo(() => {
+    const active = STEP_DEFINITIONS.filter((def) => {
+      if (def.sections.some((s) => s.required)) return true;
+      return def.sections.some((s) => enabledSections[def.originalIndex]?.[s.id] === true);
+    }).map((d) => d.originalIndex);
+    return [0, ...active];
+  }, [enabledSections]);
 
   // Restore from sessionStorage on mount
   useEffect(() => {
@@ -76,8 +101,23 @@ export function AppearanceRequestProvider({
     });
   };
 
+  const toggleSection = (originalStepIndex: number, sectionId: string) => {
+    const def = STEP_DEFINITIONS.find((d) => d.originalIndex === originalStepIndex);
+    const sectionDef = def?.sections.find((s) => s.id === sectionId);
+    if (!sectionDef || sectionDef.required) return;
+    setEnabledSections((prev) => ({
+      ...prev,
+      [originalStepIndex]: {
+        ...prev[originalStepIndex],
+        [sectionId]: !prev[originalStepIndex]?.[sectionId],
+      },
+    }));
+  };
+
   const validate = (): boolean => {
-    const errs = validateStep(step, formData, copy);
+    const originalIndex = activeStepOriginalIndices[step];
+    const stepSections = enabledSections[originalIndex] ?? {};
+    const errs = validateStep(originalIndex, formData, copy, stepSections);
     setErrors(errs);
     return Object.keys(errs).length === 0;
   };
@@ -131,9 +171,12 @@ export function AppearanceRequestProvider({
         submitted,
         submitError,
         isFirst: step === 0,
-        isLast: step === TOTAL_STEPS - 1,
+        isLast: step === activeStepOriginalIndices.length - 1,
         copy,
+        enabledSections,
+        activeStepOriginalIndices,
         update,
+        toggleSection,
         goNext,
         goBack,
         handleSubmit,
@@ -143,5 +186,3 @@ export function AppearanceRequestProvider({
     </AppearanceRequestContext.Provider>
   );
 }
-
-

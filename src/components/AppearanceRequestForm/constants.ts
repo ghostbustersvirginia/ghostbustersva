@@ -4,6 +4,85 @@ export const SESSION_KEY = "gbva-appearance-request";
 export const FORMSPREE_URL = "https://formspree.io/f/xpqybzjj";
 export const TOTAL_STEPS = 8;
 
+// ------------------------------------------------------------------ //
+// Step & section definitions — drive StepSelector and validation      //
+// ------------------------------------------------------------------ //
+
+export interface SectionDef {
+  /** Stable ID — key in enabledSections map. */
+  id: string;
+  /** Display label shown in StepSelector chip. */
+  label: string;
+  /** Required sections cannot be toggled off. */
+  required: boolean;
+}
+
+export interface StepDef {
+  /** 0-based index matching the STEP_COMPONENTS array in AppearanceRequestForm.tsx. */
+  originalIndex: number;
+  sections: SectionDef[];
+}
+
+/**
+ * Configuration for steps 1–7 (step 0 / Event Information is always present).
+ * A step is active when it has at least one required section OR any optional
+ * section is currently enabled.
+ */
+export const STEP_DEFINITIONS: StepDef[] = [
+  {
+    originalIndex: 1,
+    sections: [{ id: "eventSchedule", label: "Event Schedule", required: false }],
+  },
+  {
+    originalIndex: 2,
+    sections: [
+      { id: "venueSearch", label: "Venue Search", required: true },
+      { id: "address", label: "Address", required: true },
+    ],
+  },
+  {
+    originalIndex: 3,
+    sections: [
+      { id: "ectoVehicles", label: "Ecto Vehicles", required: false },
+      { id: "parkingInfo", label: "Parking Info", required: false },
+    ],
+  },
+  {
+    originalIndex: 4,
+    sections: [
+      { id: "tables", label: "Tables", required: false },
+      { id: "chairs", label: "Chairs", required: false },
+    ],
+  },
+  {
+    originalIndex: 5,
+    sections: [{ id: "charitableDonations", label: "Charitable Donations", required: true }],
+  },
+  {
+    originalIndex: 6,
+    sections: [
+      { id: "personContact", label: "Personal Contact", required: true },
+      { id: "companyContact", label: "Company Info", required: false },
+    ],
+  },
+  {
+    originalIndex: 7,
+    sections: [{ id: "additionalInfo", label: "Additional Information", required: false }],
+  },
+];
+
+/** Build the default section-enabled map — all optional sections start as enabled. */
+export function buildDefaultEnabledSections(): Record<number, Record<string, boolean>> {
+  const result: Record<number, Record<string, boolean>> = {};
+  for (const def of STEP_DEFINITIONS) {
+    result[def.originalIndex] = {};
+    for (const s of def.sections) {
+      if (!s.required) result[def.originalIndex][s.id] = true;
+    }
+  }
+  return result;
+}
+
 /**
  * Hard-coded radio VALUES used in conditional logic and buildPayload.
  * These must never change — only the display labels (in DEFAULT_COPY) can be edited.
@@ -70,6 +149,8 @@ export const DEFAULT_COPY: FormCopy = {
   earliestSetupTimeLabel: "Earliest Setup / Arrival Time",
   requiredLeaveTimeLabel: "Required Leave Time",
 
+  locationSearchLabel: "Search for a Venue or Address",
+  locationSearchPlaceholder: "Start typing a place name or address\u2026",
   locationDescriptionLabel: "Location Description",
   locationDescriptionPlaceholder: "Describe the venue or provide any helpful location context\u2026",
   addressLine1Label: "Street Address",
@@ -97,6 +178,8 @@ export const DEFAULT_COPY: FormCopy = {
   numberOfChairsLabel: "How many chairs will be provided?",
 
   charitableDonationsLegend: "Are charitable donations allowed at this event?",
+  collectDonationsForHostLegend:
+    "Would you like Ghostbusters Virginia to collect charitable donations on behalf of your organization?",
   optionUnsure: "Unsure",
 
   contactNameLabel: "Name",
@@ -154,6 +237,7 @@ export const DEFAULT_FORM_DATA: FormData = {
   city: "",
   state: "",
   zipCode: "",
+  placeId: "",
   requestEctoVehicle: "",
   ectoVehicleParkingInfo: "",
   maxEctoVehicles: "",
@@ -164,6 +248,7 @@ export const DEFAULT_FORM_DATA: FormData = {
   numberOfTables: "",
   numberOfChairs: "",
   charitableDonationsAllowed: "",
+  collectDonationsForHost: "",
   contactName: "",
   contactEmail: "",
   contactPhone: "",

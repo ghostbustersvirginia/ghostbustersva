@@ -1,11 +1,14 @@
 import { useAppearanceRequest } from "../AppearanceRequestContext";
 import FormLabel from "../FormLabel";
+import PlaceSearch from "../formSections/PlaceSearch";
 
-export default function Step2Location() {
+export default function Location() {
   const { formData, update, copy } = useAppearanceRequest();
 
   return (
     <>
+      <PlaceSearch />
+
       <div className="arf__group">
         <FormLabel htmlFor="locationDescription">{copy.locationDescriptionLabel}</FormLabel>
         <textarea
@@ -81,3 +84,4 @@ export default function Step2Location() {
     </>
   );
 }
+

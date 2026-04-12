@@ -12,6 +12,7 @@ export interface FormData {
   earliestSetupTime: string;
   requiredLeaveTime: string;
   // Step 2
+  placeId: string;
   locationDescription: string;
   addressLine1: string;
   addressLine2: string;
@@ -31,6 +32,7 @@ export interface FormData {
   numberOfChairs: string;
   // Step 5
   charitableDonationsAllowed: string;
+  collectDonationsForHost: string;
   // Step 6
   contactName: string;
   contactEmail: string;
@@ -83,6 +85,8 @@ export interface FormCopy {
   requiredLeaveTimeLabel: string;
 
   // Step 2 — Location
+  locationSearchLabel: string;
+  locationSearchPlaceholder: string;
   locationDescriptionLabel: string;
   locationDescriptionPlaceholder: string;
   addressLine1Label: string;
@@ -115,6 +119,7 @@ export interface FormCopy {
 
   // Step 5 — Charitable Donations
   charitableDonationsLegend: string;
+  collectDonationsForHostLegend: string;
   optionUnsure: string;
 
   // Step 6 — Contact Information

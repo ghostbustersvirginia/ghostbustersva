@@ -8,6 +8,7 @@ export function validateStep(
   step: number,
   formData: FormData,
   copy: FormCopy,
+  enabledSections: Record<string, boolean> = {},
 ): Partial<Record<keyof FormData, string>> {
   const errs: Partial<Record<keyof FormData, string>> = {};
 
@@ -35,27 +36,35 @@ export function validateStep(
   // Step 2 (Location) — no required fields
 
   if (step === 3) {
-    if (!formData.requestEctoVehicle)
-      errs.requestEctoVehicle = copy.errorRequestEctoVehicleRequired;
-    if (formData.requestEctoVehicle === "yes") {
-      if (!formData.ectoVehicleParkingInfo.trim())
-        errs.ectoVehicleParkingInfo = copy.errorEctoVehicleParkingInfoRequired;
-      if (!formData.maxEctoVehicles.trim())
-        errs.maxEctoVehicles = copy.errorMaxEctoVehiclesRequired;
+    if (enabledSections.ectoVehicles !== false) {
+      if (!formData.requestEctoVehicle)
+        errs.requestEctoVehicle = copy.errorRequestEctoVehicleRequired;
+      if (formData.requestEctoVehicle === "yes") {
+        if (!formData.ectoVehicleParkingInfo.trim())
+          errs.ectoVehicleParkingInfo = copy.errorEctoVehicleParkingInfoRequired;
+        if (!formData.maxEctoVehicles.trim())
+          errs.maxEctoVehicles = copy.errorMaxEctoVehiclesRequired;
+      }
     }
-    if (!formData.memberParkingInfo.trim())
-      errs.memberParkingInfo = copy.errorMemberParkingInfoRequired;
-    if (!formData.paidParkingCovered)
-      errs.paidParkingCovered = copy.errorPaidParkingCoveredRequired;
+    if (enabledSections.parkingInfo !== false) {
+      if (!formData.memberParkingInfo.trim())
+        errs.memberParkingInfo = copy.errorMemberParkingInfoRequired;
+      if (!formData.paidParkingCovered)
+        errs.paidParkingCovered = copy.errorPaidParkingCoveredRequired;
+    }
   }
 
   if (step === 4) {
-    if (!formData.tablesProvided) errs.tablesProvided = copy.errorTablesRequired;
-    if (!formData.chairsProvided) errs.chairsProvided = copy.errorChairsRequired;
-    if (formData.tablesProvided === "we provide tables" && !formData.numberOfTables.trim())
-      errs.numberOfTables = copy.errorNumberOfTablesRequired;
-    if (formData.chairsProvided === "we provide chairs" && !formData.numberOfChairs.trim())
-      errs.numberOfChairs = copy.errorNumberOfChairsRequired;
+    if (enabledSections.tables !== false) {
+      if (!formData.tablesProvided) errs.tablesProvided = copy.errorTablesRequired;
+      if (formData.tablesProvided === "we provide tables" && !formData.numberOfTables.trim())
+        errs.numberOfTables = copy.errorNumberOfTablesRequired;
+    }
+    if (enabledSections.chairs !== false) {
+      if (!formData.chairsProvided) errs.chairsProvided = copy.errorChairsRequired;
+      if (formData.chairsProvided === "we provide chairs" && !formData.numberOfChairs.trim())
+        errs.numberOfChairs = copy.errorNumberOfChairsRequired;
+    }
   }
 
   if (step === 5) {
@@ -97,6 +106,7 @@ export function buildPayload(formData: FormData): Record<string, string> {
   }
 
   if (formData.locationDescription) payload["Location Description"] = formData.locationDescription;
+  if (formData.placeId) payload["Google Place ID"] = formData.placeId;
   if (formData.addressLine1) payload["Street Address"] = formData.addressLine1;
   if (formData.addressLine2) payload["Address Line 2"] = formData.addressLine2;
   if (formData.city) payload["City"] = formData.city;
@@ -119,6 +129,10 @@ export function buildPayload(formData: FormData): Record<string, string> {
     payload["Number of Chairs"] = formData.numberOfChairs;
 
   payload["Charitable Donations Allowed"] = formData.charitableDonationsAllowed;
+  if (formData.charitableDonationsAllowed === "yes" && formData.collectDonationsForHost) {
+    payload["Collect Donations for Host Organization"] =
+      formData.collectDonationsForHost === "yes" ? "Yes" : "No";
+  }
 
   // FormSpree uses 'email' as the reply-to address
   payload["email"] = formData.contactEmail;

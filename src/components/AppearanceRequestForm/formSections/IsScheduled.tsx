@@ -2,14 +2,14 @@ import { useAppearanceRequest } from "../AppearanceRequestContext";
 import FieldError from "../FieldError";
 import RadioGroup from "../RadioGroup";
 
-export default function Step5CharitableDonations() {
+export default function IsScheduled() {
   const { formData, errors, update, copy } = useAppearanceRequest();
 
   return (
     <div className="arf__group">
       <fieldset>
         <legend className="arf__label">
-          {copy.charitableDonationsLegend}
+          {copy.isScheduledLegend}
           <span className="arf__required" aria-label="required">
             {" "}
             *
@@ -17,26 +17,19 @@ export default function Step5CharitableDonations() {
         </legend>
         <div>
           <RadioGroup
-            name="charitableDonationsAllowed"
+            name="isScheduled"
             options={[
               { value: "yes", label: copy.optionYes },
               { value: "no", label: copy.optionNo },
-              { value: "unsure", label: copy.optionUnsure },
             ]}
-            value={formData.charitableDonationsAllowed}
-            onChange={(v) => update("charitableDonationsAllowed", v)}
-            errorId={
-              errors.charitableDonationsAllowed
-                ? "charitableDonationsAllowed-error"
-                : undefined
-            }
+            value={formData.isScheduled}
+            onChange={(v) => update("isScheduled", v)}
+            errorId={errors.isScheduled ? "isScheduled-error" : undefined}
           />
         </div>
       </fieldset>
-      <FieldError
-        id="charitableDonationsAllowed-error"
-        message={errors.charitableDonationsAllowed}
-      />
+      <FieldError id="isScheduled-error" message={errors.isScheduled} />
     </div>
   );
 }
+
