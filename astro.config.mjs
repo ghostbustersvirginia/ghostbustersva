@@ -4,6 +4,8 @@ import sitemap from "@astrojs/sitemap";
 import markdoc from "@astrojs/markdoc";
 import vercel from "@astrojs/vercel";
 
+import react from "@astrojs/react";
+
 const productionSiteUrl = (process.env.SITE_URL || "https://gbva-site.vercel.app/").replace(
   /\/+$/,
   "",
@@ -15,5 +17,5 @@ export default defineConfig({
   // Canonical and sitemap URLs always use the explicit primary domain.
   site: productionSiteUrl,
   adapter: vercel(),
-  integrations: [sitemap(), markdoc()],
+  integrations: [sitemap(), markdoc(), react()],
 });
