@@ -19,6 +19,8 @@ export default defineConfig({
   env: {
     schema: {
       GOOGLE_MAPS_API_KEY: envField.string({ context: 'client', access: 'public' }),
+      GOOGLE_SERVICE_KEY: envField.string({ context: 'server', access: 'public' }),
+      GOOGLE_SERVICE_EMAIL: envField.string({ context: 'server', access: 'public' }),
     }
   },
   adapter: vercel(),

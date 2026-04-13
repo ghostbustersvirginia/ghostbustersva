@@ -2,6 +2,8 @@
 /**
  * Events page — mission board of upcoming and past events.
  */
+
+import Calendar from "../components/Calendar.astro";
 import BaseLayout from "../layouts/BaseLayout.astro";
 import Button from "../components/ui/Button.astro";
 import EventCard from "../components/EventCard.astro";
@@ -62,6 +64,13 @@ const safeEventCtaHref = getSafeHref(eventCtaHref) || "/contact";
     <div class="page-band page-band--white">
       <div class="container container--mid">
         <PageHeader id="events-title" title={pageTitle} subtitle={pageIntro} />
+      </div>
+    </div>
+
+    <div class="page-band">
+      <div class="container">
+        <SectionHeading>Events List</SectionHeading>
+        <Calendar />
       </div>
     </div>
 

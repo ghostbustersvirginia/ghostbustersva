@@ -1,0 +1,40 @@
+---
+// src/components/Calendar.astro
+import { google } from "googleapis";
+
+import { GOOGLE_SERVICE_KEY, GOOGLE_SERVICE_EMAIL } from "astro:env/server";
+
+// Load service account key
+const serviceAccountKey = Buffer.from(GOOGLE_SERVICE_KEY, "base64").toString();
+const serviceAccountEmail = GOOGLE_SERVICE_EMAIL;
+
+const calendarId = "c_37a308ef81bb293415e887dfe35ad3182ddab79ffcec0af9c597bd91431d54f7@group.calendar.google.com";
+
+const auth = new google.auth.JWT({
+  email: serviceAccountEmail,
+  key: serviceAccountKey,
+  scopes: ["https://www.googleapis.com/auth/calendar.readonly"],
+});
+
+const calendar = google.calendar({ version: "v3", auth });
+
+// Fetch events
+const response = await calendar.events.list({
+  calendarId: calendarId,
+  timeMin: new Date().toISOString(),
+  maxResults: 10,
+  singleEvents: true,
+  orderBy: "startTime",
+});
+
+const events = response.data.items
+  ?.filter(event => event && !event?.summary?.toLowerCase().includes('interest'));
+
+---
+
+<div>
+  {events?.map(event => (
+    <p>{event.summary} - {event.start.dateTime || event.start.date}</p>
+    <pre>{JSON.stringify(event, undefined, 2)}</pre>
+  ))}
+</div>
