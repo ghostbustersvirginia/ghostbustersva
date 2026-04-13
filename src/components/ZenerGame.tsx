@@ -97,7 +97,17 @@ const WRONG_FILES = [
   "/sounds/wrong/good-guess.mp3",
   "/sounds/wrong/isnt-your-lucky-day.mp3",
   "/sounds/wrong/wrong-1.mp3",
-  "/sounds/wrong/wrong-2.mp3",
+  "/sounds/wrong/wrong-2.mp3"
+];
+
+const RIGHT_FILES = [
+  "/sounds/right/incredible.mp3",
+  "/sounds/right/there-are-some-things.mp3",
+  "/sounds/right/theres-something-you-dont-see-every-day.mp3",
+  "/sounds/right/very-good-thats-great.mp3",
+  "/sounds/right/you-are-a-legitimate-phenomenon.mp3",
+  "/sounds/right/you-cant-see-these-can-you.mp3",
+  "/sounds/right/youre-not-cheating-me-are-you.mp3"
 ];
 
 /* ------------------------------------------------------------------ */
@@ -136,9 +146,15 @@ class SoundQueue {
   }
 }
 
+let currentAudio: HTMLAudioElement | null = null;
+
 function playSound(src: string): void {
   try {
-    new Audio(src).play().catch(() => {
+    // Don't start a new sound while another one is still playing
+    if (currentAudio && !currentAudio.paused) return;
+    const audio = new Audio(src);
+    currentAudio = audio;
+    audio.play().catch(() => {
       /* ignore browser autoplay-policy rejections */
     });
   } catch {
@@ -181,6 +197,7 @@ export default function ZenerGame() {
   const shockQueueRef = useRef(new SoundQueue(SHOCK_FILES));
   const beforeQueueRef = useRef(new SoundQueue(BEFORE_FILES));
   const wrongQueueRef = useRef(new SoundQueue(WRONG_FILES));
+  const rightQueueRef = useRef(new SoundQueue(RIGHT_FILES));
 
   /* Detect reduced motion preference */
   useEffect(() => {
@@ -256,6 +273,9 @@ export default function ZenerGame() {
         if (isCorrect) {
           setTotalScore((s) => s + score);
           triggerEffect("flash");
+          // Play a random right-answer quip 0.7–1.5 s later
+          const rightDelay = 700 + Math.random() * 800;
+          setTimeout(() => playSound(rightQueueRef.current.next()), rightDelay);
         } else {
           setIncorrectCount((n) => n + 1);
           triggerEffect("shake");
