@@ -4,6 +4,8 @@ import { google } from "googleapis";
 
 import { GOOGLE_SERVICE_KEY, GOOGLE_SERVICE_EMAIL } from "astro:env/server";
 
+const sampleUrl = "https://maps.app.goo.gl/Dv55yMJetDWxwAMn9";
+
 // Load service account key
 const serviceAccountKey = Buffer.from(GOOGLE_SERVICE_KEY, "base64").toString();
 const serviceAccountEmail = GOOGLE_SERVICE_EMAIL;
@@ -27,14 +29,30 @@ const response = await calendar.events.list({
   orderBy: "startTime",
 });
 
-const events = response.data.items
-  ?.filter(event => event && !event?.summary?.toLowerCase().includes('interest'));
+const getPlaceURL = async (url: string) => await fetch(url).then(response => response.text()).then(markup => {
+  return markup.split("\\u003d").filter(line => line.startsWith("https://"))
+    .map(line => decodeURIComponent(line.split("\\u0026")?.[0] ?? ''))?.[0];
+}).catch();
+
+
+const events = await Promise.all(response.data.items
+  ?.filter(event => event && !event?.summary?.toLowerCase().includes('interest'))
+  .map(event => {
+    const url = event.description?.replace(/[\s\S]*(https:\/\/maps.app.goo.gl\/[a-z0-9]*)[\s\S]*/mi, "$1");
+    url.startsWith("https://") && console.log(url);
+    return url?.startsWith("https://") ? Promise.resolve(getPlaceURL(url).then(placeURL => ({ event, placeURL }))) :
+      Promise.resolve({ event });
+  }) ?? []);
 
 ---
 
 <div>
-  {events?.map(event => (
-    <p>{event.summary} - {event.start.dateTime || event.start.date}</p>
-    <pre>{JSON.stringify(event, undefined, 2)}</pre>
-  ))}
+  {events?.map(entry => {
+    const { event, placeURL } = entry;
+    return (
+      <p>{event.summary} - {event.start.dateTime || event.start.date}</p>
+      <p>{placeURL}</p>
+      <!--<pre>{JSON.stringify(event, undefined, 2)}</pre>-->
+    );
+  })}
 </div>
