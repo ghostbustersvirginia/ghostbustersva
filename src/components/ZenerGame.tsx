@@ -146,15 +146,10 @@ class SoundQueue {
   }
 }
 
-let currentAudio: HTMLAudioElement | null = null;
 
 function playSound(src: string): void {
   try {
-    // Don't start a new sound while another one is still playing
-    if (currentAudio && !currentAudio.paused) return;
-    const audio = new Audio(src);
-    currentAudio = audio;
-    audio.play().catch(() => {
+    new Audio(src).play().catch(() => {
       /* ignore browser autoplay-policy rejections */
     });
   } catch {
