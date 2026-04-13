@@ -6,9 +6,7 @@
 import SectionHeading from "../components/ui/SectionHeading.astro";
 import BaseLayout from "../layouts/BaseLayout.astro";
 import AppearanceRequestForm from "../components/AppearanceRequestForm/AppearanceRequestForm.tsx";
-import { getPageCopy } from "../lib/page-copy";
 
-const formCopy = await getPageCopy("appearance-request-form");
 ---
 
 <BaseLayout
@@ -28,7 +26,7 @@ const formCopy = await getPageCopy("appearance-request-form");
         <p class="page-intro">
           Planning an event and want Ghostbusters Virginia to be part of it? Fill out the form below and we'll be in touch. Required fields are marked with an asterisk (*).
         </p>
-        <AppearanceRequestForm copy={formCopy} client:load />
+        <AppearanceRequestForm client:load />
       </div>
     </div>
   </section>
