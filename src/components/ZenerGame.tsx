@@ -97,7 +97,7 @@ const WRONG_FILES = [
   "/sounds/wrong/good-guess.mp3",
   "/sounds/wrong/isnt-your-lucky-day.mp3",
   "/sounds/wrong/wrong-1.mp3",
-  "/sounds/wrong/wrong-2.mp3"
+  "/sounds/wrong/wrong-2.mp3",
 ];
 
 const RIGHT_FILES = [
