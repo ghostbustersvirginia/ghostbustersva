@@ -1,0 +1,630 @@
+---
+/**
+ * /zener-test — Zener card ESP test game.
+ * PRD 001: Zener Card Deck
+ */
+import BaseLayout from "../layouts/BaseLayout.astro";
+import ZenerGame from "../components/ZenerGame";
+---
+
+<BaseLayout
+  title="Zener Card Test"
+  description="Test your ESP with a 25-card Zener deck. Predict the symbol on each card and see how your score compares to chance."
+  canonical="/zener-test"
+>
+  <ZenerGame client:load />
+</BaseLayout>
+
+<style is:global>
+  /* ================================================================
+     Zener Card Game — styles & animations
+     ================================================================ */
+
+  /* ---- Container / layout ---- */
+  .zener-game {
+    --zener-card-width: clamp(120px, 60vmin, 432px);
+    --zener-card-height: clamp(177px, 88.39vmin, 636px);
+
+    position: relative;
+    min-height: calc(100vh - 120px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding: var(--space-xl) var(--space-lg);
+    overflow: hidden;
+  }
+
+  /* ---- Background darkening overlay ---- */
+  .zener-bg-overlay {
+    position: fixed;
+    inset: 0;
+    background: #000;
+    pointer-events: none;
+    z-index: 0;
+    transition: opacity 0.8s ease;
+  }
+
+  /* ---- Flash overlay ---- */
+  .zener-flash-overlay {
+    position: fixed;
+    inset: 0;
+    background: #fff;
+    pointer-events: none;
+    z-index: 9999;
+    animation: zener-flash 0.3s ease forwards;
+  }
+
+  @keyframes zener-flash {
+    0% {
+      opacity: 0.7;
+    }
+    100% {
+      opacity: 0;
+    }
+  }
+
+  /* ---- Screen shake ---- */
+  .zener-game--shake {
+    animation: zener-shake 1.5s ease;
+  }
+
+  @keyframes zener-shake {
+    0%,
+    100% {
+      transform: translateX(0);
+    }
+    10%,
+    50%,
+    90% {
+      transform: translateX(-6px);
+    }
+    30%,
+    70% {
+      transform: translateX(6px);
+    }
+  }
+
+  /* ---- HUD ---- */
+  .zener-hud {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    gap: var(--space-lg);
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    max-width: 600px;
+    margin-bottom: var(--space-xl);
+    padding: var(--space-md) var(--space-xl);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-panel);
+  }
+
+  .zener-hud__score,
+  .zener-hud__cards,
+  .zener-hud__wrong {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+  }
+
+  .zener-hud__label {
+    font-size: var(--text-xs);
+    color: var(--color-text-muted);
+    font-weight: var(--weight-semibold);
+    letter-spacing: var(--tracking-wider);
+  }
+
+  .zener-hud__value {
+    font-family: var(--font-display);
+    font-size: var(--text-2xl);
+    color: var(--color-text);
+    font-weight: var(--weight-bold);
+    line-height: 1;
+  }
+
+  /* ---- Intro / idle state ---- */
+  .zener-intro {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-lg);
+    text-align: center;
+  }
+
+  .zener-intro__prompt {
+    font-size: var(--text-lg);
+    color: var(--color-text-muted);
+    max-width: 440px;
+    line-height: var(--leading-relaxed);
+  }
+
+  /* ---- Stacked deck (idle decoration) ---- */
+  .zener-deck-stack {
+    position: relative;
+    width: var(--zener-card-width);
+    height: var(--zener-card-height);
+  }
+
+  .zener-deck-card {
+    position: absolute;
+    inset: 0;
+    border-radius: var(--radius-md);
+    background: #fff url("/images/zener-test/card-back2.png") center / cover no-repeat;
+    border: 2px solid var(--color-text-muted);
+    box-shadow: var(--shadow-panel);
+  }
+
+  /* ---- Shuffle animation ---- */
+  .zener-shuffle {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: clamp(200px, 45vmin, 380px);
+    width: 100%;
+  }
+
+  .zener-shuffle__card {
+    position: absolute;
+    width: var(--zener-card-width);
+    height: var(--zener-card-height);
+    border-radius: var(--radius-md);
+    background: #fff url("/images/zener-test/card-back2.png") center / cover no-repeat;
+    border: 2px solid var(--color-text-muted);
+    box-shadow: var(--shadow-panel);
+    animation: zener-shuffle-fan 0.9s ease forwards;
+  }
+
+  @keyframes zener-shuffle-fan {
+    0% {
+      transform: translateX(0) rotate(0deg);
+      opacity: 1;
+    }
+    40% {
+      transform: translateX(calc((var(--fan-dir, 1)) * 40px))
+        rotate(calc((var(--fan-dir, 1)) * 15deg));
+      opacity: 1;
+    }
+    80% {
+      transform: translateX(0) rotate(0deg);
+      opacity: 1;
+    }
+    100% {
+      transform: translateX(0) rotate(0deg);
+      opacity: 0.9;
+    }
+  }
+
+  .zener-shuffle__card:nth-child(1) {
+    --fan-dir: -2;
+    z-index: 5;
+  }
+  .zener-shuffle__card:nth-child(2) {
+    --fan-dir: -1;
+    z-index: 4;
+  }
+  .zener-shuffle__card:nth-child(3) {
+    --fan-dir: 0;
+    z-index: 3;
+  }
+  .zener-shuffle__card:nth-child(4) {
+    --fan-dir: 1;
+    z-index: 2;
+  }
+  .zener-shuffle__card:nth-child(5) {
+    --fan-dir: 2;
+    z-index: 1;
+  }
+
+  /* ---- Game stage ---- */
+  .zener-stage {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-xl);
+    width: 100%;
+  }
+
+  /* ---- Card ---- */
+  .zener-card-wrapper {
+    perspective: 800px;
+  }
+
+  .zener-card {
+    position: relative;
+    width: var(--zener-card-width);
+    height: var(--zener-card-height);
+    transform-style: preserve-3d;
+    transition: transform 0.6s ease;
+    cursor: default;
+  }
+
+  .zener-card--slide-in {
+    animation: zener-slide-in 0.4s ease forwards;
+  }
+
+  .zener-card--slide-out {
+    animation: zener-slide-out 0.35s ease forwards;
+  }
+
+  .zener-card--center {
+    transform: translateX(0);
+  }
+
+  @keyframes zener-slide-in {
+    from {
+      transform: translateX(60vw);
+      opacity: 0;
+    }
+    to {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+
+  @keyframes zener-slide-out {
+    from {
+      transform: translateX(0);
+      opacity: 1;
+    }
+    to {
+      transform: translateX(-60vw);
+      opacity: 0;
+    }
+  }
+
+  /* 3-D flip */
+  .zener-card--flipped {
+    transform: rotateY(180deg) translateY(-10px);
+  }
+
+  .zener-card__face {
+    position: absolute;
+    inset: 0;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid var(--color-border);
+    box-shadow: var(--shadow-panel);
+  }
+
+  .zener-card__face--back {
+    background: #fff url("/images/zener-test/card-back2.png") center / cover no-repeat;
+    color: var(--color-text-inverse);
+  }
+
+  .zener-card__face--front {
+    background: var(--color-surface);
+    transform: rotateY(180deg);
+  }
+
+  .zener-card__back-label {
+    display: none;
+  }
+
+  .zener-card__revealed {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-sm);
+    width: 100%;
+    height: 100%;
+    padding: var(--space-lg);
+  }
+
+  /* Symbol SVG inside the card */
+  .zener-card__symbol {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-text);
+  }
+
+  .zener-card__symbol svg {
+    width: calc(var(--zener-card-width) * 0.75) !important;
+    height: auto;
+  }
+
+  /* ---- Result badge (✓ / ✗) ---- */
+  .zener-result-badge {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: var(--radius-full);
+    font-size: var(--text-base);
+    font-weight: var(--weight-bold);
+    line-height: 1;
+  }
+
+  .zener-result-badge--correct {
+    background: var(--color-gb-green);
+    color: #fff;
+  }
+
+  .zener-result-badge--incorrect {
+    background: var(--color-gb-red);
+    color: #fff;
+  }
+
+  /* ---- Feedback strip ---- */
+  .zener-feedback {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-sm);
+    padding: var(--space-sm) var(--space-xl);
+    border-radius: var(--radius-md);
+    font-size: var(--text-base);
+    font-weight: var(--weight-semibold);
+    min-height: 44px;
+    animation: zener-feedback-in 0.2s ease;
+  }
+
+  @keyframes zener-feedback-in {
+    from {
+      opacity: 0;
+      transform: translateY(4px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .zener-feedback--correct {
+    background: rgba(61, 134, 61, 0.1);
+    color: var(--color-gb-green);
+    border: 1px solid rgba(61, 134, 61, 0.3);
+  }
+
+  .zener-feedback--incorrect {
+    background: rgba(232, 60, 59, 0.08);
+    color: var(--color-gb-red);
+    border: 1px solid rgba(232, 60, 59, 0.25);
+  }
+
+  .zener-feedback__icon {
+    font-size: var(--text-lg);
+  }
+
+  /* ---- Symbol buttons ---- */
+  .zener-symbols {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-md);
+    justify-content: center;
+    width: 100%;
+  }
+
+  .zener-symbol-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-xs);
+    padding: var(--space-md) var(--space-md);
+    min-width: 80px;
+    background: var(--color-surface);
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    font-family: var(--font-body);
+    font-size: var(--text-sm);
+    color: var(--color-text);
+    transition:
+      border-color var(--transition-fast),
+      box-shadow var(--transition-fast),
+      transform var(--transition-fast),
+      background var(--transition-fast);
+  }
+
+  .zener-symbol-btn:hover:not(:disabled) {
+    border-color: var(--color-accent);
+    box-shadow: 0 2px 8px var(--color-glow);
+    transform: translateY(-2px);
+  }
+
+  .zener-symbol-btn:focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 2px;
+  }
+
+  .zener-symbol-btn--selected,
+  .zener-symbol-btn--selected:hover:not(:disabled) {
+    background: var(--color-accent);
+    border-color: var(--color-accent);
+    color: var(--color-text-inverse);
+  }
+
+  .zener-symbol-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  .zener-symbol-btn__label {
+    font-size: var(--text-xs);
+    font-weight: var(--weight-semibold);
+    letter-spacing: var(--tracking-wide);
+  }
+
+  .zener-symbol-btn__pts {
+    font-size: var(--text-xs);
+    color: var(--color-text-muted);
+    font-weight: var(--weight-normal);
+  }
+
+  .zener-symbol-btn--selected .zener-symbol-btn__pts {
+    color: rgba(255, 255, 255, 0.75);
+  }
+
+  .zener-symbol-btn .zener-symbol-icon {
+    width: 8dvw;
+    height: calc(var(--zener-card-height) * 0.2);
+  }
+
+  /* Symbol icon in button */
+  .zener-symbol-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .zener-symbol-icon svg {
+    width: 100%;
+    height: 100%;
+  }
+
+  /* ---- Buttons ---- */
+  .zener-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.75rem 2rem;
+    font-family: var(--font-body);
+    font-size: var(--text-base);
+    font-weight: var(--weight-semibold);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition:
+      background var(--transition-fast),
+      transform var(--transition-fast),
+      box-shadow var(--transition-fast);
+  }
+
+  .zener-btn:focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 2px;
+  }
+
+  .zener-btn--primary {
+    background: var(--color-action-primary);
+    color: var(--color-text-inverse);
+    border-color: var(--color-action-primary);
+  }
+
+  .zener-btn--primary:hover {
+    background: var(--color-action-primary-hover);
+    border-color: var(--color-action-primary-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px var(--color-glow);
+  }
+
+  .zener-btn--primary:active {
+    transform: translateY(0);
+  }
+
+  /* ---- Complete screen ---- */
+  .zener-complete {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-xl);
+    text-align: center;
+    max-width: 500px;
+    width: 100%;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-3xl) var(--space-2xl);
+    box-shadow: var(--shadow-panel);
+  }
+
+  .zener-complete__heading {
+    font-family: var(--font-display);
+    font-size: var(--text-3xl);
+    color: var(--color-text);
+    margin: 0;
+  }
+
+  .zener-complete__score-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-xs);
+  }
+
+  .zener-complete__score-label {
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+    font-weight: var(--weight-semibold);
+    letter-spacing: var(--tracking-wider);
+  }
+
+  .zener-complete__score-value {
+    font-family: var(--font-display);
+    font-size: clamp(3rem, 10vmin, 5rem);
+    font-weight: var(--weight-bold);
+    color: var(--color-accent);
+    line-height: 1;
+    animation: zener-score-pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  @keyframes zener-score-pop {
+    from {
+      transform: scale(0.6);
+      opacity: 0;
+    }
+    to {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+
+  .zener-complete__summary {
+    font-size: var(--text-base);
+    color: var(--color-text-muted);
+    line-height: var(--leading-relaxed);
+  }
+
+  .zener-complete__stats {
+    display: flex;
+    gap: var(--space-2xl);
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+  }
+
+  .zener-complete__stats strong {
+    color: var(--color-text);
+  }
+
+  /* ---- Page band full-bleed ---- */
+  .page-band--full {
+    width: 100%;
+  }
+
+  /* ---- Responsive ---- */
+  @media (max-width: 480px) {
+    .zener-symbols {
+      gap: var(--space-sm);
+    }
+
+    .zener-symbol-btn {
+      min-width: 60px;
+      padding: var(--space-sm) var(--space-md);
+    }
+
+    .zener-hud {
+      gap: var(--space-xl);
+      padding: var(--space-sm) var(--space-lg);
+    }
+  }
+</style>
