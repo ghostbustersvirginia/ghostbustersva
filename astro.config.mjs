@@ -1,8 +1,10 @@
 // @ts-check
-import { defineConfig } from "astro/config";
+import { defineConfig, envField } from "astro/config";
 import sitemap from "@astrojs/sitemap";
 import markdoc from "@astrojs/markdoc";
 import vercel from "@astrojs/vercel";
+
+import react from "@astrojs/react";
 
 const productionSiteUrl = (process.env.SITE_URL || "https://gbva-site.vercel.app/").replace(
   /\/+$/,
@@ -14,6 +16,11 @@ export default defineConfig({
   output: "static",
   // Canonical and sitemap URLs always use the explicit primary domain.
   site: productionSiteUrl,
+  env: {
+    schema: {
+      GOOGLE_MAPS_API_KEY: envField.string({ context: 'client', access: 'public' }),
+    }
+  },
   adapter: vercel(),
-  integrations: [sitemap(), markdoc()],
+  integrations: [sitemap(), markdoc(), react()],
 });
