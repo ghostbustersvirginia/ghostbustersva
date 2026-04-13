@@ -107,7 +107,7 @@ const RIGHT_FILES = [
   "/sounds/right/very-good-thats-great.mp3",
   "/sounds/right/you-are-a-legitimate-phenomenon.mp3",
   "/sounds/right/you-cant-see-these-can-you.mp3",
-  "/sounds/right/youre-not-cheating-me-are-you.mp3"
+  "/sounds/right/youre-not-cheating-me-are-you.mp3",
 ];
 
 /* ------------------------------------------------------------------ */
