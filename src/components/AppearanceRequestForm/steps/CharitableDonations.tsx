@@ -49,8 +49,8 @@ export default function CharitableDonations() {
                 <RadioGroup
                   name="collectDonationsForHost"
                   options={[
-                    { value: "yes", label: copy.optionYes },
-                    { value: "no", label: copy.optionNo },
+                    { value: "host choice", label: copy.optionOurChoice },
+                    { value: "GBVA choice", label: copy.optionYourChoice },
                   ]}
                   value={formData.collectDonationsForHost}
                   onChange={(v) => update("collectDonationsForHost", v)}

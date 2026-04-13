@@ -2,7 +2,6 @@ import type { FormCopy, FormData } from "./types";
 
 export const SESSION_KEY = "gbva-appearance-request";
 export const FORMSPREE_URL = "https://formspree.io/f/xpqybzjj";
-export const TOTAL_STEPS = 8;
 
 // ------------------------------------------------------------------ //
 // Step & section definitions — drive StepSelector and validation      //
@@ -20,6 +19,12 @@ export interface SectionDef {
 export interface StepDef {
   /** 0-based index matching the STEP_COMPONENTS array in AppearanceRequestForm.tsx. */
   originalIndex: number;
+  /**
+   * When set, only THIS sectionId being enabled makes the step active.
+   * Subsections (other sections in the array) are shown in StepSelector
+   * only while the gate section is enabled.
+   */
+  gateSection?: string;
   sections: SectionDef[];
 }
 
@@ -30,8 +35,15 @@ export interface StepDef {
  */
 export const STEP_DEFINITIONS: StepDef[] = [
   {
+    // EventSchedule: gate section controls whether the step is active.
+    // Subsections appear in StepSelector only while the gate is enabled.
     originalIndex: 1,
-    sections: [{ id: "eventSchedule", label: "Event Schedule", required: false }],
+    gateSection: "eventSchedule",
+    sections: [
+      { id: "eventSchedule", label: "Event Schedule", required: false },
+      { id: "eventDateTime", label: "Dates & Times", required: false },
+      { id: "earliestSetup", label: "Setup Times", required: false },
+    ],
   },
   {
     originalIndex: 2,
@@ -54,10 +66,7 @@ export const STEP_DEFINITIONS: StepDef[] = [
       { id: "chairs", label: "Chairs", required: false },
     ],
   },
-  {
-    originalIndex: 5,
-    sections: [{ id: "charitableDonations", label: "Charitable Donations", required: true }],
-  },
+  // Step 5 (Charitable Donations) is embedded directly in EventInformation — not a standalone step.
   {
     originalIndex: 6,
     sections: [
@@ -71,7 +80,7 @@ export const STEP_DEFINITIONS: StepDef[] = [
   },
 ];
 
-/** Build the default section-enabled map — all optional sections start as enabled. */
+/** Build the default section-enabled map — opt-in sections start disabled. */
 export function buildDefaultEnabledSections(): Record<number, Record<string, boolean>> {
   const result: Record<number, Record<string, boolean>> = {};
   for (const def of STEP_DEFINITIONS) {
@@ -80,23 +89,14 @@ export function buildDefaultEnabledSections(): Record<number, Record<string, boo
       if (!s.required) result[def.originalIndex][s.id] = true;
     }
   }
+  // These sections are opt-in — disabled by default.
+  result[3].ectoVehicles = false;
+  result[3].parkingInfo = false;
+  result[4].tables = false;
+  result[4].chairs = false;
+  result[6].companyContact = false;
   return result;
 }
-
-/**
- * Hard-coded radio VALUES used in conditional logic and buildPayload.
- * These must never change — only the display labels (in DEFAULT_COPY) can be edited.
- */
-export const RADIO_VALUES = {
-  yes: "yes",
-  no: "no",
-  na: "n/a",
-  unsure: "unsure",
-  tablesWeBring: "we provide tables",
-  tablesGbvaBrings: "ghostbusters virginia provides tables",
-  chairsWeBring: "we provide chairs",
-  chairsGbvaBrings: "ghostbusters virginia provides chairs",
-} as const;
 
 /**
  * Default copy used when no CMS entry is available.
@@ -133,7 +133,6 @@ export const DEFAULT_COPY: FormCopy = {
     "Hospital / Home Visit",
     "Parade",
     "TV / Radio / Podcast",
-    "Touch a Truck",
     "Trunk or Treat",
     "Other",
   ],
@@ -165,8 +164,6 @@ export const DEFAULT_COPY: FormCopy = {
   maxEctoVehiclesLabel: "Maximum number of ecto vehicles that can be accommodated",
   memberParkingInfoLabel: "Where should members park on the day of the event?",
   memberParkingInfoPlaceholder: "Describe member parking location and instructions\u2026",
-  paidParkingCoveredLegend: "Is paid parking covered for members?",
-  optionNA: "N/A",
 
   tablesLegend: "Tables",
   tablesOptionWeBring: "We provide tables",
@@ -179,7 +176,9 @@ export const DEFAULT_COPY: FormCopy = {
 
   charitableDonationsLegend: "Are charitable donations allowed at this event?",
   collectDonationsForHostLegend:
-    "Would you like Ghostbusters Virginia to collect charitable donations on behalf of your organization?",
+    "For whom can we collect donations?",
+  optionOurChoice: "My choice of approved charity",
+  optionYourChoice: "Ghostbusters, Virginia's choice of charity",
   optionUnsure: "Unsure",
 
   contactNameLabel: "Name",
@@ -207,7 +206,6 @@ export const DEFAULT_COPY: FormCopy = {
   errorEctoVehicleParkingInfoRequired: "Ecto vehicle parking information is required.",
   errorMaxEctoVehiclesRequired: "Maximum number of ecto vehicles is required.",
   errorMemberParkingInfoRequired: "Member parking information is required.",
-  errorPaidParkingCoveredRequired: "Please indicate whether paid parking is covered.",
   errorTablesRequired: "Please indicate table availability.",
   errorChairsRequired: "Please indicate chair availability.",
   errorNumberOfTablesRequired: "Please specify the number of tables.",
@@ -242,7 +240,6 @@ export const DEFAULT_FORM_DATA: FormData = {
   ectoVehicleParkingInfo: "",
   maxEctoVehicles: "",
   memberParkingInfo: "",
-  paidParkingCovered: "",
   tablesProvided: "",
   chairsProvided: "",
   numberOfTables: "",

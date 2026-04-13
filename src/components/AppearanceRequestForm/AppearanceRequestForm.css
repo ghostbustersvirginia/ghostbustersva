@@ -321,6 +321,16 @@
   line-height: var(--leading-relaxed);
 }
 
+.arf__radio-group--cols-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-sm) var(--space-xl);
+}
+
+.arf__radio-group--cols-2 .arf__radio-label {
+  font-size: var(--text-sm);
+}
+
 /* ------------------------------------------------------------------ */
 /* Step selector (shown on Event Information step)                      */
 /* ------------------------------------------------------------------ */
@@ -416,9 +426,9 @@
 
 /* Required chip — no interaction */
 .arf__chip--locked {
-  background: transparent;
+  background: var(--color-accent);
   border-color: var(--color-border);
-  color: var(--color-text-muted);
+  color: var(--color-text-inverse);
   cursor: default;
   opacity: 0.7;
 }
@@ -440,6 +450,10 @@
 @media (max-width: 640px) {
   .arf__step-track {
     display: none;
+  }
+
+  .arf__radio-group--cols-2 {
+    grid-template-columns: 1fr;
   }
 
   .arf__grid-2 {

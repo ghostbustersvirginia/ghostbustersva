@@ -17,60 +17,28 @@ export function validateStep(
     if (!formData.eventType) errs.eventType = copy.errorEventTypeRequired;
     if (formData.eventType === "Other" && !formData.eventTypeOther.trim())
       errs.eventTypeOther = copy.errorEventTypeOtherRequired;
+    if (!formData.charitableDonationsAllowed)
+      errs.charitableDonationsAllowed = copy.errorCharitableDonationsRequired;
   }
 
   if (step === 1) {
     if (!formData.isScheduled) errs.isScheduled = copy.errorIsScheduledRequired;
     if (formData.isScheduled === "yes") {
-      if (!formData.eventStartDate) errs.eventStartDate = copy.errorEventStartDateRequired;
-      if (!formData.eventEndDate) errs.eventEndDate = copy.errorEventEndDateRequired;
-      if (!formData.eventStartTime) errs.eventStartTime = copy.errorEventStartTimeRequired;
-      if (!formData.eventEndTime) errs.eventEndTime = copy.errorEventEndTimeRequired;
-      if (!formData.earliestSetupTime)
-        errs.earliestSetupTime = copy.errorEarliestSetupTimeRequired;
-      if (!formData.requiredLeaveTime)
-        errs.requiredLeaveTime = copy.errorRequiredLeaveTimeRequired;
+      if (enabledSections.eventDateTime !== false) {
+        if (!formData.eventStartDate) errs.eventStartDate = copy.errorEventStartDateRequired;
+        if (!formData.eventEndDate) errs.eventEndDate = copy.errorEventEndDateRequired;
+        if (!formData.eventStartTime) errs.eventStartTime = copy.errorEventStartTimeRequired;
+        if (!formData.eventEndTime) errs.eventEndTime = copy.errorEventEndTimeRequired;
+      }
+      // earliestSetup fields (earliestSetupTime, requiredLeaveTime) are optional
     }
   }
 
   // Step 2 (Location) — no required fields
+  // Step 3 (Vehicles & Parking) — all fields optional
+  // Step 4 (Tables & Chairs) — all fields optional
 
-  if (step === 3) {
-    if (enabledSections.ectoVehicles !== false) {
-      if (!formData.requestEctoVehicle)
-        errs.requestEctoVehicle = copy.errorRequestEctoVehicleRequired;
-      if (formData.requestEctoVehicle === "yes") {
-        if (!formData.ectoVehicleParkingInfo.trim())
-          errs.ectoVehicleParkingInfo = copy.errorEctoVehicleParkingInfoRequired;
-        if (!formData.maxEctoVehicles.trim())
-          errs.maxEctoVehicles = copy.errorMaxEctoVehiclesRequired;
-      }
-    }
-    if (enabledSections.parkingInfo !== false) {
-      if (!formData.memberParkingInfo.trim())
-        errs.memberParkingInfo = copy.errorMemberParkingInfoRequired;
-      if (!formData.paidParkingCovered)
-        errs.paidParkingCovered = copy.errorPaidParkingCoveredRequired;
-    }
-  }
-
-  if (step === 4) {
-    if (enabledSections.tables !== false) {
-      if (!formData.tablesProvided) errs.tablesProvided = copy.errorTablesRequired;
-      if (formData.tablesProvided === "we provide tables" && !formData.numberOfTables.trim())
-        errs.numberOfTables = copy.errorNumberOfTablesRequired;
-    }
-    if (enabledSections.chairs !== false) {
-      if (!formData.chairsProvided) errs.chairsProvided = copy.errorChairsRequired;
-      if (formData.chairsProvided === "we provide chairs" && !formData.numberOfChairs.trim())
-        errs.numberOfChairs = copy.errorNumberOfChairsRequired;
-    }
-  }
-
-  if (step === 5) {
-    if (!formData.charitableDonationsAllowed)
-      errs.charitableDonationsAllowed = copy.errorCharitableDonationsRequired;
-  }
+  // Step 5 (Charitable Donations) is now embedded in step 0 — no standalone validation needed.
 
   if (step === 6) {
     if (!formData.contactName.trim()) errs.contactName = copy.errorContactNameRequired;
@@ -119,7 +87,6 @@ export function buildPayload(formData: FormData): Record<string, string> {
     payload["Maximum Ecto Vehicles"] = formData.maxEctoVehicles;
   }
   payload["Member Parking Information"] = formData.memberParkingInfo;
-  payload["Paid Parking Covered"] = formData.paidParkingCovered;
 
   payload["Tables"] = formData.tablesProvided;
   if (formData.tablesProvided === "we provide tables")

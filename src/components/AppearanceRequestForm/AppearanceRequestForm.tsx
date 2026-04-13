@@ -15,7 +15,9 @@ import type { FormCopy } from "./types";
 import { AppearanceRequestProvider, useAppearanceRequest } from "./AppearanceRequestContext";
 import StepProgress from "./StepProgress";
 import NavButtons from "./NavButtons";
-import { DEFAULT_COPY } from "./constants";import EventInformation from "./steps/EventInformation";
+import { DEFAULT_COPY } from "./constants";
+import StepSelector from "./formSections/StepSelector";
+import EventInformation from "./steps/EventInformation";
 import EventSchedule from "./steps/EventSchedule";
 import Location from "./steps/Location";
 import VehiclesAndParking from "./steps/VehiclesAndParking";
@@ -30,7 +32,7 @@ const STEP_COMPONENTS: ComponentType[] = [
   Location,
   VehiclesAndParking,
   TablesAndChairs,
-  CharitableDonations,
+  CharitableDonations, // index 5 — embedded in step 0; kept here for array alignment
   ContactInformation,
   AdditionalInformation,
 ];
@@ -92,6 +94,7 @@ function FormContent() {
           </div>
         )}
         <NavButtons />
+        {step === 0 && <StepSelector />}
       </form>
     </div>
   );
@@ -114,4 +117,3 @@ export default function AppearanceRequestForm({ copy = {} }: AppearanceRequestFo
     </AppearanceRequestProvider>
   );
 }
-

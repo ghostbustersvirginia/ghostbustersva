@@ -1,14 +1,13 @@
 import EventName from "../formSections/EventName";
 import EventType from "../formSections/EventType";
-import StepSelector from "../formSections/StepSelector";
+import CharitableDonations from "./CharitableDonations";
 
 export default function EventInformation() {
   return (
     <>
       <EventName />
       <EventType />
-      <StepSelector />
+      <CharitableDonations />
     </>
   );
 }
-

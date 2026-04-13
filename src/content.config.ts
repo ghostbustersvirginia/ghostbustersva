@@ -450,8 +450,6 @@ const appearanceRequestFormPageCopy = z.object({
   maxEctoVehiclesLabel: z.string().optional(),
   memberParkingInfoLabel: z.string().optional(),
   memberParkingInfoPlaceholder: z.string().optional(),
-  paidParkingCoveredLegend: z.string().optional(),
-  optionNA: z.string().optional(),
 
   // Step 4 — Tables & Chairs
   tablesLegend: z.string().optional(),

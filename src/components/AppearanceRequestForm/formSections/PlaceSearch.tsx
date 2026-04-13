@@ -2,7 +2,8 @@ import { useEffect, useRef } from "react";
 import { useAppearanceRequest } from "../AppearanceRequestContext";
 import FormLabel from "../FormLabel";
 
-const MAPS_API_KEY = "AIzaSyDS-qaf3fImTnQBzJoIv--cgGVNB59qb3s";
+import { GOOGLE_MAPS_API_KEY as MAPS_API_KEY } from "astro:env/client";
+
 const SCRIPT_ID = "gbva-google-maps-api";
 const CALLBACK_NAME = "__gbvaMapsReady";
 

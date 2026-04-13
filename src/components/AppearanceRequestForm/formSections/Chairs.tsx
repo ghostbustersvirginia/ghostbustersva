@@ -10,13 +10,7 @@ export default function Chairs() {
     <>
       <div className="arf__group">
         <fieldset>
-          <legend className="arf__label">
-            {copy.chairsLegend}
-            <span className="arf__required" aria-label="required">
-              {" "}
-              *
-            </span>
-          </legend>
+          <legend className="arf__label">{copy.chairsLegend}</legend>
           <div>
             <RadioGroup
               name="chairsProvided"
@@ -26,7 +20,6 @@ export default function Chairs() {
                   value: "ghostbusters virginia provides chairs",
                   label: copy.chairsOptionGbvaBrings,
                 },
-                { value: "n/a", label: copy.optionNA },
               ]}
               value={formData.chairsProvided}
               onChange={(v) => update("chairsProvided", v)}
@@ -40,20 +33,16 @@ export default function Chairs() {
       {formData.chairsProvided === "we provide chairs" && (
         <div className="arf__conditional">
           <div className="arf__group">
-            <FormLabel htmlFor="numberOfChairs" required>
+            <FormLabel htmlFor="numberOfChairs">
               {copy.numberOfChairsLabel}
             </FormLabel>
             <input
               id="numberOfChairs"
               type="number"
               min="1"
-              className={["arf__input", errors.numberOfChairs ? "arf__input--error" : ""]
-                .filter(Boolean)
-                .join(" ")}
+              className="arf__input"
               value={formData.numberOfChairs}
               onChange={(e) => update("numberOfChairs", e.target.value)}
-              aria-required="true"
-              aria-describedby={errors.numberOfChairs ? "numberOfChairs-error" : undefined}
               style={{ maxWidth: "8rem" }}
             />
             <FieldError id="numberOfChairs-error" message={errors.numberOfChairs} />

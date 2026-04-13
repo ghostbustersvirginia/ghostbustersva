@@ -24,7 +24,6 @@ export interface FormData {
   ectoVehicleParkingInfo: string;
   maxEctoVehicles: string;
   memberParkingInfo: string;
-  paidParkingCovered: string;
   // Step 4
   tablesProvided: string;
   chairsProvided: string;
@@ -102,8 +101,6 @@ export interface FormCopy {
   maxEctoVehiclesLabel: string;
   memberParkingInfoLabel: string;
   memberParkingInfoPlaceholder: string;
-  paidParkingCoveredLegend: string;
-  optionNA: string;
 
   // Step 4 — Tables & Chairs
   // NOTE: radio VALUES ("we provide tables" / "ghostbusters virginia provides tables" / "n/a")
@@ -119,7 +116,9 @@ export interface FormCopy {
 
   // Step 5 — Charitable Donations
   charitableDonationsLegend: string;
-  collectDonationsForHostLegend: string;
+  collectDonationsForHostLegend: string
+  optionOurChoice: string;
+  optionYourChoice: string;
   optionUnsure: string;
 
   // Step 6 — Contact Information
@@ -149,7 +148,6 @@ export interface FormCopy {
   errorEctoVehicleParkingInfoRequired: string;
   errorMaxEctoVehiclesRequired: string;
   errorMemberParkingInfoRequired: string;
-  errorPaidParkingCoveredRequired: string;
   errorTablesRequired: string;
   errorChairsRequired: string;
   errorNumberOfTablesRequired: string;

@@ -4,11 +4,16 @@ interface RadioGroupProps {
   value: string;
   onChange: (v: string) => void;
   errorId?: string;
+  className?: string;
 }
 
-export default function RadioGroup({ name, options, value, onChange, errorId }: RadioGroupProps) {
+export default function RadioGroup({ name, options, value, onChange, errorId, className }: RadioGroupProps) {
   return (
-    <div className="arf__radio-group" role="group" aria-describedby={errorId}>
+    <div
+      className={["arf__radio-group", className].filter(Boolean).join(" ")}
+      role="group"
+      aria-describedby={errorId}
+    >
       {options.map((opt) => (
         <label key={opt.value} className="arf__radio-option">
           <input
@@ -24,4 +29,3 @@ export default function RadioGroup({ name, options, value, onChange, errorId }: 
     </div>
   );
 }
-

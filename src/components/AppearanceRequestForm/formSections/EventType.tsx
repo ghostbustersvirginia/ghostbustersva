@@ -24,6 +24,7 @@ export default function EventType() {
               value={formData.eventType}
               onChange={(v) => update("eventType", v)}
               errorId={errors.eventType ? "eventType-error" : undefined}
+              className="arf__radio-group--cols-2"
             />
           </div>
         </fieldset>
