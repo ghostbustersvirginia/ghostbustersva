@@ -76,6 +76,29 @@ const scaleLabels = [
     anchor,
   };
 });
+
+// Arc band radii (mirrored from client constants) — used for SSR hit-area paths.
+const ARC_BAND_OUTER_1 = 189;
+const ARC_BAND_OUTER_2 = 147;
+const ARC_BAND_OUTER_3 = 105;
+const ARC_BAND_INNER_3 = 63;
+
+// Full 180° annular-wedge path — used as a transparent pointer-events hit area so
+// the entire band is hoverable regardless of how much data is filled in.
+function buildFullArcBandPath(outerR: number, innerR: number): string {
+  const o1 = pointOnArc(ARC_START_DEG, outerR);
+  const o2 = pointOnArc(ARC_END_DEG, outerR);
+  const i1 = pointOnArc(ARC_START_DEG, innerR);
+  const i2 = pointOnArc(ARC_END_DEG, innerR);
+  return (
+    `M ${o1.x} ${o1.y} A ${outerR} ${outerR} 0 1 1 ${o2.x} ${o2.y} ` +
+    `L ${i2.x} ${i2.y} A ${innerR} ${innerR} 0 1 0 ${i1.x} ${i1.y} Z`
+  );
+}
+
+const arcHitTotal = buildFullArcBandPath(ARC_BAND_OUTER_1, ARC_BAND_OUTER_2);
+const arcHitGiveback = buildFullArcBandPath(ARC_BAND_OUTER_2, ARC_BAND_OUTER_3);
+const arcHitWish = buildFullArcBandPath(ARC_BAND_OUTER_3, ARC_BAND_INNER_3);
 ---
 
 <div class:list={["donation-meter", className]} data-donation-meter data-state="loading">
@@ -127,14 +150,81 @@ const scaleLabels = [
     <rect x="18" y="18" width="564" height="336" rx="2" class="donation-meter__face"></rect>
     <rect x="18" y="18" width="564" height="336" rx="2" class="donation-meter__face-texture"></rect>
 
-    <path data-meter-arc-total d="" class="donation-meter__arc-band donation-meter__arc-band--total"
-    ></path>
-    <path
-      data-meter-arc-giveback
-      d=""
-      class="donation-meter__arc-band donation-meter__arc-band--giveback"></path>
-    <path data-meter-arc-wish d="" class="donation-meter__arc-band donation-meter__arc-band--wish"
-    ></path>
+    <g
+      class="donation-meter__arc-band-group donation-meter__arc-band-group--total"
+      tabindex="0"
+      role="img"
+      aria-label="Total raised arc band"
+    >
+      <path d={arcHitTotal} class="donation-meter__arc-band-hit"></path>
+      <path
+        data-meter-arc-total
+        d=""
+        class="donation-meter__arc-band donation-meter__arc-band--total"></path>
+      <g class="donation-meter__arc-label donation-meter__arc-label--total" aria-hidden="true">
+        <rect
+          x="136"
+          y="115"
+          width="110"
+          height="28"
+          rx="3"
+          class="donation-meter__arc-label-bg donation-meter__arc-label-bg--total"></rect>
+        <text x="190" y="125" class="donation-meter__arc-label-name">RAISED + MATCHING</text>
+        <text x="190" y="137" class="donation-meter__arc-label-value" data-meter-arc-label-total
+          >—</text
+        >
+      </g>
+    </g>
+
+    <g
+      class="donation-meter__arc-band-group donation-meter__arc-band-group--giveback"
+      tabindex="0"
+      role="img"
+      aria-label="Give Back arc band"
+    >
+      <path d={arcHitGiveback} class="donation-meter__arc-band-hit"></path>
+      <path
+        data-meter-arc-giveback
+        d=""
+        class="donation-meter__arc-band donation-meter__arc-band--giveback"></path>
+      <g class="donation-meter__arc-label donation-meter__arc-label--giveback" aria-hidden="true">
+        <rect
+          x="166"
+          y="145"
+          width="90"
+          height="28"
+          rx="3"
+          class="donation-meter__arc-label-bg donation-meter__arc-label-bg--giveback"></rect>
+        <text x="211" y="155" class="donation-meter__arc-label-name">TOTAL RAISED</text>
+        <text x="211" y="167" class="donation-meter__arc-label-value" data-meter-arc-label-giveback
+          >—</text
+        >
+      </g>
+    </g>
+
+    <g
+      class="donation-meter__arc-band-group donation-meter__arc-band-group--wish"
+      tabindex="0"
+      role="img"
+      aria-label="Make-A-Wish arc band"
+    >
+      <path d={arcHitWish} class="donation-meter__arc-band-hit"></path>
+      <path data-meter-arc-wish d="" class="donation-meter__arc-band donation-meter__arc-band--wish"
+      ></path>
+      <g class="donation-meter__arc-label donation-meter__arc-label--wish" aria-hidden="true">
+        <rect
+          x="196"
+          y="175"
+          width="90"
+          height="28"
+          rx="3"
+          class="donation-meter__arc-label-bg donation-meter__arc-label-bg--wish"></rect>
+        <text x="241" y="185" class="donation-meter__arc-label-name">MAKE-A-WISH</text>
+        <text x="241" y="197" class="donation-meter__arc-label-value" data-meter-arc-label-wish
+          >—</text
+        >
+      </g>
+    </g>
 
     <path d={arcPath} class="donation-meter__arc"></path>
     <path d={dangerSectorPath} class="donation-meter__danger-zone"></path>
@@ -174,7 +264,7 @@ const scaleLabels = [
       x={CENTER_X}
       y="304"
       class="donation-meter__dial-title"
-      text-anchor="middle">D.C.DONATIONERES</text
+      text-anchor="middle">VA GIGA-GIVERES</text
     >
     <text x={CENTER_X} y="328" class="donation-meter__dial-range" text-anchor="middle">
       <tspan data-meter-raised class="donation-meter__dial-value donation-meter__dial-value--raised"
@@ -191,16 +281,9 @@ const scaleLabels = [
 
     <rect x="12" y="354" width="576" height="34" rx="3" class="donation-meter__bottom-rail"></rect>
 
-    <text x={CENTER_X} y="371" class="donation-meter__giveback-readout" text-anchor="middle">
-      GIVEBACK <tspan
-        data-meter-giveback-raised
-        class="donation-meter__dial-value donation-meter__dial-value--giveback">$—</tspan
-      >
-    </text>
-
     <g data-meter-needle-wish transform={`rotate(${ARC_START_DEG} ${CENTER_X} ${CENTER_Y})`}>
       <path
-        d="M 299.1 248 L 300.9 248 L 301.5 66 L 300 46 L 298.5 66 Z"
+        d="M 299.1 248 L 300.9 248 L 301.5 158 L 300 138 L 298.5 158 Z"
         class="donation-meter__needle--wish"></path>
       <path
         d="M 299.4 248 L 300.6 248 L 300.4 266 L 299.6 266 Z"
@@ -209,7 +292,7 @@ const scaleLabels = [
 
     <g data-meter-needle-giveback transform={`rotate(${ARC_START_DEG} ${CENTER_X} ${CENTER_Y})`}>
       <path
-        d="M 299.1 248 L 300.9 248 L 301.5 66 L 300 46 L 298.5 66 Z"
+        d="M 299.1 248 L 300.9 248 L 301.5 116 L 300 96 L 298.5 116 Z"
         class="donation-meter__needle--giveback"></path>
       <path
         d="M 299.4 248 L 300.6 248 L 300.4 266 L 299.6 266 Z"
@@ -218,7 +301,7 @@ const scaleLabels = [
 
     <g data-meter-needle transform={`rotate(${ARC_START_DEG} ${CENTER_X} ${CENTER_Y})`}>
       <path
-        d="M 299.1 248 L 300.9 248 L 301.5 66 L 300 46 L 298.5 66 Z"
+        d="M 299.1 248 L 300.9 248 L 301.5 74 L 300 54 L 298.5 74 Z"
         class="donation-meter__needle"></path>
       <path
         d="M 299.4 248 L 300.6 248 L 300.4 266 L 299.6 266 Z"
@@ -242,10 +325,10 @@ const scaleLabels = [
   const PIVOT_X = 300;
   const PIVOT_Y = 248;
   const STARTUP_DURATION_MS = 5000;
-  const ARC_BAND_OUTER_1 = 209; // green / total  (outermost, 1 px gap inside tick ring)
-  const ARC_BAND_OUTER_2 = 156.5; // orange / giveback
-  const ARC_BAND_OUTER_3 = 104; // yellow / wish
-  const ARC_BAND_INNER_3 = 51.5; // yellow / wish  (innermost)
+  const ARC_BAND_OUTER_1 = 189; // green / total  (flush with inner edge of major ticks)
+  const ARC_BAND_OUTER_2 = 147; // orange / giveback  (189 − 42)
+  const ARC_BAND_OUTER_3 = 105; // yellow / wish      (147 − 42)
+  const ARC_BAND_INNER_3 = 63; // yellow / wish (innermost, 105 − 42)
 
   const motionTokens = new WeakMap<SVGGElement, number>();
   const overloadTimers = new WeakMap<SVGGElement, number>();
@@ -693,6 +776,8 @@ const scaleLabels = [
   type MeterCache = {
     raised: number;
     goal: number;
+    givebackRaised: number;
+    wishRaised: number;
     updatedAt: number;
   };
 
@@ -712,9 +797,15 @@ const scaleLabels = [
         return null;
       }
 
+      // givebackRaised / wishRaised were added later; default to 0 for older entries.
+      const givebackRaised = Math.max(0, Number(parsed.givebackRaised) || 0);
+      const wishRaised = Math.max(0, Number(parsed.wishRaised) || 0);
+
       return {
         raised: Math.max(0, raised),
         goal: Math.max(0, goal),
+        givebackRaised,
+        wishRaised,
         updatedAt,
       };
     } catch {
@@ -722,11 +813,18 @@ const scaleLabels = [
     }
   }
 
-  function writeCachedMeter(raised: number, goal: number): void {
+  function writeCachedMeter(
+    raised: number,
+    goal: number,
+    givebackRaised: number,
+    wishRaised: number,
+  ): void {
     try {
       const payload: MeterCache = {
         raised: Math.max(0, raised),
         goal: Math.max(0, goal),
+        givebackRaised: Math.max(0, givebackRaised),
+        wishRaised: Math.max(0, wishRaised),
         updatedAt: Date.now(),
       };
       window.localStorage.setItem(CACHE_KEY, JSON.stringify(payload));
@@ -776,11 +874,13 @@ const scaleLabels = [
     const wishNeedle = root.querySelector<SVGGElement>("[data-meter-needle-wish]");
     const raisedNode = root.querySelector<SVGTSpanElement>("[data-meter-raised]");
     const goalNode = root.querySelector<SVGTSpanElement>("[data-meter-goal]");
-    const givebackRaisedNode = root.querySelector<Element>("[data-meter-giveback-raised]");
     const statusNode = root.querySelector<HTMLElement>("[data-meter-status]");
     const arcTotal = root.querySelector<SVGPathElement>("[data-meter-arc-total]");
     const arcGiveback = root.querySelector<SVGPathElement>("[data-meter-arc-giveback]");
     const arcWish = root.querySelector<SVGPathElement>("[data-meter-arc-wish]");
+    const labelTotal = root.querySelector<SVGTextElement>("[data-meter-arc-label-total]");
+    const labelGiveback = root.querySelector<SVGTextElement>("[data-meter-arc-label-giveback]");
+    const labelWish = root.querySelector<SVGTextElement>("[data-meter-arc-label-wish]");
 
     if (!needle || !raisedNode || !goalNode || !statusNode) {
       return;
@@ -796,6 +896,27 @@ const scaleLabels = [
 
     const cached = readCachedMeter();
 
+    // Wish-needle cache fast-path: animate to the last-known wish value immediately
+    // without blocking on the live wish fetch. The live animation will update from
+    // this position once the fetch resolves.
+    const cachedWishRatio =
+      cached && cached.wishRaised > 0 ? getProgressRatio(cached.wishRaised, FALLBACK_GOAL) : 0;
+
+    if (cachedWishRatio > 0) {
+      if (arcWish) {
+        arcWish.setAttribute(
+          "d",
+          buildArcBandPath(cachedWishRatio, ARC_BAND_OUTER_3, ARC_BAND_INNER_3),
+        );
+        showArcBand(arcWish);
+      }
+      if (wishNeedle) {
+        animateNeedlePosition(wishNeedle, 0, cachedWishRatio, 1350, true).catch((e: unknown) =>
+          console.warn("Wish needle cache animation failed.", e),
+        );
+      }
+    }
+
     // Step 1: Await giveback data before any animation or wish fetch (PRD 003).
     // If the request fails, givebackRaised defaults to 0 and processing continues.
     let givebackRaised = 0;
@@ -808,15 +929,14 @@ const scaleLabels = [
       } else {
         console.warn("Giveback donation meter failed to load.", givebackError);
       }
-      if (givebackRaisedNode) givebackRaisedNode.textContent = "\u2014";
     }
 
     // Derived totals. wishRaised is populated after the wish fetch (PRD 004 uses it).
     const totalRaised = 2 * givebackRaised;
 
-    if (givebackRaised > 0 && givebackRaisedNode) {
-      setCurrencyText(givebackRaisedNode, givebackRaised);
-    }
+    // Update arc band tooltip labels with live values.
+    if (labelTotal) setCurrencyText(labelTotal, totalRaised);
+    if (labelGiveback) setCurrencyText(labelGiveback, givebackRaised);
 
     // Animate giveback needle (needle 2) now that its data is already resolved.
     // Fade in the giveback arc band after the needle reaches its position.
@@ -928,7 +1048,8 @@ const scaleLabels = [
       showArcBand(arcTotal);
 
       // Set wish arc geometry now that wishRaised is known, then fire needle
-      // and fade in the wish arc band after the needle reaches its position.
+      // from the cached position (or 0) to the live value.
+      if (labelWish) setCurrencyText(labelWish, wishRaised);
       if (arcWish) {
         arcWish.setAttribute(
           "d",
@@ -944,7 +1065,7 @@ const scaleLabels = [
       if (wishNeedle) {
         animateNeedlePosition(
           wishNeedle,
-          0,
+          cachedWishRatio,
           getProgressRatio(wishRaised, FALLBACK_GOAL),
           STARTUP_DURATION_MS,
           true,
@@ -953,7 +1074,7 @@ const scaleLabels = [
           .catch((e: unknown) => console.warn("Wish needle animation failed.", e));
       }
 
-      writeCachedMeter(totalRaised, FALLBACK_GOAL);
+      writeCachedMeter(totalRaised, FALLBACK_GOAL, givebackRaised, wishRaised);
       root.dataset.state = isOverload ? "goal" : "ready";
     } catch (error) {
       bumpMotionToken(needle);
@@ -999,6 +1120,32 @@ const scaleLabels = [
 
   meterRoots.forEach((root) => {
     hydrateMeter(root);
+
+    // Touch: tap a band group to open its label; tap anywhere else to close.
+    const bandGroups = root.querySelectorAll<SVGGElement>(".donation-meter__arc-band-group");
+
+    bandGroups.forEach((group) => {
+      group.addEventListener(
+        "touchstart",
+        (e) => {
+          e.preventDefault(); // prevent simulated mouse events + double-tap zoom
+          const isOpen = "labelOpen" in group.dataset;
+          bandGroups.forEach((g) => delete g.dataset.labelOpen);
+          if (!isOpen) group.dataset.labelOpen = "";
+        },
+        { passive: false },
+      );
+    });
+
+    root.addEventListener(
+      "touchstart",
+      (e) => {
+        if (!(e.target as Element).closest(".donation-meter__arc-band-group")) {
+          bandGroups.forEach((g) => delete g.dataset.labelOpen);
+        }
+      },
+      { passive: true },
+    );
   });
 </script>
 
@@ -1122,6 +1269,68 @@ const scaleLabels = [
     .donation-meter__arc-band--wish {
       transition: none;
     }
+  }
+
+  /* Transparent hit area — catches pointer events for the full 180° band */
+  .donation-meter__arc-band-hit {
+    fill: none;
+    pointer-events: all;
+    cursor: pointer;
+  }
+
+  /* Arc band tooltip labels */
+  .donation-meter__arc-label {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s ease-out;
+  }
+
+  .donation-meter__arc-band-group:hover .donation-meter__arc-label,
+  .donation-meter__arc-band-group:focus-visible .donation-meter__arc-label,
+  .donation-meter__arc-band-group[data-label-open] .donation-meter__arc-label {
+    opacity: 1;
+  }
+
+  .donation-meter__arc-band-group {
+    outline: none;
+  }
+
+  .donation-meter__arc-label-bg {
+    fill: rgba(8, 12, 18, 0.88);
+  }
+
+  .donation-meter__arc-label-bg--total {
+    stroke: var(--color-meter-arc-total, rgba(34, 197, 94, 1));
+    stroke-width: 0.75;
+  }
+
+  .donation-meter__arc-label-bg--giveback {
+    stroke: var(--color-meter-arc-giveback, rgba(249, 115, 22, 1));
+    stroke-width: 0.75;
+  }
+
+  .donation-meter__arc-label-bg--wish {
+    stroke: var(--color-meter-arc-wish, rgba(234, 179, 8, 1));
+    stroke-width: 0.75;
+  }
+
+  .donation-meter__arc-label-name {
+    fill: rgba(255, 255, 255, 0.6);
+    font-family: var(--font-display);
+    font-size: 7.5px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-anchor: middle;
+  }
+
+  .donation-meter__arc-label-value {
+    fill: rgba(255, 255, 255, 0.95);
+    font-family: var(--font-display);
+    font-size: 10px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.02em;
+    text-anchor: middle;
   }
 
   .donation-meter__arc {
