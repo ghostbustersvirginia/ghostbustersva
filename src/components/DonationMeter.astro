@@ -182,6 +182,19 @@ const scaleLabels = [
 
     <rect x="12" y="354" width="576" height="34" rx="3" class="donation-meter__bottom-rail"></rect>
 
+    <text x={CENTER_X} y="371" class="donation-meter__giveback-readout" text-anchor="middle">
+      GIVEBACK <tspan data-meter-giveback-raised class="donation-meter__dial-value donation-meter__dial-value--giveback">$—</tspan>
+    </text>
+
+    <g data-meter-needle-giveback transform={`rotate(${ARC_START_DEG} ${CENTER_X} ${CENTER_Y})`}>
+      <path
+        d="M 299.1 248 L 300.9 248 L 301.5 66 L 300 46 L 298.5 66 Z"
+        class="donation-meter__needle--giveback"></path>
+      <path
+        d="M 299.4 248 L 300.6 248 L 300.4 266 L 299.6 266 Z"
+        class="donation-meter__needle-tail--giveback"></path>
+    </g>
+
     <g data-meter-needle transform={`rotate(${ARC_START_DEG} ${CENTER_X} ${CENTER_Y})`}>
       <path
         d="M 299.1 248 L 300.9 248 L 301.5 66 L 300 46 L 298.5 66 Z"
@@ -198,6 +211,7 @@ const scaleLabels = [
 
 <script>
   import { getWishData, isWishRequestTimeoutError } from "../utils/wishData";
+  import { getGivebackData, isGivebackRequestTimeoutError } from "../utils/givebackData";
 
   const ARC_START_DEG = -90;
   const ARC_END_DEG = 90;
@@ -207,6 +221,7 @@ const scaleLabels = [
   const PIVOT_X = 300;
   const PIVOT_Y = 248;
   const STARTUP_DURATION_MS = 5000;
+  const GIVEBACK_NEEDLE_DURATION_MS = 2500;
 
   const motionTokens = new WeakMap<SVGGElement, number>();
   const overloadTimers = new WeakMap<SVGGElement, number>();
@@ -555,6 +570,61 @@ const scaleLabels = [
     }
   }
 
+  async function animateNeedlePosition(
+    needle: SVGGElement,
+    fromRatio: number,
+    toRatio: number,
+    durationMs: number,
+    mechanical: boolean,
+  ): Promise<void> {
+    const targetRatio = clamp(toRatio, 0, 1);
+    const startRatio = clamp(fromRatio, 0, 1);
+    const startAngle = toNeedleAngle(startRatio);
+    const targetAngle = toNeedleAngle(targetRatio);
+    const token = bumpMotionToken(needle);
+
+    stopOverloadTeeter(needle);
+
+    if (hasReducedMotion()) {
+      setNeedle(needle, targetRatio);
+      return;
+    }
+
+    await new Promise<void>((resolve) => {
+      const start = performance.now();
+      const frameDuration = Math.max(220, durationMs);
+
+      const frame = (now: number) => {
+        if (!isCurrentToken(needle, token)) {
+          resolve();
+          return;
+        }
+
+        const progress = clamp((now - start) / frameDuration, 0, 1);
+        const angle = mechanical
+          ? getMechanicalAngle(progress, startAngle, targetAngle)
+          : lerp(startAngle, targetAngle, easeInOutSine(progress));
+
+        setNeedleAngle(needle, angle);
+
+        if (progress < 1) {
+          window.requestAnimationFrame(frame);
+          return;
+        }
+
+        resolve();
+      };
+
+      window.requestAnimationFrame(frame);
+    });
+
+    if (!isCurrentToken(needle, token)) {
+      return;
+    }
+
+    setNeedleAngle(needle, targetAngle);
+  }
+
   type MeterCache = {
     raised: number;
     goal: number;
@@ -637,8 +707,10 @@ const scaleLabels = [
 
   async function hydrateMeter(root: HTMLElement): Promise<void> {
     const needle = root.querySelector<SVGGElement>("[data-meter-needle]");
+    const givebackNeedle = root.querySelector<SVGGElement>("[data-meter-needle-giveback]");
     const raisedNode = root.querySelector<SVGTSpanElement>("[data-meter-raised]");
     const goalNode = root.querySelector<SVGTSpanElement>("[data-meter-goal]");
+    const givebackRaisedNode = root.querySelector<Element>("[data-meter-giveback-raised]");
     const statusNode = root.querySelector<HTMLElement>("[data-meter-status]");
 
     if (!needle || !raisedNode || !goalNode || !statusNode) {
@@ -647,11 +719,41 @@ const scaleLabels = [
 
     const palette = getRaisedPalette();
     setNeedle(needle, 0);
+    if (givebackNeedle) setNeedle(givebackNeedle, 0);
     root.dataset.state = "loading";
     updateReadout(root, raisedNode, goalNode, statusNode, 0, FALLBACK_GOAL, palette);
     statusNode.textContent = "Donation meter loading latest totals.";
 
     const cached = readCachedMeter();
+
+    // Start giveback fetch in parallel with wish fetch
+    const givebackDataPromise = getGivebackData();
+
+    // Animate the giveback needle independently — it has its own goal and
+    // does not need to wait for wish data to resolve.
+    if (givebackNeedle) {
+      (async () => {
+        try {
+          const { raised: givebackRaised, goal: givebackGoal } = await givebackDataPromise;
+          const givebackRatio = getProgressRatio(givebackRaised, givebackGoal);
+          if (givebackRaisedNode) setCurrencyText(givebackRaisedNode, givebackRaised);
+          await animateNeedlePosition(
+            givebackNeedle,
+            0,
+            givebackRatio,
+            GIVEBACK_NEEDLE_DURATION_MS,
+            true,
+          );
+        } catch (givebackError) {
+          if (isGivebackRequestTimeoutError(givebackError)) {
+            console.warn("Giveback donation meter request timed out.", givebackError);
+          } else {
+            console.warn("Giveback donation meter failed to load.", givebackError);
+          }
+          if (givebackRaisedNode) givebackRaisedNode.textContent = "—";
+        }
+      })();
+    }
 
     try {
       let currentAmount = 0;
@@ -916,6 +1018,26 @@ const scaleLabels = [
   .donation-meter__needle-tail {
     fill: var(--color-meter-needle);
     filter: drop-shadow(0 0.8px 1.2px var(--color-meter-needle-shadow));
+  }
+
+  .donation-meter__needle--giveback,
+  .donation-meter__needle-tail--giveback {
+    fill: var(--color-meter-needle-giveback, #3b82f6);
+    filter: drop-shadow(0 0.8px 1.2px var(--color-meter-needle-giveback-shadow, rgba(59, 130, 246, 0.45)));
+  }
+
+  .donation-meter__giveback-readout {
+    fill: var(--color-meter-readout-dim);
+    font-family: var(--font-display);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    font-variant-numeric: tabular-nums;
+    text-transform: uppercase;
+  }
+
+  .donation-meter__dial-value--giveback {
+    fill: var(--color-meter-needle-giveback, #3b82f6);
   }
 
   .donation-meter__pivot-core {
