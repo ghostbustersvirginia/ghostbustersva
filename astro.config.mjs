@@ -18,8 +18,8 @@ export default defineConfig({
   site: productionSiteUrl,
   env: {
     schema: {
-      GOOGLE_MAPS_API_KEY: envField.string({ context: 'client', access: 'public' }),
-    }
+      GOOGLE_MAPS_API_KEY: envField.string({ context: "client", access: "public", optional: true }),
+    },
   },
   adapter: vercel(),
   integrations: [sitemap(), markdoc(), react()],

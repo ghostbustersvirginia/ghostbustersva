@@ -6,8 +6,14 @@ import RadioGroup from "../RadioGroup";
 export default function Chairs() {
   const { formData, errors, update, copy } = useAppearanceRequest();
 
+  const needsCount = formData.chairsProvided !== "" && formData.chairsProvided !== "n/a";
+  const countLabel =
+    formData.chairsProvided === "ghostbusters virginia provides chairs"
+      ? copy.numberOfChairsNeededLabel
+      : copy.numberOfChairsLabel;
+
   return (
-    <>
+    <div>
       <div className="arf__group">
         <fieldset>
           <legend className="arf__label">{copy.chairsLegend}</legend>
@@ -15,6 +21,7 @@ export default function Chairs() {
             <RadioGroup
               name="chairsProvided"
               options={[
+                { value: "n/a", label: copy.chairsOptionNA },
                 { value: "we provide chairs", label: copy.chairsOptionWeBring },
                 {
                   value: "ghostbusters virginia provides chairs",
@@ -30,26 +37,28 @@ export default function Chairs() {
         <FieldError id="chairsProvided-error" message={errors.chairsProvided} />
       </div>
 
-      {formData.chairsProvided === "we provide chairs" && (
+      {needsCount && (
         <div className="arf__conditional">
           <div className="arf__group">
-            <FormLabel htmlFor="numberOfChairs">
-              {copy.numberOfChairsLabel}
+            <FormLabel htmlFor="numberOfChairs" required>
+              {countLabel}
             </FormLabel>
             <input
               id="numberOfChairs"
               type="number"
               min="1"
-              className="arf__input"
+              className={["arf__input", errors.numberOfChairs ? "arf__input--error" : ""]
+                .filter(Boolean)
+                .join(" ")}
               value={formData.numberOfChairs}
               onChange={(e) => update("numberOfChairs", e.target.value)}
-              style={{ maxWidth: "8rem" }}
+              aria-required="true"
+              aria-describedby={errors.numberOfChairs ? "numberOfChairs-error" : undefined}
             />
             <FieldError id="numberOfChairs-error" message={errors.numberOfChairs} />
           </div>
         </div>
       )}
-    </>
+    </div>
   );
 }
-

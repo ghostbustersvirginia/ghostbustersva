@@ -1,5 +1,117 @@
 import type { FormCopy, FormData } from "./types";
 
+type FormErrors = Partial<Record<keyof FormData, string>>;
+type StepCompletionCheck = (formData: FormData) => boolean;
+type StepValidator = (formData: FormData, copy: FormCopy) => FormErrors;
+
+const hasText = (value: string): boolean => value.trim().length > 0;
+const needsCount = (value: string): boolean => value !== "" && value !== "n/a";
+
+const STEP_COMPLETION_CHECKS: Partial<Record<number, StepCompletionCheck>> = {
+  0: (formData) => {
+    if (!hasText(formData.eventName)) return false;
+    if (!formData.eventType) return false;
+    if (formData.eventType === "Other" && !hasText(formData.eventTypeOther)) return false;
+    if (!formData.isScheduled) return false;
+    if (formData.isScheduled === "yes") {
+      if (!formData.eventStartDate) return false;
+      if (!formData.eventEndDate) return false;
+      if (!formData.eventStartTime) return false;
+      if (!formData.eventEndTime) return false;
+    }
+    return true;
+  },
+  1: (formData) => {
+    if (!hasText(formData.addressLine1)) return false;
+    if (!hasText(formData.city)) return false;
+    if (!hasText(formData.state)) return false;
+    return true;
+  },
+  2: (formData) => {
+    if (!formData.charitableDonationsAllowed) return false;
+    if (!formData.needsLogistics) return false;
+    return true;
+  },
+  // Step 3 (Logistics) is conditionally validated on Next; no pre-emptive disable needed.
+  4: (formData) => {
+    if (!hasText(formData.contactName)) return false;
+    if (!hasText(formData.contactEmail)) return false;
+    return true;
+  },
+};
+
+const STEP_VALIDATORS: Record<number, StepValidator> = {
+  0: (formData, copy) => {
+    const errs: FormErrors = {};
+    if (!hasText(formData.eventName)) errs.eventName = copy.errorEventNameRequired;
+    if (!formData.eventType) errs.eventType = copy.errorEventTypeRequired;
+    if (formData.eventType === "Other" && !hasText(formData.eventTypeOther)) {
+      errs.eventTypeOther = copy.errorEventTypeOtherRequired;
+    }
+    if (!formData.isScheduled) errs.isScheduled = copy.errorIsScheduledRequired;
+    if (formData.isScheduled === "yes") {
+      if (!formData.eventStartDate) errs.eventStartDate = copy.errorEventStartDateRequired;
+      if (!formData.eventEndDate) errs.eventEndDate = copy.errorEventEndDateRequired;
+      if (!formData.eventStartTime) errs.eventStartTime = copy.errorEventStartTimeRequired;
+      if (!formData.eventEndTime) errs.eventEndTime = copy.errorEventEndTimeRequired;
+    }
+    return errs;
+  },
+  1: (formData, copy) => {
+    const errs: FormErrors = {};
+    if (!hasText(formData.addressLine1)) errs.addressLine1 = copy.errorAddressLine1Required;
+    if (!hasText(formData.city)) errs.city = copy.errorCityRequired;
+    if (!hasText(formData.state)) errs.state = copy.errorStateRequired;
+    return errs;
+  },
+  2: (formData, copy) => {
+    const errs: FormErrors = {};
+    if (!formData.charitableDonationsAllowed) {
+      errs.charitableDonationsAllowed = copy.errorCharitableDonationsRequired;
+    }
+    if (!formData.needsLogistics) errs.needsLogistics = copy.errorNeedsLogisticsRequired;
+    return errs;
+  },
+  3: (formData, copy) => {
+    const errs: FormErrors = {};
+    if (formData.requestEctoVehicle === "yes") {
+      if (!hasText(formData.ectoVehicleParkingInfo)) {
+        errs.ectoVehicleParkingInfo = copy.errorEctoVehicleParkingInfoRequired;
+      }
+      if (!hasText(formData.maxEctoVehicles)) {
+        errs.maxEctoVehicles = copy.errorMaxEctoVehiclesRequired;
+      }
+    }
+    if (needsCount(formData.tablesProvided) && !hasText(formData.numberOfTables)) {
+      errs.numberOfTables = copy.errorNumberOfTablesRequired;
+    }
+    if (needsCount(formData.chairsProvided) && !hasText(formData.numberOfChairs)) {
+      errs.numberOfChairs = copy.errorNumberOfChairsRequired;
+    }
+    return errs;
+  },
+  4: (formData, copy) => {
+    const errs: FormErrors = {};
+    if (!hasText(formData.contactName)) errs.contactName = copy.errorContactNameRequired;
+    if (!hasText(formData.contactEmail)) errs.contactEmail = copy.errorContactEmailRequired;
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.contactEmail.trim())) {
+      errs.contactEmail = copy.errorContactEmailInvalid;
+    }
+    return errs;
+  },
+};
+
+// ------------------------------------------------------------------ //
+// Per-step completion check (presence only — no error messages)       //
+// Used to enable/disable the Next button before the user tries to     //
+// advance.                                                            //
+// ------------------------------------------------------------------ //
+
+export function isStepComplete(step: number, formData: FormData): boolean {
+  const check = STEP_COMPLETION_CHECKS[step];
+  return check ? check(formData) : true;
+}
+
 // ------------------------------------------------------------------ //
 // Per-step validation                                                  //
 // ------------------------------------------------------------------ //
@@ -8,46 +120,9 @@ export function validateStep(
   step: number,
   formData: FormData,
   copy: FormCopy,
-  enabledSections: Record<string, boolean> = {},
 ): Partial<Record<keyof FormData, string>> {
-  const errs: Partial<Record<keyof FormData, string>> = {};
-
-  if (step === 0) {
-    if (!formData.eventName.trim()) errs.eventName = copy.errorEventNameRequired;
-    if (!formData.eventType) errs.eventType = copy.errorEventTypeRequired;
-    if (formData.eventType === "Other" && !formData.eventTypeOther.trim())
-      errs.eventTypeOther = copy.errorEventTypeOtherRequired;
-    if (!formData.charitableDonationsAllowed)
-      errs.charitableDonationsAllowed = copy.errorCharitableDonationsRequired;
-  }
-
-  if (step === 1) {
-    if (!formData.isScheduled) errs.isScheduled = copy.errorIsScheduledRequired;
-    if (formData.isScheduled === "yes") {
-      if (enabledSections.eventDateTime !== false) {
-        if (!formData.eventStartDate) errs.eventStartDate = copy.errorEventStartDateRequired;
-        if (!formData.eventEndDate) errs.eventEndDate = copy.errorEventEndDateRequired;
-        if (!formData.eventStartTime) errs.eventStartTime = copy.errorEventStartTimeRequired;
-        if (!formData.eventEndTime) errs.eventEndTime = copy.errorEventEndTimeRequired;
-      }
-      // earliestSetup fields (earliestSetupTime, requiredLeaveTime) are optional
-    }
-  }
-
-  // Step 2 (Location) — no required fields
-  // Step 3 (Vehicles & Parking) — all fields optional
-  // Step 4 (Tables & Chairs) — all fields optional
-
-  // Step 5 (Charitable Donations) is now embedded in step 0 — no standalone validation needed.
-
-  if (step === 6) {
-    if (!formData.contactName.trim()) errs.contactName = copy.errorContactNameRequired;
-    if (!formData.contactEmail.trim()) errs.contactEmail = copy.errorContactEmailRequired;
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.contactEmail.trim()))
-      errs.contactEmail = copy.errorContactEmailInvalid;
-  }
-
-  return errs;
+  const validator = STEP_VALIDATORS[step];
+  return validator ? validator(formData, copy) : {};
 }
 
 // ------------------------------------------------------------------ //
@@ -58,33 +133,47 @@ export function buildPayload(formData: FormData): Record<string, string> {
   const payload: Record<string, string> = {
     _subject: `Appearance Request: ${formData.eventName}`,
     "Event Name": formData.eventName,
-    "Event Type": formData.eventType === "Other"
-      ? `Other: ${formData.eventTypeOther}`
-      : formData.eventType,
+    "Event Type":
+      formData.eventType === "Other" ? `Other: ${formData.eventTypeOther}` : formData.eventType,
     "Event Scheduled": formData.isScheduled === "yes" ? "Yes" : "No",
   };
 
-  if (formData.isScheduled === "yes") {
-    payload["Event Start Date"] = formData.eventStartDate;
-    payload["Event End Date"] = formData.eventEndDate;
-    payload["Event Start Time"] = formData.eventStartTime;
-    payload["Event End Time"] = formData.eventEndTime;
-    payload["Earliest Setup / Arrival Time"] = formData.earliestSetupTime;
-    payload["Required Leave Time"] = formData.requiredLeaveTime;
-  }
+  const addIfValue = (label: string, value: string): void => {
+    if (value) payload[label] = value;
+  };
 
-  if (formData.locationDescription) payload["Location Description"] = formData.locationDescription;
-  if (formData.placeId) payload["Google Place ID"] = formData.placeId;
-  if (formData.addressLine1) payload["Street Address"] = formData.addressLine1;
-  if (formData.addressLine2) payload["Address Line 2"] = formData.addressLine2;
-  if (formData.city) payload["City"] = formData.city;
-  if (formData.state) payload["State"] = formData.state;
-  if (formData.zipCode) payload["ZIP Code"] = formData.zipCode;
+  const addPairs = (pairs: Array<[string, string]>): void => {
+    for (const [label, value] of pairs) {
+      payload[label] = value;
+    }
+  };
+
+  if (formData.isScheduled === "yes") {
+    addPairs([
+      ["Event Start Date", formData.eventStartDate],
+      ["Event End Date", formData.eventEndDate],
+      ["Event Start Time", formData.eventStartTime],
+      ["Event End Time", formData.eventEndTime],
+      ["Earliest Setup / Arrival Time", formData.earliestSetupTime],
+      ["Required Leave Time", formData.requiredLeaveTime],
+    ]);
+  }
+  if (formData.isScheduled === "no") addIfValue("Timing Notes", formData.unscheduledNote);
+
+  addIfValue("Location Description", formData.locationDescription);
+  addIfValue("Google Place ID", formData.placeId);
+  addIfValue("Street Address", formData.addressLine1);
+  addIfValue("Address Line 2", formData.addressLine2);
+  addIfValue("City", formData.city);
+  addIfValue("State", formData.state);
+  addIfValue("ZIP Code", formData.zipCode);
 
   payload["Requesting Ecto Vehicle"] = formData.requestEctoVehicle === "yes" ? "Yes" : "No";
   if (formData.requestEctoVehicle === "yes") {
-    payload["Ecto Vehicle Parking Information"] = formData.ectoVehicleParkingInfo;
-    payload["Maximum Ecto Vehicles"] = formData.maxEctoVehicles;
+    addPairs([
+      ["Ecto Vehicle Parking Information", formData.ectoVehicleParkingInfo],
+      ["Maximum Ecto Vehicles", formData.maxEctoVehicles],
+    ]);
   }
   payload["Member Parking Information"] = formData.memberParkingInfo;
 
@@ -97,18 +186,19 @@ export function buildPayload(formData: FormData): Record<string, string> {
 
   payload["Charitable Donations Allowed"] = formData.charitableDonationsAllowed;
   if (formData.charitableDonationsAllowed === "yes" && formData.collectDonationsForHost) {
-    payload["Collect Donations for Host Organization"] =
-      formData.collectDonationsForHost === "yes" ? "Yes" : "No";
+    payload["Donations For"] = formData.collectDonationsForHost;
+    if (formData.collectDonationsForHost === "host choice") {
+      addIfValue("Charity", formData.charityInfo);
+    }
   }
 
   // FormSpree uses 'email' as the reply-to address
   payload["email"] = formData.contactEmail;
   payload["Contact Name"] = formData.contactName;
-  if (formData.contactPhone) payload["Phone Number"] = formData.contactPhone;
-  if (formData.companyName) payload["Company Name"] = formData.companyName;
-  if (formData.companyWebsite) payload["Company / Event Website"] = formData.companyWebsite;
-
-  if (formData.additionalInfo) payload["Additional Information"] = formData.additionalInfo;
+  addIfValue("Phone Number", formData.contactPhone);
+  addIfValue("Company Name", formData.companyName);
+  addIfValue("Company / Event Website", formData.companyWebsite);
+  addIfValue("Additional Information", formData.additionalInfo);
 
   return payload;
 }
@@ -117,9 +207,21 @@ export function buildPayload(formData: FormData): Record<string, string> {
 // sessionStorage helpers                                               //
 // ------------------------------------------------------------------ //
 
-export function loadFromSession(key: string): Partial<FormData> | null {
+function getSessionStorage(): Storage | null {
   try {
-    const saved = sessionStorage.getItem(key);
+    if (typeof window === "undefined") return null;
+    return window.sessionStorage;
+  } catch {
+    return null;
+  }
+}
+
+export function loadFromSession(key: string): Partial<FormData> | null {
+  const storage = getSessionStorage();
+  if (!storage) return null;
+
+  try {
+    const saved = storage.getItem(key);
     if (saved) return JSON.parse(saved) as Partial<FormData>;
   } catch {
     /* ignore */
@@ -128,18 +230,23 @@ export function loadFromSession(key: string): Partial<FormData> | null {
 }
 
 export function saveToSession(key: string, data: FormData): void {
+  const storage = getSessionStorage();
+  if (!storage) return;
+
   try {
-    sessionStorage.setItem(key, JSON.stringify(data));
+    storage.setItem(key, JSON.stringify(data));
   } catch {
     /* ignore */
   }
 }
 
 export function clearSession(key: string): void {
+  const storage = getSessionStorage();
+  if (!storage) return;
+
   try {
-    sessionStorage.removeItem(key);
+    storage.removeItem(key);
   } catch {
     /* ignore */
   }
 }
-

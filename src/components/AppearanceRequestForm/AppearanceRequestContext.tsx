@@ -1,14 +1,15 @@
-import { createContext, useContext, useState, useEffect, useMemo } from "react";
+import { createContext, useContext, useState, useEffect } from "react";
 import type { ReactNode } from "react";
 import type { FormCopy, FormData } from "./types";
+import { SESSION_KEY, FORMSPREE_URL, DEFAULT_FORM_DATA, FORM_COPY, TOTAL_STEPS } from "./constants";
 import {
-  SESSION_KEY,
-  FORMSPREE_URL,
-  DEFAULT_FORM_DATA,
-  STEP_DEFINITIONS,
-  buildDefaultEnabledSections,
-} from "./constants";
-import { validateStep, buildPayload, loadFromSession, saveToSession, clearSession } from "./helpers";
+  validateStep,
+  isStepComplete,
+  buildPayload,
+  loadFromSession,
+  saveToSession,
+  clearSession,
+} from "./helpers";
 
 // ------------------------------------------------------------------ //
 // Context shape                                                        //
@@ -23,16 +24,16 @@ interface AppearanceRequestContextValue {
   submitError: string;
   isFirst: boolean;
   isLast: boolean;
+  canAdvance: boolean;
+  skipLogistics: boolean;
+  effectiveStep: number;
+  effectiveTotalSteps: number;
   copy: FormCopy;
-  /** Optional-section toggle map: enabledSections[originalStepIndex][sectionId] */
-  enabledSections: Record<number, Record<string, boolean>>;
-  /** Original step indices (into STEP_COMPONENTS) for the currently active steps. */
-  activeStepOriginalIndices: number[];
   update: (field: keyof FormData, value: string) => void;
-  /** Toggle an optional section on/off. Required sections silently ignore calls. */
-  toggleSection: (originalStepIndex: number, sectionId: string) => void;
   goNext: () => void;
   goBack: () => void;
+  goToStep: (realStep: number) => void;
+  resetForm: () => void;
   handleSubmit: () => Promise<void>;
 }
 
@@ -54,32 +55,17 @@ export function useAppearanceRequest(): AppearanceRequestContextValue {
 // Provider                                                             //
 // ------------------------------------------------------------------ //
 
-export function AppearanceRequestProvider({
-  children,
-  copy,
-}: {
-  children: ReactNode;
-  copy: FormCopy;
-}) {
+export function AppearanceRequestProvider({ children }: { children: ReactNode }) {
   const [step, setStep] = useState(0);
   const [formData, setFormData] = useState<FormData>(DEFAULT_FORM_DATA);
   const [errors, setErrors] = useState<Partial<Record<keyof FormData, string>>>({});
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [submitError, setSubmitError] = useState("");
-  const [enabledSections, setEnabledSections] = useState<
-    Record<number, Record<string, boolean>>
-  >(buildDefaultEnabledSections);
 
-  // Step 0 (Event Information) is always first; remaining steps are active when
-  // they have a required section OR at least one enabled optional section.
-  const activeStepOriginalIndices = useMemo(() => {
-    const active = STEP_DEFINITIONS.filter((def) => {
-      if (def.sections.some((s) => s.required)) return true;
-      return def.sections.some((s) => enabledSections[def.originalIndex]?.[s.id] === true);
-    }).map((d) => d.originalIndex);
-    return [0, ...active];
-  }, [enabledSections]);
+  const copy: FormCopy = FORM_COPY;
+
+  const LOGISTICS_STEP = 3;
 
   // Restore from sessionStorage on mount
   useEffect(() => {
@@ -101,36 +87,50 @@ export function AppearanceRequestProvider({
     });
   };
 
-  const toggleSection = (originalStepIndex: number, sectionId: string) => {
-    const def = STEP_DEFINITIONS.find((d) => d.originalIndex === originalStepIndex);
-    const sectionDef = def?.sections.find((s) => s.id === sectionId);
-    if (!sectionDef || sectionDef.required) return;
-    setEnabledSections((prev) => ({
-      ...prev,
-      [originalStepIndex]: {
-        ...prev[originalStepIndex],
-        [sectionId]: !prev[originalStepIndex]?.[sectionId],
-      },
-    }));
-  };
-
   const validate = (): boolean => {
-    const originalIndex = activeStepOriginalIndices[step];
-    const stepSections = enabledSections[originalIndex] ?? {};
-    const errs = validateStep(originalIndex, formData, copy, stepSections);
+    const errs = validateStep(step, formData, copy);
     setErrors(errs);
     return Object.keys(errs).length === 0;
   };
 
+  const skipLogistics = formData.needsLogistics === "no";
+
+  const skippedSteps = new Set<number>([...(skipLogistics ? [LOGISTICS_STEP] : [])]);
+
+  const effectiveStep = Array.from({ length: step }, (_, i) => i).filter(
+    (i) => !skippedSteps.has(i),
+  ).length;
+  const effectiveTotalSteps = TOTAL_STEPS - skippedSteps.size;
+
   const goNext = () => {
     if (validate()) {
-      setStep((s) => s + 1);
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      setStep((s) => {
+        let next = s + 1;
+        while (skippedSteps.has(next) && next < TOTAL_STEPS) next++;
+        return next;
+      });
     }
   };
 
   const goBack = () => {
-    setStep((s) => s - 1);
+    setStep((s) => {
+      let prev = s - 1;
+      while (skippedSteps.has(prev) && prev >= 0) prev--;
+      return prev;
+    });
+  };
+
+  const goToStep = (targetStep: number) => {
+    if (targetStep < step) {
+      setStep(targetStep);
+    }
+  };
+
+  const resetForm = () => {
+    setFormData(DEFAULT_FORM_DATA);
+    setErrors({});
+    setStep(0);
+    clearSession(SESSION_KEY);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -171,14 +171,17 @@ export function AppearanceRequestProvider({
         submitted,
         submitError,
         isFirst: step === 0,
-        isLast: step === activeStepOriginalIndices.length - 1,
+        isLast: step === TOTAL_STEPS - 1,
+        canAdvance: isStepComplete(step, formData),
+        skipLogistics,
+        effectiveStep,
+        effectiveTotalSteps,
         copy,
-        enabledSections,
-        activeStepOriginalIndices,
         update,
-        toggleSection,
         goNext,
         goBack,
+        goToStep,
+        resetForm,
         handleSubmit,
       }}
     >

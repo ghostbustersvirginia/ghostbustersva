@@ -1,35 +1,32 @@
 import { useAppearanceRequest } from "../AppearanceRequestContext";
+import FieldError from "../FieldError";
 import FormLabel from "../FormLabel";
 import PlaceSearch from "../formSections/PlaceSearch";
 
 export default function Location() {
-  const { formData, update, copy } = useAppearanceRequest();
+  const { formData, errors, update, copy } = useAppearanceRequest();
 
   return (
     <>
       <PlaceSearch />
 
       <div className="arf__group">
-        <FormLabel htmlFor="locationDescription">{copy.locationDescriptionLabel}</FormLabel>
-        <textarea
-          id="locationDescription"
-          className="arf__textarea"
-          value={formData.locationDescription}
-          onChange={(e) => update("locationDescription", e.target.value)}
-          placeholder={copy.locationDescriptionPlaceholder}
-        />
-      </div>
-
-      <div className="arf__group">
-        <FormLabel htmlFor="addressLine1">{copy.addressLine1Label}</FormLabel>
+        <FormLabel htmlFor="addressLine1" required>
+          {copy.addressLine1Label}
+        </FormLabel>
         <input
           id="addressLine1"
           type="text"
-          className="arf__input"
+          className={["arf__input", errors.addressLine1 ? "arf__input--error" : ""]
+            .filter(Boolean)
+            .join(" ")}
           value={formData.addressLine1}
           onChange={(e) => update("addressLine1", e.target.value)}
           autoComplete="street-address"
+          aria-required="true"
+          aria-describedby={errors.addressLine1 ? "addressLine1-error" : undefined}
         />
+        <FieldError id="addressLine1-error" message={errors.addressLine1} />
       </div>
 
       <div className="arf__group">
@@ -44,44 +41,68 @@ export default function Location() {
         />
       </div>
 
-      <div className="arf__grid-2">
+      <div className="arf__grid-csz">
         <div className="arf__group">
-          <FormLabel htmlFor="city">{copy.cityLabel}</FormLabel>
+          <FormLabel htmlFor="city" required>
+            {copy.cityLabel}
+          </FormLabel>
           <input
             id="city"
             type="text"
-            className="arf__input"
+            className={["arf__input", errors.city ? "arf__input--error" : ""]
+              .filter(Boolean)
+              .join(" ")}
             value={formData.city}
             onChange={(e) => update("city", e.target.value)}
             autoComplete="address-level2"
+            aria-required="true"
+            aria-describedby={errors.city ? "city-error" : undefined}
           />
+          <FieldError id="city-error" message={errors.city} />
         </div>
 
         <div className="arf__group">
-          <FormLabel htmlFor="state">{copy.stateLabel}</FormLabel>
+          <FormLabel htmlFor="state" required>
+            {copy.stateLabel}
+          </FormLabel>
           <input
             id="state"
             type="text"
-            className="arf__input"
+            className={["arf__input", errors.state ? "arf__input--error" : ""]
+              .filter(Boolean)
+              .join(" ")}
             value={formData.state}
             onChange={(e) => update("state", e.target.value)}
             autoComplete="address-level1"
+            aria-required="true"
+            aria-describedby={errors.state ? "state-error" : undefined}
+          />
+          <FieldError id="state-error" message={errors.state} />
+        </div>
+
+        <div className="arf__group">
+          <FormLabel htmlFor="zipCode">{copy.zipCodeLabel}</FormLabel>
+          <input
+            id="zipCode"
+            type="text"
+            className="arf__input"
+            value={formData.zipCode}
+            onChange={(e) => update("zipCode", e.target.value)}
+            autoComplete="postal-code"
           />
         </div>
       </div>
 
-      <div className="arf__group" style={{ maxWidth: "12rem" }}>
-        <FormLabel htmlFor="zipCode">{copy.zipCodeLabel}</FormLabel>
-        <input
-          id="zipCode"
-          type="text"
-          className="arf__input"
-          value={formData.zipCode}
-          onChange={(e) => update("zipCode", e.target.value)}
-          autoComplete="postal-code"
+      <div className="arf__group">
+        <FormLabel htmlFor="locationDescription">{copy.locationDescriptionLabel}</FormLabel>
+        <textarea
+          id="locationDescription"
+          className="arf__textarea"
+          value={formData.locationDescription}
+          onChange={(e) => update("locationDescription", e.target.value)}
+          placeholder={copy.locationDescriptionPlaceholder}
         />
       </div>
     </>
   );
 }
-
