@@ -60,11 +60,11 @@ const ticks = Array.from({ length: 51 }, (_, index) => {
 
 const scaleLabels = [
   { percent: 0, value: 0, radius: 180, anchor: "start" },
-  { percent: 20, value: 5000, radius: 180, anchor: "middle" },
-  { percent: 40, value: 10000, radius: 180, anchor: "middle" },
-  { percent: 60, value: 15000, radius: 180, anchor: "middle" },
-  { percent: 80, value: 20000, radius: 180, anchor: "middle" },
-  { percent: 100, value: 25000, radius: 180, anchor: "end" },
+  { percent: 20, value: 10000, radius: 180, anchor: "middle" },
+  { percent: 40, value: 20000, radius: 180, anchor: "middle" },
+  { percent: 60, value: 30000, radius: 180, anchor: "middle" },
+  { percent: 80, value: 40000, radius: 180, anchor: "middle" },
+  { percent: 100, value: 50000, radius: 180, anchor: "end" },
 ].map(({ percent, value, radius, anchor }) => {
   const angle = ARC_START_DEG + (percent / 100) * (ARC_END_DEG - ARC_START_DEG);
   const point = pointOnArc(angle, radius);
@@ -127,6 +127,15 @@ const scaleLabels = [
     <rect x="18" y="18" width="564" height="336" rx="2" class="donation-meter__face"></rect>
     <rect x="18" y="18" width="564" height="336" rx="2" class="donation-meter__face-texture"></rect>
 
+    <path data-meter-arc-total d="" class="donation-meter__arc-band donation-meter__arc-band--total"
+    ></path>
+    <path
+      data-meter-arc-giveback
+      d=""
+      class="donation-meter__arc-band donation-meter__arc-band--giveback"></path>
+    <path data-meter-arc-wish d="" class="donation-meter__arc-band donation-meter__arc-band--wish"
+    ></path>
+
     <path d={arcPath} class="donation-meter__arc"></path>
     <path d={dangerSectorPath} class="donation-meter__danger-zone"></path>
 
@@ -173,7 +182,7 @@ const scaleLabels = [
       >
       <tspan> OF </tspan>
       <tspan data-meter-goal class="donation-meter__dial-value donation-meter__dial-value--goal"
-        >$25,000</tspan
+        >$50,000</tspan
       >
       <tspan> GOAL</tspan>
     </text>
@@ -183,8 +192,20 @@ const scaleLabels = [
     <rect x="12" y="354" width="576" height="34" rx="3" class="donation-meter__bottom-rail"></rect>
 
     <text x={CENTER_X} y="371" class="donation-meter__giveback-readout" text-anchor="middle">
-      GIVEBACK <tspan data-meter-giveback-raised class="donation-meter__dial-value donation-meter__dial-value--giveback">$—</tspan>
+      GIVEBACK <tspan
+        data-meter-giveback-raised
+        class="donation-meter__dial-value donation-meter__dial-value--giveback">$—</tspan
+      >
     </text>
+
+    <g data-meter-needle-wish transform={`rotate(${ARC_START_DEG} ${CENTER_X} ${CENTER_Y})`}>
+      <path
+        d="M 299.1 248 L 300.9 248 L 301.5 66 L 300 46 L 298.5 66 Z"
+        class="donation-meter__needle--wish"></path>
+      <path
+        d="M 299.4 248 L 300.6 248 L 300.4 266 L 299.6 266 Z"
+        class="donation-meter__needle-tail--wish"></path>
+    </g>
 
     <g data-meter-needle-giveback transform={`rotate(${ARC_START_DEG} ${CENTER_X} ${CENTER_Y})`}>
       <path
@@ -215,13 +236,16 @@ const scaleLabels = [
 
   const ARC_START_DEG = -90;
   const ARC_END_DEG = 90;
-  const SCALE_MAX = 25000;
-  const FALLBACK_GOAL = 25000;
-  const CACHE_KEY = "gbva:donation-meter-cache-v2";
+  const SCALE_MAX = 50000;
+  const FALLBACK_GOAL = 50000;
+  const CACHE_KEY = "gbva:donation-meter-cache-v3";
   const PIVOT_X = 300;
   const PIVOT_Y = 248;
   const STARTUP_DURATION_MS = 5000;
-  const GIVEBACK_NEEDLE_DURATION_MS = 2500;
+  const ARC_BAND_OUTER_1 = 209; // green / total  (outermost, 1 px gap inside tick ring)
+  const ARC_BAND_OUTER_2 = 156.5; // orange / giveback
+  const ARC_BAND_OUTER_3 = 104; // yellow / wish
+  const ARC_BAND_INNER_3 = 51.5; // yellow / wish  (innermost)
 
   const motionTokens = new WeakMap<SVGGElement, number>();
   const overloadTimers = new WeakMap<SVGGElement, number>();
@@ -446,6 +470,41 @@ const scaleLabels = [
     }
 
     return clamp(raised / SCALE_MAX, 0, 1);
+  }
+
+  /**
+   * Build an SVG path string for a filled annular wedge (arc band).
+   * The wedge sweeps clockwise from ARC_START_DEG by ratio × 180°.
+   * Returns "" when ratio <= 0 (invisible / no data).
+   */
+  function buildArcBandPath(ratio: number, outerR: number, innerR: number): string {
+    if (ratio <= 0) return "";
+
+    const clampedRatio = Math.min(ratio, 1);
+    const startRad = (ARC_START_DEG * Math.PI) / 180;
+    const endDeg = ARC_START_DEG + clampedRatio * (ARC_END_DEG - ARC_START_DEG);
+    const endRad = (endDeg * Math.PI) / 180;
+
+    const ox1 = PIVOT_X + Math.sin(startRad) * outerR;
+    const oy1 = PIVOT_Y - Math.cos(startRad) * outerR;
+    const ox2 = PIVOT_X + Math.sin(endRad) * outerR;
+    const oy2 = PIVOT_Y - Math.cos(endRad) * outerR;
+    const ix2 = PIVOT_X + Math.sin(endRad) * innerR;
+    const iy2 = PIVOT_Y - Math.cos(endRad) * innerR;
+    const ix1 = PIVOT_X + Math.sin(startRad) * innerR;
+    const iy1 = PIVOT_Y - Math.cos(startRad) * innerR;
+
+    // Large-arc-flag is 1 only if sweep > 180°. After clamping ratio to ≤ 1
+    // the maximum sweep is exactly 180°, so this flag is never 1 in practice.
+    const largeArc = clampedRatio * 180 > 180 ? 1 : 0;
+
+    return (
+      `M ${ox1} ${oy1} ` +
+      `A ${outerR} ${outerR} 0 ${largeArc} 1 ${ox2} ${oy2} ` +
+      `L ${ix2} ${iy2} ` +
+      `A ${innerR} ${innerR} 0 ${largeArc} 0 ${ix1} ${iy1} ` +
+      `Z`
+    );
   }
 
   function getMechanicalAngle(progress: number, startAngle: number, targetAngle: number): number {
@@ -708,10 +767,14 @@ const scaleLabels = [
   async function hydrateMeter(root: HTMLElement): Promise<void> {
     const needle = root.querySelector<SVGGElement>("[data-meter-needle]");
     const givebackNeedle = root.querySelector<SVGGElement>("[data-meter-needle-giveback]");
+    const wishNeedle = root.querySelector<SVGGElement>("[data-meter-needle-wish]");
     const raisedNode = root.querySelector<SVGTSpanElement>("[data-meter-raised]");
     const goalNode = root.querySelector<SVGTSpanElement>("[data-meter-goal]");
     const givebackRaisedNode = root.querySelector<Element>("[data-meter-giveback-raised]");
     const statusNode = root.querySelector<HTMLElement>("[data-meter-status]");
+    const arcTotal = root.querySelector<SVGPathElement>("[data-meter-arc-total]");
+    const arcGiveback = root.querySelector<SVGPathElement>("[data-meter-arc-giveback]");
+    const arcWish = root.querySelector<SVGPathElement>("[data-meter-arc-wish]");
 
     if (!needle || !raisedNode || !goalNode || !statusNode) {
       return;
@@ -720,39 +783,66 @@ const scaleLabels = [
     const palette = getRaisedPalette();
     setNeedle(needle, 0);
     if (givebackNeedle) setNeedle(givebackNeedle, 0);
+    if (wishNeedle) setNeedle(wishNeedle, 0);
     root.dataset.state = "loading";
     updateReadout(root, raisedNode, goalNode, statusNode, 0, FALLBACK_GOAL, palette);
     statusNode.textContent = "Donation meter loading latest totals.";
 
     const cached = readCachedMeter();
 
-    // Start giveback fetch in parallel with wish fetch
-    const givebackDataPromise = getGivebackData();
+    // Step 1: Await giveback data before any animation or wish fetch (PRD 003).
+    // If the request fails, givebackRaised defaults to 0 and processing continues.
+    let givebackRaised = 0;
+    try {
+      const { raised } = await getGivebackData();
+      givebackRaised = raised;
+    } catch (givebackError) {
+      if (isGivebackRequestTimeoutError(givebackError)) {
+        console.warn("Giveback donation meter request timed out.", givebackError);
+      } else {
+        console.warn("Giveback donation meter failed to load.", givebackError);
+      }
+      if (givebackRaisedNode) givebackRaisedNode.textContent = "\u2014";
+    }
 
-    // Animate the giveback needle independently — it has its own goal and
-    // does not need to wait for wish data to resolve.
-    if (givebackNeedle) {
-      (async () => {
-        try {
-          const { raised: givebackRaised, goal: givebackGoal } = await givebackDataPromise;
-          const givebackRatio = getProgressRatio(givebackRaised, givebackGoal);
-          if (givebackRaisedNode) setCurrencyText(givebackRaisedNode, givebackRaised);
-          await animateNeedlePosition(
-            givebackNeedle,
-            0,
-            givebackRatio,
-            GIVEBACK_NEEDLE_DURATION_MS,
-            true,
-          );
-        } catch (givebackError) {
-          if (isGivebackRequestTimeoutError(givebackError)) {
-            console.warn("Giveback donation meter request timed out.", givebackError);
-          } else {
-            console.warn("Giveback donation meter failed to load.", givebackError);
-          }
-          if (givebackRaisedNode) givebackRaisedNode.textContent = "—";
-        }
-      })();
+    // Derived totals. wishRaised is populated after the wish fetch (PRD 004 uses it).
+    const totalRaised = 2 * givebackRaised;
+
+    if (givebackRaised > 0 && givebackRaisedNode) {
+      setCurrencyText(givebackRaisedNode, givebackRaised);
+    }
+
+    // Animate giveback needle (needle 2) now that its data is already resolved.
+    if (givebackNeedle && givebackRaised > 0) {
+      animateNeedlePosition(
+        givebackNeedle,
+        0,
+        getProgressRatio(givebackRaised, FALLBACK_GOAL),
+        STARTUP_DURATION_MS,
+        true,
+      ).catch((e: unknown) => console.warn("Giveback needle animation failed.", e));
+    }
+
+    // Arc bands for total and giveback snap to their values immediately (PRD 005).
+    if (arcTotal) {
+      arcTotal.setAttribute(
+        "d",
+        buildArcBandPath(
+          getProgressRatio(totalRaised, FALLBACK_GOAL),
+          ARC_BAND_OUTER_1,
+          ARC_BAND_OUTER_2,
+        ),
+      );
+    }
+    if (arcGiveback) {
+      arcGiveback.setAttribute(
+        "d",
+        buildArcBandPath(
+          getProgressRatio(givebackRaised, FALLBACK_GOAL),
+          ARC_BAND_OUTER_2,
+          ARC_BAND_OUTER_3,
+        ),
+      );
     }
 
     try {
@@ -791,7 +881,8 @@ const scaleLabels = [
         stopIdle = startIdleMotion(root, needle, raisedNode, goalNode, statusNode, palette);
       }
 
-      const { raised: raisedAmount, goal: goalAmount } = await wishDataPromise;
+      // wishRaised is available here for PRD 004 (Make-a-Wish needle).
+      const { raised: wishRaised } = await wishDataPromise;
 
       if (stopIdle) {
         const idleSnapshot = stopIdle();
@@ -799,10 +890,9 @@ const scaleLabels = [
         currentRatio = idleSnapshot.ratio;
       }
 
-      const normalizedGoal = goalAmount > 0 ? goalAmount : currentGoal;
-      const ratio = getProgressRatio(raisedAmount, normalizedGoal);
-      const goalReached = normalizedGoal > 0 && raisedAmount >= normalizedGoal;
-      const isOverload = goalReached;
+      // Needle 1 tracks totalRaised (2× giveback matching funds) against the $50k goal.
+      const ratio = getProgressRatio(totalRaised, FALLBACK_GOAL);
+      const isOverload = totalRaised >= FALLBACK_GOAL;
       const ratioDelta = Math.abs(ratio - currentRatio);
       const duration =
         cached || ratioDelta > 0.07 ? STARTUP_DURATION_MS : Math.round(1800 + ratioDelta * 3000);
@@ -817,19 +907,47 @@ const scaleLabels = [
         currentRatio,
         ratio,
         currentAmount,
-        raisedAmount,
+        totalRaised,
         currentGoal,
-        normalizedGoal,
+        FALLBACK_GOAL,
         duration,
         true,
         isOverload,
       );
 
-      writeCachedMeter(raisedAmount, normalizedGoal);
-      root.dataset.state = normalizedGoal > 0 ? (isOverload ? "goal" : "ready") : "fallback";
+      // Needle 3 (green / Make-a-Wish) — fire-and-forget, non-blocking.
+      if (wishNeedle) {
+        animateNeedlePosition(
+          wishNeedle,
+          0,
+          getProgressRatio(wishRaised, FALLBACK_GOAL),
+          STARTUP_DURATION_MS,
+          true,
+        ).catch((e: unknown) => console.warn("Wish needle animation failed.", e));
+      }
+
+      // Arc band for wish snaps to its value immediately (PRD 005).
+      if (arcWish) {
+        arcWish.setAttribute(
+          "d",
+          buildArcBandPath(
+            getProgressRatio(wishRaised, FALLBACK_GOAL),
+            ARC_BAND_OUTER_3,
+            ARC_BAND_INNER_3,
+          ),
+        );
+      }
+
+      writeCachedMeter(totalRaised, FALLBACK_GOAL);
+      root.dataset.state = isOverload ? "goal" : "ready";
     } catch (error) {
       bumpMotionToken(needle);
       stopOverloadTeeter(needle);
+      // Needle 3 falls back to zero on wish-data error (requirement 9).
+      if (wishNeedle) {
+        bumpMotionToken(wishNeedle);
+        setNeedle(wishNeedle, 0);
+      }
 
       if (isWishRequestTimeoutError(error)) {
         if (cached && cached.goal > 0) {
@@ -953,6 +1071,21 @@ const scaleLabels = [
     opacity: 0.34;
   }
 
+  .donation-meter__arc-band--total {
+    fill: var(--color-meter-arc-total, rgba(34, 197, 94, 1));
+    opacity: 0.18;
+  }
+
+  .donation-meter__arc-band--giveback {
+    fill: var(--color-meter-arc-giveback, rgba(249, 115, 22, 1));
+    opacity: 0.22;
+  }
+
+  .donation-meter__arc-band--wish {
+    fill: var(--color-meter-arc-wish, rgba(234, 179, 8, 1));
+    opacity: 0.22;
+  }
+
   .donation-meter__arc {
     fill: none;
     stroke: var(--color-meter-arc);
@@ -1016,14 +1149,26 @@ const scaleLabels = [
 
   .donation-meter__needle,
   .donation-meter__needle-tail {
-    fill: var(--color-meter-needle);
-    filter: drop-shadow(0 0.8px 1.2px var(--color-meter-needle-shadow));
+    fill: var(--color-meter-needle-total, #ef4444);
+    filter: drop-shadow(
+      0 0.8px 1.2px var(--color-meter-needle-total-shadow, rgba(239, 68, 68, 0.45))
+    );
   }
 
   .donation-meter__needle--giveback,
   .donation-meter__needle-tail--giveback {
     fill: var(--color-meter-needle-giveback, #3b82f6);
-    filter: drop-shadow(0 0.8px 1.2px var(--color-meter-needle-giveback-shadow, rgba(59, 130, 246, 0.45)));
+    filter: drop-shadow(
+      0 0.8px 1.2px var(--color-meter-needle-giveback-shadow, rgba(59, 130, 246, 0.45))
+    );
+  }
+
+  .donation-meter__needle--wish,
+  .donation-meter__needle-tail--wish {
+    fill: var(--color-meter-needle-wish, #22c55e);
+    filter: drop-shadow(
+      0 0.8px 1.2px var(--color-meter-needle-wish-shadow, rgba(34, 197, 94, 0.45))
+    );
   }
 
   .donation-meter__giveback-readout {

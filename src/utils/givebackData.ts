@@ -102,4 +102,3 @@ export async function getGivebackData(): Promise<GivebackData> {
   const markup = await response.text();
   return parseMarkup(markup);
 }
-
