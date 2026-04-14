@@ -507,6 +507,12 @@ const scaleLabels = [
     );
   }
 
+  /** Trigger the CSS fade-in transition on an arc band. */
+  function showArcBand(arc: SVGPathElement | null): void {
+    if (!arc) return;
+    arc.dataset.arcVisible = "";
+  }
+
   function getMechanicalAngle(progress: number, startAngle: number, targetAngle: number): number {
     const dipAngle = startAngle - 8.5;
     const overshootAngle = clamp(targetAngle + 4.3, ARC_START_DEG - 10, ARC_END_DEG + 3.5);
@@ -813,6 +819,7 @@ const scaleLabels = [
     }
 
     // Animate giveback needle (needle 2) now that its data is already resolved.
+    // Fade in the giveback arc band after the needle reaches its position.
     if (givebackNeedle && givebackRaised > 0) {
       animateNeedlePosition(
         givebackNeedle,
@@ -820,7 +827,9 @@ const scaleLabels = [
         getProgressRatio(givebackRaised, FALLBACK_GOAL),
         STARTUP_DURATION_MS,
         true,
-      ).catch((e: unknown) => console.warn("Giveback needle animation failed.", e));
+      )
+        .then(() => showArcBand(arcGiveback))
+        .catch((e: unknown) => console.warn("Giveback needle animation failed.", e));
     }
 
     // Arc bands for total and giveback snap to their values immediately (PRD 005).
@@ -915,18 +924,11 @@ const scaleLabels = [
         isOverload,
       );
 
-      // Needle 3 (green / Make-a-Wish) — fire-and-forget, non-blocking.
-      if (wishNeedle) {
-        animateNeedlePosition(
-          wishNeedle,
-          0,
-          getProgressRatio(wishRaised, FALLBACK_GOAL),
-          STARTUP_DURATION_MS,
-          true,
-        ).catch((e: unknown) => console.warn("Wish needle animation failed.", e));
-      }
+      // Total needle reached its position — fade in the total arc band.
+      showArcBand(arcTotal);
 
-      // Arc band for wish snaps to its value immediately (PRD 005).
+      // Set wish arc geometry now that wishRaised is known, then fire needle
+      // and fade in the wish arc band after the needle reaches its position.
       if (arcWish) {
         arcWish.setAttribute(
           "d",
@@ -936,6 +938,19 @@ const scaleLabels = [
             ARC_BAND_INNER_3,
           ),
         );
+      }
+
+      // Needle 3 (green / Make-a-Wish) — fire-and-forget, non-blocking.
+      if (wishNeedle) {
+        animateNeedlePosition(
+          wishNeedle,
+          0,
+          getProgressRatio(wishRaised, FALLBACK_GOAL),
+          STARTUP_DURATION_MS,
+          true,
+        )
+          .then(() => showArcBand(arcWish))
+          .catch((e: unknown) => console.warn("Wish needle animation failed.", e));
       }
 
       writeCachedMeter(totalRaised, FALLBACK_GOAL);
@@ -1073,17 +1088,40 @@ const scaleLabels = [
 
   .donation-meter__arc-band--total {
     fill: var(--color-meter-arc-total, rgba(34, 197, 94, 1));
+    opacity: 0;
+    transition: opacity 0.6s ease-in;
+  }
+
+  .donation-meter__arc-band--total[data-arc-visible] {
     opacity: 0.18;
   }
 
   .donation-meter__arc-band--giveback {
     fill: var(--color-meter-arc-giveback, rgba(249, 115, 22, 1));
+    opacity: 0;
+    transition: opacity 0.6s ease-in;
+  }
+
+  .donation-meter__arc-band--giveback[data-arc-visible] {
     opacity: 0.22;
   }
 
   .donation-meter__arc-band--wish {
     fill: var(--color-meter-arc-wish, rgba(234, 179, 8, 1));
+    opacity: 0;
+    transition: opacity 0.6s ease-in;
+  }
+
+  .donation-meter__arc-band--wish[data-arc-visible] {
     opacity: 0.22;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .donation-meter__arc-band--total,
+    .donation-meter__arc-band--giveback,
+    .donation-meter__arc-band--wish {
+      transition: none;
+    }
   }
 
   .donation-meter__arc {
