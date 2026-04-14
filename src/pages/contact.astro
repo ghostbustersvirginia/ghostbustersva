@@ -4,6 +4,7 @@
  */
 import PageHeader from "../components/ui/PageHeader.astro";
 import SectionHeading from "../components/ui/SectionHeading.astro";
+import Button from "../components/ui/Button.astro";
 import BaseLayout from "../layouts/BaseLayout.astro";
 import LEDScrollbar from "../components/LEDScrollbar.astro";
 import ContactBookingPanel from "../components/contact/ContactBookingPanel.astro";
@@ -119,6 +120,20 @@ const bookingImage = await getResponsiveImageAttrs({
           eventInquiryAllowlistJson={eventInquiryAllowlistJson}
           contactFormSubmitLabel={contactFormSubmitLabel}
         />
+
+        <section class="appearance-cta" aria-labelledby="appearance-cta-title">
+          <SectionHeading id="appearance-cta-title" level={3}>Request an Appearance</SectionHeading>
+          <p class="appearance-cta__text">
+            Need to book Ghostbusters Virginia for a full event appearance? Use our dedicated
+            multi-step appearance request form. It walks through event details, schedule, location,
+            logistics, and contact info so we can respond faster with the right plan.
+          </p>
+          <div class="appearance-cta__actions">
+            <Button href="/appearance" variant="primary" icon="arrow-right"
+              >Open Appearance Request Form</Button
+            >
+          </div>
+        </section>
       </div>
     </div>
 
@@ -157,6 +172,38 @@ const bookingImage = await getResponsiveImageAttrs({
     margin-right: auto;
     border-radius: var(--radius-md);
     overflow: visible;
+  }
+
+  .appearance-cta {
+    margin-top: var(--space-3xl);
+    padding: var(--space-xl);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    text-align: center;
+    background:
+      linear-gradient(135deg, rgba(0, 0, 255, 0.035), rgba(0, 0, 255, 0.02)), var(--color-surface);
+    box-shadow: var(--shadow-panel);
+  }
+
+  .appearance-cta__text {
+    margin: 0;
+    width: 100%;
+    color: var(--color-text-muted);
+    font-family: var(--font-body);
+    font-size: var(--text-base);
+    line-height: var(--leading-relaxed);
+  }
+
+  .appearance-cta__actions {
+    margin-top: var(--space-2xl);
+    display: flex;
+    justify-content: center;
+  }
+
+  @media (max-width: 640px) {
+    .appearance-cta {
+      padding: var(--space-lg);
+    }
   }
 
   :global(.flatpickr-wrapper) {
