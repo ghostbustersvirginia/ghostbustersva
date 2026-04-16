@@ -48,7 +48,7 @@ describe("contact form inquiry picker behavior", () => {
   });
 
   it("validates inquiry selection value as required", () => {
-    expect(isInquirySelectionValid("Schedule Event")).toBe(true);
+    expect(isInquirySelectionValid("Plan a Proton Pet Drive")).toBe(true);
     expect(isInquirySelectionValid(" ")).toBe(false);
     expect(isInquirySelectionValid("")).toBe(false);
   });

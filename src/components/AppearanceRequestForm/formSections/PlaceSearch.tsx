@@ -13,6 +13,8 @@ let mapsReadyPromise: Promise<void> | null = null;
 function loadMapsAPI(): Promise<void> {
   if (typeof window === "undefined") return Promise.reject(new Error("SSR"));
 
+  if (!MAPS_API_KEY) return Promise.reject(new Error("GOOGLE_MAPS_API_KEY not set"));
+
   if (window.google?.maps?.places?.Autocomplete) return Promise.resolve();
 
   if (!mapsReadyPromise) {
@@ -80,8 +82,7 @@ export default function PlaceSearch() {
             if (comp.types.includes("street_number")) streetNumber = comp.long_name;
             else if (comp.types.includes("route")) route = comp.long_name;
             else if (comp.types.includes("locality")) city = comp.long_name;
-            else if (comp.types.includes("administrative_area_level_1"))
-              state = comp.short_name;
+            else if (comp.types.includes("administrative_area_level_1")) state = comp.short_name;
             else if (comp.types.includes("postal_code")) zip = comp.long_name;
           }
 
@@ -118,7 +119,9 @@ export default function PlaceSearch() {
         placeholder={copy.locationSearchPlaceholder}
         autoComplete="off"
       />
+      <p className="arf__hint">
+        Search to auto-fill the address fields below, or fill them in manually.
+      </p>
     </div>
   );
 }
-

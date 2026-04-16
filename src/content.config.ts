@@ -394,116 +394,6 @@ const codeOfConductPageCopy = z.object({
   ogImage: z.string().optional(),
 });
 
-const appearanceRequestFormPageCopy = z.object({
-  page: z.literal("appearance-request-form"),
-
-  // Step progress titles
-  step0Title: z.string().optional(),
-  step1Title: z.string().optional(),
-  step2Title: z.string().optional(),
-  step3Title: z.string().optional(),
-  step4Title: z.string().optional(),
-  step5Title: z.string().optional(),
-  step6Title: z.string().optional(),
-  step7Title: z.string().optional(),
-
-  // Navigation buttons
-  navBack: z.string().optional(),
-  navNext: z.string().optional(),
-  navSubmit: z.string().optional(),
-  navSubmitting: z.string().optional(),
-
-  // Success state
-  successIcon: z.string().optional(),
-  successHeading: z.string().optional(),
-  successBody: z.string().optional(),
-
-  // Step 0 — Event Information
-  eventNameLabel: z.string().optional(),
-  eventTypeLegend: z.string().optional(),
-  eventTypeOptions: z.array(z.string()).min(1).optional(),
-
-  // Step 1 — Event Schedule
-  isScheduledLegend: z.string().optional(),
-  optionYes: z.string().optional(),
-  optionNo: z.string().optional(),
-  eventStartDateLabel: z.string().optional(),
-  eventEndDateLabel: z.string().optional(),
-  eventStartTimeLabel: z.string().optional(),
-  eventEndTimeLabel: z.string().optional(),
-  earliestSetupTimeLabel: z.string().optional(),
-  requiredLeaveTimeLabel: z.string().optional(),
-
-  // Step 2 — Location
-  locationDescriptionLabel: z.string().optional(),
-  locationDescriptionPlaceholder: z.string().optional(),
-  addressLine1Label: z.string().optional(),
-  addressLine2Label: z.string().optional(),
-  cityLabel: z.string().optional(),
-  stateLabel: z.string().optional(),
-  zipCodeLabel: z.string().optional(),
-
-  // Step 3 — Vehicles & Parking
-  requestEctoVehicleLegend: z.string().optional(),
-  ectoVehicleParkingInfoLabel: z.string().optional(),
-  ectoVehicleParkingInfoPlaceholder: z.string().optional(),
-  maxEctoVehiclesLabel: z.string().optional(),
-  memberParkingInfoLabel: z.string().optional(),
-  memberParkingInfoPlaceholder: z.string().optional(),
-
-  // Step 4 — Tables & Chairs
-  tablesLegend: z.string().optional(),
-  tablesOptionWeBring: z.string().optional(),
-  tablesOptionGbvaBrings: z.string().optional(),
-  numberOfTablesLabel: z.string().optional(),
-  chairsLegend: z.string().optional(),
-  chairsOptionWeBring: z.string().optional(),
-  chairsOptionGbvaBrings: z.string().optional(),
-  numberOfChairsLabel: z.string().optional(),
-
-  // Step 5 — Charitable Donations
-  charitableDonationsLegend: z.string().optional(),
-  optionUnsure: z.string().optional(),
-
-  // Step 6 — Contact Information
-  contactNameLabel: z.string().optional(),
-  contactEmailLabel: z.string().optional(),
-  contactPhoneLabel: z.string().optional(),
-  companyNameLabel: z.string().optional(),
-  companyWebsiteLabel: z.string().optional(),
-  companyWebsitePlaceholder: z.string().optional(),
-
-  // Step 7 — Additional Information
-  additionalInfoLabel: z.string().optional(),
-  additionalInfoPlaceholder: z.string().optional(),
-
-  // Validation error messages
-  errorEventNameRequired: z.string().optional(),
-  errorEventTypeRequired: z.string().optional(),
-  errorIsScheduledRequired: z.string().optional(),
-  errorEventStartDateRequired: z.string().optional(),
-  errorEventEndDateRequired: z.string().optional(),
-  errorEventStartTimeRequired: z.string().optional(),
-  errorEventEndTimeRequired: z.string().optional(),
-  errorEarliestSetupTimeRequired: z.string().optional(),
-  errorRequiredLeaveTimeRequired: z.string().optional(),
-  errorRequestEctoVehicleRequired: z.string().optional(),
-  errorEctoVehicleParkingInfoRequired: z.string().optional(),
-  errorMaxEctoVehiclesRequired: z.string().optional(),
-  errorMemberParkingInfoRequired: z.string().optional(),
-  errorPaidParkingCoveredRequired: z.string().optional(),
-  errorTablesRequired: z.string().optional(),
-  errorChairsRequired: z.string().optional(),
-  errorNumberOfTablesRequired: z.string().optional(),
-  errorNumberOfChairsRequired: z.string().optional(),
-  errorCharitableDonationsRequired: z.string().optional(),
-  errorContactNameRequired: z.string().optional(),
-  errorContactEmailRequired: z.string().optional(),
-  errorContactEmailInvalid: z.string().optional(),
-  errorSubmitFailed: z.string().optional(),
-  errorNetworkError: z.string().optional(),
-});
-
 const pageCopy = defineCollection({
   loader: glob({ pattern: "**/*.json", base: "src/content/page-copy" }),
   schema: z.discriminatedUnion("page", [
@@ -515,7 +405,6 @@ const pageCopy = defineCollection({
     contactPageCopy,
     donatePageCopy,
     codeOfConductPageCopy,
-    appearanceRequestFormPageCopy,
   ]),
 });
 

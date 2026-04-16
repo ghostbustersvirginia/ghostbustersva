@@ -3,119 +3,27 @@ import type { FormCopy, FormData } from "./types";
 export const SESSION_KEY = "gbva-appearance-request";
 export const FORMSPREE_URL = "https://formspree.io/f/xpqybzjj";
 
-// ------------------------------------------------------------------ //
-// Step & section definitions — drive StepSelector and validation      //
-// ------------------------------------------------------------------ //
+/** Total number of wizard steps. Matches STEP_COMPONENTS length in AppearanceRequestForm.tsx. */
+export const TOTAL_STEPS = 5;
 
-export interface SectionDef {
-  /** Stable ID — key in enabledSections map. */
-  id: string;
-  /** Display label shown in StepSelector chip. */
-  label: string;
-  /** Required sections cannot be toggled off. */
-  required: boolean;
-}
-
-export interface StepDef {
-  /** 0-based index matching the STEP_COMPONENTS array in AppearanceRequestForm.tsx. */
-  originalIndex: number;
-  /**
-   * When set, only THIS sectionId being enabled makes the step active.
-   * Subsections (other sections in the array) are shown in StepSelector
-   * only while the gate section is enabled.
-   */
-  gateSection?: string;
-  sections: SectionDef[];
-}
-
-/**
- * Configuration for steps 1–7 (step 0 / Event Information is always present).
- * A step is active when it has at least one required section OR any optional
- * section is currently enabled.
- */
-export const STEP_DEFINITIONS: StepDef[] = [
-  {
-    // EventSchedule: gate section controls whether the step is active.
-    // Subsections appear in StepSelector only while the gate is enabled.
-    originalIndex: 1,
-    gateSection: "eventSchedule",
-    sections: [
-      { id: "eventSchedule", label: "Event Schedule", required: false },
-      { id: "eventDateTime", label: "Dates & Times", required: false },
-      { id: "earliestSetup", label: "Setup Times", required: false },
-    ],
-  },
-  {
-    originalIndex: 2,
-    sections: [
-      { id: "venueSearch", label: "Venue Search", required: true },
-      { id: "address", label: "Address", required: true },
-    ],
-  },
-  {
-    originalIndex: 3,
-    sections: [
-      { id: "ectoVehicles", label: "Ecto Vehicles", required: false },
-      { id: "parkingInfo", label: "Parking Info", required: false },
-    ],
-  },
-  {
-    originalIndex: 4,
-    sections: [
-      { id: "tables", label: "Tables", required: false },
-      { id: "chairs", label: "Chairs", required: false },
-    ],
-  },
-  // Step 5 (Charitable Donations) is embedded directly in EventInformation — not a standalone step.
-  {
-    originalIndex: 6,
-    sections: [
-      { id: "personContact", label: "Personal Contact", required: true },
-      { id: "companyContact", label: "Company Info", required: false },
-    ],
-  },
-  {
-    originalIndex: 7,
-    sections: [{ id: "additionalInfo", label: "Additional Information", required: false }],
-  },
-];
-
-/** Build the default section-enabled map — opt-in sections start disabled. */
-export function buildDefaultEnabledSections(): Record<number, Record<string, boolean>> {
-  const result: Record<number, Record<string, boolean>> = {};
-  for (const def of STEP_DEFINITIONS) {
-    result[def.originalIndex] = {};
-    for (const s of def.sections) {
-      if (!s.required) result[def.originalIndex][s.id] = true;
-    }
-  }
-  // These sections are opt-in — disabled by default.
-  result[3].ectoVehicles = false;
-  result[3].parkingInfo = false;
-  result[4].tables = false;
-  result[4].chairs = false;
-  result[6].companyContact = false;
-  return result;
-}
-
-/**
- * Default copy used when no CMS entry is available.
- * Mirrors src/content/page-copy/appearance-request-form.json exactly.
- */
-export const DEFAULT_COPY: FormCopy = {
-  step0Title: "Event Information",
-  step1Title: "Event Schedule",
-  step2Title: "Location",
-  step3Title: "Vehicles & Parking",
-  step4Title: "Tables & Chairs",
-  step5Title: "Charitable Donations",
-  step6Title: "Contact Information",
-  step7Title: "Additional Information",
+/** Static copy for the appearance request form. */
+export const FORM_COPY: FormCopy = {
+  step0Title: "Event Details",
+  step1Title: "Location",
+  step2Title: "Event Needs",
+  step3Title: "Logistics",
+  step4Title: "Contact & Notes",
 
   navBack: "← Back",
   navNext: "Next →",
   navSubmit: "Submit Request",
   navSubmitting: "Submitting…",
+  navReset: "Reset Form",
+  navResetModalHeading: "Reset Form?",
+  navResetModalBody:
+    "This will clear all your saved information and take you back to step one. This can\u2019t be undone.",
+  navResetModalConfirm: "Yes, start over",
+  navResetModalCancel: "Keep my info",
 
   successIcon: "👻",
   successHeading: "Request Received!",
@@ -139,6 +47,9 @@ export const DEFAULT_COPY: FormCopy = {
   eventTypeOtherLabel: "Please describe the event type",
 
   isScheduledLegend: "Is the event already scheduled?",
+  unscheduledNoteLabel: "Any context on timing?",
+  unscheduledNotePlaceholder:
+    "e.g. planning for summer, targeting a specific month, still exploring options\u2026",
   optionYes: "Yes",
   optionNo: "No",
   eventStartDateLabel: "Event Start Date",
@@ -151,32 +62,44 @@ export const DEFAULT_COPY: FormCopy = {
   locationSearchLabel: "Search for a Venue or Address",
   locationSearchPlaceholder: "Start typing a place name or address\u2026",
   locationDescriptionLabel: "Location Description",
-  locationDescriptionPlaceholder: "Describe the venue or provide any helpful location context\u2026",
+  locationDescriptionPlaceholder:
+    "Describe the venue or provide any helpful location context\u2026",
   addressLine1Label: "Street Address",
   addressLine2Label: "Address Line 2",
   cityLabel: "City",
   stateLabel: "State",
   zipCodeLabel: "ZIP Code",
 
-  requestEctoVehicleLegend: "Are you requesting an ecto vehicle?",
-  ectoVehicleParkingInfoLabel: "Where should ecto vehicles park?",
+  requestEctoVehicleLegend: "Are you requesting an Ecto vehicle?",
+  ectoVehicleParkingInfoLabel: "Where should Ecto vehicles park?",
   ectoVehicleParkingInfoPlaceholder: "Parking area, access instructions, etc.",
-  maxEctoVehiclesLabel: "Maximum number of ecto vehicles that can be accommodated",
+  maxEctoVehiclesLabel: "How many ecto vehicles?",
+  maxEctoVehiclesShortLabel: "How many ecto vehicles?",
   memberParkingInfoLabel: "Where should members park on the day of the event?",
   memberParkingInfoPlaceholder: "Describe member parking location and instructions\u2026",
 
   tablesLegend: "Tables",
   tablesOptionWeBring: "We provide tables",
   tablesOptionGbvaBrings: "Ghostbusters Virginia provides tables",
+  tablesOptionNA: "Not needed",
   numberOfTablesLabel: "How many tables will be provided?",
+  numberOfTablesNeededLabel: "How many tables will you need provided?",
   chairsLegend: "Chairs",
   chairsOptionWeBring: "We provide chairs",
   chairsOptionGbvaBrings: "Ghostbusters Virginia provides chairs",
+  chairsOptionNA: "Not needed",
   numberOfChairsLabel: "How many chairs will be provided?",
+  numberOfChairsNeededLabel: "How many chairs will you need provided?",
 
   charitableDonationsLegend: "Are charitable donations allowed at this event?",
-  collectDonationsForHostLegend:
-    "For whom can we collect donations?",
+  needsLogisticsLegend: "Will you need any of the following? Chairs, tables, or Ecto vehicles?",
+  requestEctoVehicleHint: "We\u2019ll ask follow-up questions in the next steps.",
+  needsLogisticsHint: "We\u2019ll ask follow-up questions in the next steps.",
+  errorNeedsLogisticsRequired: "Please indicate whether you need any logistics support.",
+  collectDonationsForHostLegend: "For whom can we collect donations?",
+  charityInfoLabel: "Which charity?",
+  charityInfoPlaceholder: "Charity name or website URL\u2026",
+  charityInfoHint: "Please provide the charity name or website URL.",
   optionOurChoice: "My choice of approved charity",
   optionYourChoice: "Ghostbusters, Virginia's choice of charity",
   optionUnsure: "Unsure",
@@ -189,7 +112,8 @@ export const DEFAULT_COPY: FormCopy = {
   companyWebsitePlaceholder: "https://",
 
   additionalInfoLabel: "Is there anything else you\u2019d like us to know?",
-  additionalInfoPlaceholder: "Any additional context, special requirements, or questions\u2026",
+  additionalInfoPlaceholder:
+    "Any additional context, special requirements, parking restrictions, or general questions not covered here\u2026",
 
   errorEventNameRequired: "Event name is required.",
   errorEventTypeRequired: "Please select an event type.",
@@ -201,8 +125,7 @@ export const DEFAULT_COPY: FormCopy = {
   errorEventEndTimeRequired: "Event end time is required.",
   errorEarliestSetupTimeRequired: "Earliest setup / arrival time is required.",
   errorRequiredLeaveTimeRequired: "Required leave time is required.",
-  errorRequestEctoVehicleRequired:
-    "Please indicate whether you are requesting an ecto vehicle.",
+  errorRequestEctoVehicleRequired: "Please indicate whether you are requesting an ecto vehicle.",
   errorEctoVehicleParkingInfoRequired: "Ecto vehicle parking information is required.",
   errorMaxEctoVehiclesRequired: "Maximum number of ecto vehicles is required.",
   errorMemberParkingInfoRequired: "Member parking information is required.",
@@ -211,6 +134,9 @@ export const DEFAULT_COPY: FormCopy = {
   errorNumberOfTablesRequired: "Please specify the number of tables.",
   errorNumberOfChairsRequired: "Please specify the number of chairs.",
   errorCharitableDonationsRequired: "Please indicate whether charitable donations are allowed.",
+  errorAddressLine1Required: "Street address is required.",
+  errorCityRequired: "City is required.",
+  errorStateRequired: "State is required.",
   errorContactNameRequired: "Name is required.",
   errorContactEmailRequired: "Email address is required.",
   errorContactEmailInvalid: "Please enter a valid email address.",
@@ -223,6 +149,7 @@ export const DEFAULT_FORM_DATA: FormData = {
   eventType: "",
   eventTypeOther: "",
   isScheduled: "",
+  unscheduledNote: "",
   eventStartDate: "",
   eventEndDate: "",
   eventStartTime: "",
@@ -236,16 +163,18 @@ export const DEFAULT_FORM_DATA: FormData = {
   state: "",
   zipCode: "",
   placeId: "",
-  requestEctoVehicle: "",
+  requestEctoVehicle: "no",
   ectoVehicleParkingInfo: "",
   maxEctoVehicles: "",
   memberParkingInfo: "",
-  tablesProvided: "",
-  chairsProvided: "",
+  tablesProvided: "n/a",
+  chairsProvided: "n/a",
   numberOfTables: "",
   numberOfChairs: "",
   charitableDonationsAllowed: "",
+  needsLogistics: "",
   collectDonationsForHost: "",
+  charityInfo: "",
   contactName: "",
   contactEmail: "",
   contactPhone: "",
@@ -253,4 +182,3 @@ export const DEFAULT_FORM_DATA: FormData = {
   companyWebsite: "",
   additionalInfo: "",
 };
-

@@ -5,6 +5,7 @@ export interface FormData {
   eventTypeOther: string;
   // Step 1
   isScheduled: string;
+  unscheduledNote: string;
   eventStartDate: string;
   eventEndDate: string;
   eventStartTime: string;
@@ -29,9 +30,11 @@ export interface FormData {
   chairsProvided: string;
   numberOfTables: string;
   numberOfChairs: string;
-  // Step 5
+  // Step 5 (gating question lives in Step 0)
+  needsLogistics: string;
   charitableDonationsAllowed: string;
   collectDonationsForHost: string;
+  charityInfo: string;
   // Step 6
   contactName: string;
   contactEmail: string;
@@ -42,23 +45,25 @@ export interface FormData {
   additionalInfo: string;
 }
 
-/** All user-visible text in the form — loaded from the pageCopy CMS collection. */
+/** All user-visible text in the form. */
 export interface FormCopy {
-  // Step progress titles
+  // Step progress titles (5 steps)
   step0Title: string;
   step1Title: string;
   step2Title: string;
   step3Title: string;
   step4Title: string;
-  step5Title: string;
-  step6Title: string;
-  step7Title: string;
 
   // Navigation buttons
   navBack: string;
   navNext: string;
   navSubmit: string;
   navSubmitting: string;
+  navReset: string;
+  navResetModalHeading: string;
+  navResetModalBody: string;
+  navResetModalConfirm: string;
+  navResetModalCancel: string;
 
   // Success state
   successIcon: string;
@@ -74,6 +79,8 @@ export interface FormCopy {
 
   // Step 1 — Event Schedule
   isScheduledLegend: string;
+  unscheduledNoteLabel: string;
+  unscheduledNotePlaceholder: string;
   optionYes: string;
   optionNo: string;
   eventStartDateLabel: string;
@@ -99,6 +106,7 @@ export interface FormCopy {
   ectoVehicleParkingInfoLabel: string;
   ectoVehicleParkingInfoPlaceholder: string;
   maxEctoVehiclesLabel: string;
+  maxEctoVehiclesShortLabel: string;
   memberParkingInfoLabel: string;
   memberParkingInfoPlaceholder: string;
 
@@ -108,15 +116,28 @@ export interface FormCopy {
   tablesLegend: string;
   tablesOptionWeBring: string;
   tablesOptionGbvaBrings: string;
+  tablesOptionNA: string;
   numberOfTablesLabel: string;
+  numberOfTablesNeededLabel: string;
   chairsLegend: string;
   chairsOptionWeBring: string;
   chairsOptionGbvaBrings: string;
+  chairsOptionNA: string;
   numberOfChairsLabel: string;
+  numberOfChairsNeededLabel: string;
+
+  // Step 0 — Logistics gating
+  requestEctoVehicleHint: string;
+  needsLogisticsLegend: string;
+  needsLogisticsHint: string;
+  errorNeedsLogisticsRequired: string;
 
   // Step 5 — Charitable Donations
   charitableDonationsLegend: string;
-  collectDonationsForHostLegend: string
+  collectDonationsForHostLegend: string;
+  charityInfoLabel: string;
+  charityInfoPlaceholder: string;
+  charityInfoHint: string;
   optionOurChoice: string;
   optionYourChoice: string;
   optionUnsure: string;
@@ -153,6 +174,9 @@ export interface FormCopy {
   errorNumberOfTablesRequired: string;
   errorNumberOfChairsRequired: string;
   errorCharitableDonationsRequired: string;
+  errorAddressLine1Required: string;
+  errorCityRequired: string;
+  errorStateRequired: string;
   errorContactNameRequired: string;
   errorContactEmailRequired: string;
   errorContactEmailInvalid: string;

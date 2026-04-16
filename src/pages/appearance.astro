@@ -3,31 +3,68 @@
  * Request an Appearance — multi-step form for booking Ghostbusters Virginia.
  */
 
-import SectionHeading from "../components/ui/SectionHeading.astro";
+import PageHeader from "../components/ui/PageHeader.astro";
 import BaseLayout from "../layouts/BaseLayout.astro";
 import AppearanceRequestForm from "../components/AppearanceRequestForm/AppearanceRequestForm.tsx";
-
 ---
 
 <BaseLayout
   title="Request an Appearance"
   description="Request an appearance by Ghostbusters Virginia at your event, convention, or community gathering."
-  canonical="/request-appearance"
+  canonical="/appearance"
   ogTitle="Request a Ghostbusters Virginia Appearance"
   ogDescription="Planning an event? Fill out our multi-step request form and we'll get back to you about bringing Ghostbusters Virginia to your event."
   ogImage="/images/ghostbusters-virginia-full-team-photo.jpg"
 >
-  <section class="page" aria-labelledby="request-title">
+  <section class="page" aria-labelledby="appearance-title">
     <div class="page-band page-band--white">
       <div class="container container--mid">
-        <SectionHeading id="request-section-heading" level={2}>
-          Request an Appearance
-        </SectionHeading>
-        <p class="page-intro">
-          Planning an event and want Ghostbusters Virginia to be part of it? Fill out the form below and we'll be in touch. Required fields are marked with an asterisk (*).
+        <PageHeader
+          id="appearance-title"
+          title="Request an Appearance"
+          subtitle="Planning an event and want Ghostbusters Virginia to be part of it? Share the details below and we'll follow up with next steps."
+        />
+      </div>
+    </div>
+
+    <div class="page-band page-band--alt">
+      <div class="container container--mid">
+        <div class="appearance-panel" aria-label="Appearance request form">
+          <AppearanceRequestForm client:load />
+        </div>
+        <p class="appearance-panel__intro">
+          The stepper collects event info, schedule, location, logistics, and contact details so we
+          can review requests quickly. Required fields are marked with an asterisk (*).
         </p>
-        <AppearanceRequestForm client:load />
       </div>
     </div>
   </section>
+  <link
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.css"
+  />
 </BaseLayout>
+
+<style>
+  .appearance-panel {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-panel);
+    padding: var(--space-xl);
+  }
+
+  .appearance-panel__intro {
+    margin-block: var(--space-lg) 0;
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+    line-height: var(--leading-relaxed);
+    text-align: center;
+  }
+
+  @media (max-width: 640px) {
+    .appearance-panel {
+      padding: var(--space-lg);
+    }
+  }
+</style>

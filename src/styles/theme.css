@@ -460,7 +460,8 @@ html.reduce-motion *::after {
 }
 
 .page > .page-band:first-child {
-  padding-top: var(--space-xl);
+  padding-top: var(--space-lg);
+  padding-bottom: var(--space-2xl);
 }
 
 .page > .page-band:last-child {
@@ -469,7 +470,8 @@ html.reduce-motion *::after {
 
 @media (max-width: 640px) {
   .page > .page-band:first-child {
-    padding-top: var(--space-lg);
+    padding-top: var(--space-md);
+    padding-bottom: var(--space-xl);
   }
 
   .page > .page-band:last-child {
@@ -543,7 +545,7 @@ html.reduce-motion *::after {
 /* .page-title — shared h1 for inner pages */
 .page-title {
   font-family: var(--font-display);
-  font-size: var(--text-4xl);
+  font-size: var(--text-3xl);
   font-weight: var(--weight-bold);
   letter-spacing: var(--tracking-wide);
   color: var(--color-heading-section);
@@ -553,7 +555,7 @@ html.reduce-motion *::after {
 
 @media (max-width: 640px) {
   .page-title {
-    font-size: var(--text-2xl);
+    font-size: var(--text-xl);
   }
 }
 
@@ -561,7 +563,7 @@ html.reduce-motion *::after {
 .page-intro {
   color: var(--color-text-muted);
   font-family: var(--font-body);
-  font-size: var(--text-base);
+  font-size: var(--text-sm);
   line-height: var(--leading-normal);
   text-align: center;
   max-width: var(--content-width-mid);

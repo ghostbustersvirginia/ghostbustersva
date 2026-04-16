@@ -1,40 +1,29 @@
 /**
- * AppearanceRequestForm — 8-step appearance request form.
+ * AppearanceRequestForm — 5-step appearance request form.
  *
  * State is managed via AppearanceRequestContext (AppearanceRequestContext.tsx).
  * Each step is its own component under ./steps/.
  * Helper/utility functions live in helpers.ts.
- * Constants and DEFAULT_COPY live in constants.ts. Types live in types.ts.
- *
- * Pass `copy` from getPageCopy("appearance-request-form") to override any text via Keystatic.
- * Omitting `copy` falls back to DEFAULT_COPY so the form works standalone.
+ * Static labels/copy live in constants.ts. Types live in types.ts.
  */
 import type { ComponentType } from "react";
+import { useEffect } from "react";
 import "./AppearanceRequestForm.css";
-import type { FormCopy } from "./types";
 import { AppearanceRequestProvider, useAppearanceRequest } from "./AppearanceRequestContext";
 import StepProgress from "./StepProgress";
 import NavButtons from "./NavButtons";
-import { DEFAULT_COPY } from "./constants";
-import StepSelector from "./formSections/StepSelector";
 import EventInformation from "./steps/EventInformation";
-import EventSchedule from "./steps/EventSchedule";
+import EventNeeds from "./steps/EventNeeds";
 import Location from "./steps/Location";
-import VehiclesAndParking from "./steps/VehiclesAndParking";
-import TablesAndChairs from "./steps/TablesAndChairs";
-import CharitableDonations from "./steps/CharitableDonations";
-import ContactInformation from "./steps/ContactInformation";
-import AdditionalInformation from "./steps/AdditionalInformation";
+import Logistics from "./steps/Logistics";
+import ContactAndNotes from "./steps/ContactAndNotes";
 
 const STEP_COMPONENTS: ComponentType[] = [
   EventInformation,
-  EventSchedule,
   Location,
-  VehiclesAndParking,
-  TablesAndChairs,
-  CharitableDonations, // index 5 — embedded in step 0; kept here for array alignment
-  ContactInformation,
-  AdditionalInformation,
+  EventNeeds,
+  Logistics,
+  ContactAndNotes,
 ];
 
 // ------------------------------------------------------------------ //
@@ -59,8 +48,23 @@ function SuccessMessage() {
 // ------------------------------------------------------------------ //
 
 function FormContent() {
-  const { step, submitted, submitError, copy, activeStepOriginalIndices } =
-    useAppearanceRequest();
+  const {
+    step,
+    submitted,
+    submitError,
+    copy,
+    isLast,
+    goNext,
+    goToStep,
+    handleSubmit,
+    skipLogistics,
+    effectiveStep,
+    effectiveTotalSteps,
+  } = useAppearanceRequest();
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "auto" });
+  }, [step]);
 
   const allStepTitles: string[] = [
     copy.step0Title,
@@ -68,25 +72,43 @@ function FormContent() {
     copy.step2Title,
     copy.step3Title,
     copy.step4Title,
-    copy.step5Title,
-    copy.step6Title,
-    copy.step7Title,
   ];
+  const stepTitles = allStepTitles.filter((_, i) => {
+    if (i === 3 && skipLogistics) return false;
+    return true;
+  });
 
   if (submitted) return <SuccessMessage />;
 
-  const originalIndex = activeStepOriginalIndices[step];
-  const StepComponent = STEP_COMPONENTS[originalIndex];
-  const activeStepTitles = activeStepOriginalIndices.map((i) => allStepTitles[i]);
+  const StepComponent = STEP_COMPONENTS[step];
+
+  // Map effective stepper index back to real step index (accounts for skipped steps)
+  const handleNodeClick = (effectiveIndex: number) => {
+    const activeSteps = Array.from({ length: STEP_COMPONENTS.length }, (_, i) => i).filter(
+      (i) => !(i === 3 && skipLogistics),
+    );
+    const realStep = activeSteps[effectiveIndex] ?? effectiveIndex;
+    goToStep(realStep);
+  };
+
+  const onSubmit = (e: { preventDefault: () => void }) => {
+    e.preventDefault();
+    if (isLast) {
+      void handleSubmit();
+      return;
+    }
+    goNext();
+  };
 
   return (
     <div className="arf">
       <StepProgress
-        step={step}
-        totalSteps={activeStepOriginalIndices.length}
-        stepTitles={activeStepTitles}
+        step={effectiveStep}
+        totalSteps={effectiveTotalSteps}
+        stepTitles={stepTitles}
+        onNodeClick={handleNodeClick}
       />
-      <form noValidate onSubmit={(e) => e.preventDefault()}>
+      <form noValidate onSubmit={onSubmit}>
         <StepComponent />
         {submitError && (
           <div className="arf__submit-error" role="alert">
@@ -94,7 +116,6 @@ function FormContent() {
           </div>
         )}
         <NavButtons />
-        {step === 0 && <StepSelector />}
       </form>
     </div>
   );
@@ -104,15 +125,9 @@ function FormContent() {
 // Public export — wraps in provider                                    //
 // ------------------------------------------------------------------ //
 
-interface AppearanceRequestFormProps {
-  /** CMS copy from getPageCopy("appearance-request-form"). Merged over DEFAULT_COPY. */
-  copy?: Partial<FormCopy>;
-}
-
-export default function AppearanceRequestForm({ copy = {} }: AppearanceRequestFormProps) {
-  const resolvedCopy: FormCopy = { ...DEFAULT_COPY, ...copy };
+export default function AppearanceRequestForm() {
   return (
-    <AppearanceRequestProvider copy={resolvedCopy}>
+    <AppearanceRequestProvider>
       <FormContent />
     </AppearanceRequestProvider>
   );
