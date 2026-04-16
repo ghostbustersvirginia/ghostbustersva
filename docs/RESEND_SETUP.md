@@ -1,283 +1,152 @@
-**# Resend + Vercel Contact Form Playbook**
+# Resend Setup — Ghostbusters Virginia
 
-Purpose: reusable setup standard for small sites using a contact form with Resend email delivery, Vercel hosting, optional Upstash rate limiting, and basic alerting.
+This doc covers what you need to do manually to get Resend working after running the implementation PRD. The code changes are defined in `docs/prds/006-resend-implementation.md` — run that first, then come back here.
 
-Use this as both:
+---
 
-- a manual checklist for dashboard work
-- an instruction file for coding agents
+## What the PRD handles (no manual work needed)
 
-**## 1. Default Architecture**
+- Installs `resend`, `@upstash/redis`, `@upstash/ratelimit`
+- Creates `/api/contact` and `/api/appearance` endpoints
+- Removes all Formspree dependencies from both forms
+- Wires both forms to submit via AJAX to the new endpoints
+- Adds honeypot, timing, origin, and rate-limit checks
+- Creates `.env.example` with all required vars and dummy Turnstile keys
+- Updates env var schema in `astro.config.mjs`
+- Adds tests and verifies build
 
-- Host: Vercel
-- App endpoint: one canonical route only (no duplicate legacy endpoints)
-- Email provider: Resend
-- Sender identity: verified domain mailbox-style address (for example, `hello@yourdomain.com`)
-- Destination inbox: personal inbox is acceptable (`CONTACT_TO_EMAIL`)
-- Reply behavior: set `Reply-To` to the form submitter email
-- Anti-abuse baseline:
+---
 
-- server-side validation
+## Environment Variables
 
-- honeypot field
+### Already done
 
-- timing check
+- `RESEND_API_KEY` — connected in Vercel.
 
-- same-origin check
+### Must add before production traffic works
 
-- rate limiting (Upstash in production, memory fallback in local)
+Add these in Vercel → Project Settings → Environment Variables (Production + Preview):
 
-**## 2. Canonical Environment Variables**
-
-Required:
-
-- `RESEND_API_KEY`
-- `CONTACT_FROM_EMAIL`
-- `CONTACT_TO_EMAIL`
-
-Optional but recommended:
-
-- `UPSTASH_REDIS_REST_URL`
-- `UPSTASH_REDIS_REST_TOKEN`
-
-Optional: Cloudflare Turnstile (add when spam starts):
-
-- `PUBLIC_TURNSTILE_SITE_KEY`
-- `TURNSTILE_SECRET_KEY`
-- Both must be set together or neither will activate.
+| Variable             | What it is                                                                       |
+| -------------------- | -------------------------------------------------------------------------------- |
+| `CONTACT_FROM_EMAIL` | Sending address on your verified Resend domain (e.g. `hello@ghostbustersva.org`) |
+| `CONTACT_TO_EMAIL`   | The inbox where form submissions land — can be personal                          |
 
 Rules:
 
-- `CONTACT_FROM_EMAIL` must be on a domain verified in Resend for the same account/workspace as the API key.
-- Do not use personal Gmail/Outlook as `CONTACT_FROM_EMAIL` for production sending.
-- `CONTACT_TO_EMAIL` can be personal.
-- Keep `.env` out of git.
+- `CONTACT_FROM_EMAIL` must be on a domain that is **Verified** in Resend under the same account as the API key. The mailbox does not need to physically exist for outbound sending.
+- Do not use a personal Gmail or Outlook address as `CONTACT_FROM_EMAIL`.
+- Redeploy after adding vars.
 
-**## 3. Dashboard Steps: Resend**
+### Recommended — add after initial smoke test
 
-1. Add or confirm a sending domain in Resend.
+| Variable                   | What it is                                       |
+| -------------------------- | ------------------------------------------------ |
+| `UPSTASH_REDIS_REST_URL`   | Upstash Redis REST URL for durable rate limiting |
+| `UPSTASH_REDIS_REST_TOKEN` | Upstash Redis REST token                         |
 
-2. Copy required DNS records from Resend.
+Without these the rate limiter uses an in-memory fallback, which is not durable across serverless instances. Fine for development, not reliable in production under any real load.
 
-3. In domain DNS provider, add records exactly as provided.
+### Optional — add when spam starts
 
-4. Wait for Resend domain status to become Verified.
+| Variable                    | What it is                      | Notes                                                          |
+| --------------------------- | ------------------------------- | -------------------------------------------------------------- |
+| `PUBLIC_TURNSTILE_SITE_KEY` | Cloudflare Turnstile site key   | Baked into client bundle — requires full redeploy after adding |
+| `TURNSTILE_SECRET_KEY`      | Cloudflare Turnstile secret key | Server-only                                                    |
 
-5. Create API key with Sending access.
+Both keys must be set or Turnstile is skipped silently. See setup steps below.
 
-6. Confirm key scope/domain access is correct.
+---
 
-7. Decide sender identity:
+## Manual Setup Steps
 
-- set `CONTACT_FROM_EMAIL` to a verified-domain address (mailbox does not have to exist for outbound)
+### 1. Resend domain verification (if not already done)
 
-8. In project docs, record which Resend account/workspace owns this key/domain.
+1. Log in to resend.com.
+2. Go to Domains → Add Domain.
+3. Copy the DNS records Resend provides (MX, TXT, CNAME).
+4. Add them exactly in your domain DNS provider. Do not delete existing site records.
+5. Wait for Resend to show the domain as **Verified** (can take a few minutes to a few hours depending on DNS TTL).
+6. Note which Resend account/workspace owns this key and domain — keep that consistent.
 
-**## 4. Dashboard Steps: Domain Provider (DNS)**
+### 2. Set Vercel env vars
 
-1. Add Resend DNS records exactly (MX/TXT/CNAME as provided).
+1. Vercel → Project → Settings → Environment Variables.
+2. Add `CONTACT_FROM_EMAIL` and `CONTACT_TO_EMAIL` for Production and Preview.
+3. Confirm `RESEND_API_KEY` is already present and scoped correctly.
+4. Redeploy.
 
-2. Keep host/name values exact (for example, `send`, `resend._domainkey`, etc., per Resend UI).
+### 3. Upstash Redis (recommended)
 
-3. Use sensible TTL (default is fine).
+1. Go to upstash.com (or use the Vercel Storage integration: Vercel → Storage → Create Database → Upstash Redis).
+2. Create a Redis database.
+3. Copy the REST URL and REST token from the database dashboard.
+4. Add `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` to Vercel env vars.
+5. Redeploy.
 
-4. Do not delete existing site records unless required.
+### 4. Cloudflare Turnstile (optional — when spam starts)
 
-5. Re-check in Resend until domain is Verified.
+1. Go to cloudflare.com → Turnstile → Add widget.
+2. Name: "GBVA Contact Forms"
+3. Allowed hostnames: your production domain, `gbva-site.vercel.app`, and `localhost` only if not using dummy keys locally.
+4. Widget mode: Managed.
+5. Copy Site Key → `PUBLIC_TURNSTILE_SITE_KEY`; copy Secret Key → `TURNSTILE_SECRET_KEY`.
+6. Add both to Vercel env vars.
+7. **Trigger a full redeploy** — `PUBLIC_TURNSTILE_SITE_KEY` is baked into the Astro client bundle at build time and will not activate without a rebuild.
+8. For local dev, use the pre-filled dummy keys in `.env.example` (always pass, no Cloudflare account needed).
 
-**## 5. Dashboard Steps: Vercel**
+### 5. Alerting (optional)
 
-1. Add env vars in Vercel project settings:
+Connect Vercel Log Drain to an observability tool (Better Stack, Axiom, Datadog, etc.) and create 3 alerts:
 
-- Production
+1. **Rate-limit spike** — log event contains `contact_rejected` AND reason contains `rate_limited` — threshold: > 20 in 5 minutes.
+2. **Send failures** — log event contains `contact_send_failed` — threshold: > 3 in 10 minutes.
+3. **Volume spike** — POST count on `/api/contact` or `/api/appearance` exceeds 3x normal baseline in 10 minutes.
 
-- Preview
+---
 
-- Development (if needed)
+## Verifying the PRD Was Completed Correctly
 
-2. Minimum set:
+Run these checks locally before deploying:
 
-- `RESEND_API_KEY`
+```
+npm run check   # typecheck + lint + format + tests — must pass
+npm run build   # production build — must pass
+```
 
-- `CONTACT_FROM_EMAIL`
+Then confirm these things in the codebase:
 
-- `CONTACT_TO_EMAIL`
+- [ ] `src/pages/api/contact.ts` exists
+- [ ] `src/pages/api/appearance.ts` exists
+- [ ] `src/lib/email.ts` exists
+- [ ] `src/lib/rate-limit.ts` exists
+- [ ] `.env.example` exists and includes all six vars with dummy Turnstile keys pre-filled
+- [ ] `FORMSPREE_URL` no longer appears anywhere in the codebase (`grep -r "formspree" src/`)
+- [ ] `formspreeAction` prop no longer appears in `contact.astro` or `ContactBookingPanel.astro`
+- [ ] `astro.config.mjs` has `output: "hybrid"` and the new env field entries
+- [ ] `AppearanceRequestForm/constants.ts` exports `APPEARANCE_ENDPOINT` not `FORMSPREE_URL`
 
-3. If using Upstash:
+---
 
-- `UPSTASH_REDIS_REST_URL`
+## Post-Deploy Smoke Test
 
-- `UPSTASH_REDIS_REST_TOKEN`
+Do this on the deployed URL after adding env vars and redeploying:
 
-4. If using Cloudflare Turnstile:
-
-- Production: `PUBLIC_TURNSTILE_SITE_KEY` (real key), `TURNSTILE_SECRET_KEY` (real key)
-
-- Preview: dummy keys are acceptable (`PUBLIC_TURNSTILE_SITE_KEY=1x00000000000000000000AA`, `TURNSTILE_SECRET_KEY=1x0000000000000000000000000000000AA`)
-
-- Redeploy required after adding `PUBLIC_TURNSTILE_SITE_KEY` (baked into client bundle at build time).
-
-5. Redeploy after env changes.
-
-6. Smoke test one form submit on deployed URL.
-
-**## 6. Dashboard Steps: Upstash Redis (Rate Limiting)**
-
-1. Create Redis database (via Vercel Storage integration or Upstash directly).
-
-2. Add REST URL and REST token to Vercel env vars.
-
-3. Confirm app uses Redis for limiter keys in production.
-
-4. Keep memory fallback for local development only.
-
-Notes:
-
-- Free tiers are usually available, but verify current plan limits before launch.
-- Without Redis, serverless memory-based limits are not durable across instances.
-
-**## 7. Dashboard Steps: Cloudflare Turnstile**
-
-1. Create a Cloudflare account at cloudflare.com if one does not exist.
-
-2. Navigate to the Turnstile section in the left sidebar.
-
-3. Click "Add widget" and configure:
-
-- Widget name
-
-- Allowed hostnames: production domain, Vercel preview domain (for example, `yourproject.vercel.app`), and `localhost` only if NOT using dummy keys locally
-
-4. Select widget mode: Managed (recommended default).
-
-5. Copy keys:
-
-- Site Key → `PUBLIC_TURNSTILE_SITE_KEY`
-
-- Secret Key → `TURNSTILE_SECRET_KEY`
-
-Notes:
-
-- `PUBLIC_TURNSTILE_SITE_KEY` is baked into the client bundle at build time in Astro — a redeploy is required after adding it to Vercel.
-
-- Cloudflare provides dummy test keys for local dev that always pass: Site key `1x00000000000000000000AA`, Secret key `1x0000000000000000000000000000000AA`.
-
-- Turnstile activates conditionally when both env vars are present — if either is missing, verification is skipped silently.
-
-**## 8. Dashboard Steps: Alerting**
-
-Recommended: connect Vercel Log Drain to Better Stack, Datadog, Axiom, or similar.
-
-Create 3 alerts:
-
-1. Rate-limit spike:
-
-- event contains `contact_rejected`
-
-- reason contains `rate_limited`
-
-- threshold example: > 20 in 5 minutes
-
-2. Send failures:
-
-- event contains `contact_send_failed`
-
-- threshold example: > 3 in 10 minutes
-
-3. Request-volume spike:
-
-- count of POST `/api/contact`
-
-- threshold: > 3x normal baseline for 10 minutes
-
-Send alerts to email or Slack.
-
-**## 9. Agent Implementation Standard**
-
-When asking an agent to implement contact email stack, require:
-
-1. Use one canonical endpoint only.
-
-2. Use exact env var names from this playbook.
-
-3. Validate all fields server-side.
-
-4. Escape email HTML content.
-
-5. Set `Reply-To` to submitter email.
-
-6. Return JSON `{ ok: boolean }` for AJAX mode.
-
-7. Log structured reject/send-failure reasons.
-
-8. Add or update `.env.example` — must include `PUBLIC_TURNSTILE_SITE_KEY` and `TURNSTILE_SECRET_KEY` with dummy key values pre-filled as defaults and a comment indicating they should be replaced with real Cloudflare keys for production.
-
-9. Add or update env typings.
-
-10. Add/adjust tests.
-
-11. Run tests and production build before done.
-
-**## 10. Smoke Test Checklist (Post-Deploy)**
-
-1. Submit valid form:
-
-- Expect 200 and success UI.
-
-2. Confirm message arrives at `CONTACT_TO_EMAIL`.
-
-3. Confirm `Reply-To` is the submitter email.
-
-4. Submit 2 to 3 rapid requests:
-
-- Expect rate limiting to eventually trigger.
-
-5. Confirm logs show:
-
-- success
-
-- reject reasons
-
-- send failures (if simulated)
-
-6. Turnstile check: submit the form in production and confirm the network request payload includes a `cf-turnstile-response` token. If the token is missing, both env vars are likely not set or the client widget is not rendering.
-
-**## 11. Common Failure Map**
-
-- 429 from `/api/contact`:
-
-- limiter triggered before provider send
-
-- check rate-limit reason in logs
-
-- 502 from `/api/contact`:
-
-- provider send failed
-
-- check provider error and sender domain verification
-
-- no Resend failure event but request failed:
-
-- likely rejected before send (validation/rate-limit/origin)
-
-- sender rejected:
-
-- `CONTACT_FROM_EMAIL` not on verified sending domain
-
-**## 12. Security Baseline (Small Sites)**
-
-Minimum acceptable:
-
-- validation + honeypot + timing + origin + rate limit
-
-Add when spam starts:
-
-- Cloudflare Turnstile — see Section 7 for setup. Uses dummy keys locally, real keys in production. Silent fallthrough if env vars are absent.
-- stronger per-IP and per-email limits
-- geo/ASN blocking (if needed)
-
-**## 13. Copy/Paste Prompt for Future Projects**
-
-Use this prompt with your coding agent:
-
-"Implement a production-ready contact form email flow on Vercel using Resend, following RESEND_SETUP.md exactly. Use one canonical API endpoint, canonical env vars, server-side validation, anti-spam checks, structured logging, optional Upstash Redis limiter with fallback, and update .env.example + env typings + tests. Then run tests and build. Also provide a dashboard checklist for Resend, DNS, Vercel, Upstash, and alerting."
+1. Submit the contact form with valid data → expect success UI, no page reload.
+2. Check `CONTACT_TO_EMAIL` inbox — message should arrive, `Reply-To` should be the submitter's email.
+3. Submit the appearance request form through all steps → expect success screen.
+4. Check `CONTACT_TO_EMAIL` inbox — appearance request email should arrive with all fields.
+5. Submit the contact form 5–6 times in rapid succession → expect a rate-limit error response eventually.
+6. Check Vercel logs — confirm structured log events: `contact_sent`, `contact_rejected` for rate-limited requests.
+
+---
+
+## Failure Reference
+
+| Symptom                                        | Likely cause                                                                                                  |
+| ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| `502` from `/api/contact` or `/api/appearance` | Resend send failed — check `CONTACT_FROM_EMAIL` is on a verified domain                                       |
+| `429`                                          | Rate limiter triggered — check logs for `contact_rejected` + `reason: rate_limited`                           |
+| Form submits but no email arrives              | `CONTACT_TO_EMAIL` not set, or `CONTACT_FROM_EMAIL` domain not verified                                       |
+| Request rejected before send, no Resend error  | Validation, honeypot, timing, or origin check failed — check logs                                             |
+| Turnstile not activating                       | One or both Turnstile env vars missing, or client bundle not rebuilt after adding `PUBLIC_TURNSTILE_SITE_KEY` |
