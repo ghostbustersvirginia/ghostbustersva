@@ -325,6 +325,7 @@ const arcHitWish = buildFullArcBandPath(ARC_BAND_OUTER_3, ARC_BAND_INNER_3);
   const PIVOT_X = 300;
   const PIVOT_Y = 248;
   const STARTUP_DURATION_MS = 5000;
+  const NEEDLE_START_DELAY_MS = 1500;
   const ARC_BAND_OUTER_1 = 189; // green / total  (flush with inner edge of major ticks)
   const ARC_BAND_OUTER_2 = 147; // orange / giveback  (189 − 42)
   const ARC_BAND_OUTER_3 = 105; // yellow / wish      (147 − 42)
@@ -342,6 +343,10 @@ const arcHitWish = buildFullArcBandPath(ARC_BAND_OUTER_3, ARC_BAND_INNER_3);
 
   function clamp(value: number, min: number, max: number): number {
     return Math.min(max, Math.max(min, value));
+  }
+
+  function sleep(ms: number): Promise<void> {
+    return new Promise((resolve) => window.setTimeout(resolve, ms));
   }
 
   function hasReducedMotion(): boolean {
@@ -896,6 +901,11 @@ const arcHitWish = buildFullArcBandPath(ARC_BAND_OUTER_3, ARC_BAND_INNER_3);
 
     const cached = readCachedMeter();
 
+    // Pause before any needle motion so the gauge face is visible before action starts.
+    if (!hasReducedMotion()) {
+      await sleep(NEEDLE_START_DELAY_MS);
+    }
+
     // Wish-needle cache fast-path: animate to the last-known wish value immediately
     // without blocking on the live wish fetch. The live animation will update from
     // this position once the fetch resolves.
@@ -913,6 +923,42 @@ const arcHitWish = buildFullArcBandPath(ARC_BAND_OUTER_3, ARC_BAND_INNER_3);
       if (wishNeedle) {
         animateNeedlePosition(wishNeedle, 0, cachedWishRatio, 1350, true).catch((e: unknown) =>
           console.warn("Wish needle cache animation failed.", e),
+        );
+      }
+    }
+
+    // Giveback-needle cache fast-path: animate to the last-known giveback value immediately
+    // without blocking on the live giveback fetch. The live animation will update from
+    // this position once the fetch resolves.
+    const cachedGivebackRatio =
+      cached && cached.givebackRaised > 0
+        ? getProgressRatio(cached.givebackRaised, FALLBACK_GOAL)
+        : 0;
+    const cachedTotalRatio =
+      cached && cached.givebackRaised > 0
+        ? getProgressRatio(2 * cached.givebackRaised, FALLBACK_GOAL)
+        : 0;
+
+    if (cachedGivebackRatio > 0) {
+      if (arcGiveback) {
+        arcGiveback.setAttribute(
+          "d",
+          buildArcBandPath(cachedGivebackRatio, ARC_BAND_OUTER_2, ARC_BAND_OUTER_3),
+        );
+        showArcBand(arcGiveback);
+      }
+      if (arcTotal) {
+        arcTotal.setAttribute(
+          "d",
+          buildArcBandPath(cachedTotalRatio, ARC_BAND_OUTER_1, ARC_BAND_OUTER_2),
+        );
+        showArcBand(arcTotal);
+      }
+      if (labelGiveback) setCurrencyText(labelGiveback, cached!.givebackRaised);
+      if (labelTotal) setCurrencyText(labelTotal, 2 * cached!.givebackRaised);
+      if (givebackNeedle) {
+        animateNeedlePosition(givebackNeedle, 0, cachedGivebackRatio, 1350, true).catch(
+          (e: unknown) => console.warn("Giveback needle cache animation failed.", e),
         );
       }
     }
@@ -938,12 +984,12 @@ const arcHitWish = buildFullArcBandPath(ARC_BAND_OUTER_3, ARC_BAND_INNER_3);
     if (labelTotal) setCurrencyText(labelTotal, totalRaised);
     if (labelGiveback) setCurrencyText(labelGiveback, givebackRaised);
 
-    // Animate giveback needle (needle 2) now that its data is already resolved.
+    // Animate giveback needle (needle 2) from cached position to live value.
     // Fade in the giveback arc band after the needle reaches its position.
     if (givebackNeedle && givebackRaised > 0) {
       animateNeedlePosition(
         givebackNeedle,
-        0,
+        cachedGivebackRatio,
         getProgressRatio(givebackRaised, FALLBACK_GOAL),
         STARTUP_DURATION_MS,
         true,
@@ -952,7 +998,7 @@ const arcHitWish = buildFullArcBandPath(ARC_BAND_OUTER_3, ARC_BAND_INNER_3);
         .catch((e: unknown) => console.warn("Giveback needle animation failed.", e));
     }
 
-    // Arc bands for total and giveback snap to their values immediately (PRD 005).
+    // Arc bands for total and giveback snap to their live values (PRD 005).
     if (arcTotal) {
       arcTotal.setAttribute(
         "d",
@@ -1010,7 +1056,6 @@ const arcHitWish = buildFullArcBandPath(ARC_BAND_OUTER_3, ARC_BAND_INNER_3);
         stopIdle = startIdleMotion(root, needle, raisedNode, goalNode, statusNode, palette);
       }
 
-      // wishRaised is available here for PRD 004 (Make-a-Wish needle).
       const { raised: wishRaised } = await wishDataPromise;
 
       if (stopIdle) {
