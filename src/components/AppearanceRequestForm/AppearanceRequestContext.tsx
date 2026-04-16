@@ -93,7 +93,7 @@ export function AppearanceRequestProvider({ children }: { children: ReactNode })
     return Object.keys(errs).length === 0;
   };
 
-  const skipLogistics = formData.needsLogistics === "no";
+  const skipLogistics = formData.needsLogistics === "no" && formData.requestEctoVehicle !== "yes";
 
   const skippedSteps = new Set<number>([...(skipLogistics ? [LOGISTICS_STEP] : [])]);
 

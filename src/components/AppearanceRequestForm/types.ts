@@ -127,6 +127,7 @@ export interface FormCopy {
   numberOfChairsNeededLabel: string;
 
   // Step 0 — Logistics gating
+  requestEctoVehicleHint: string;
   needsLogisticsLegend: string;
   needsLogisticsHint: string;
   errorNeedsLogisticsRequired: string;

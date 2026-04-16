@@ -93,6 +93,7 @@ export const FORM_COPY: FormCopy = {
 
   charitableDonationsLegend: "Are charitable donations allowed at this event?",
   needsLogisticsLegend: "Will you need any of the following? Chairs, tables, or Ecto vehicles?",
+  requestEctoVehicleHint: "We\u2019ll ask follow-up questions in the next steps.",
   needsLogisticsHint: "We\u2019ll ask follow-up questions in the next steps.",
   errorNeedsLogisticsRequired: "Please indicate whether you need any logistics support.",
   collectDonationsForHostLegend: "For whom can we collect donations?",

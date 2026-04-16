@@ -1,12 +1,13 @@
 export const inquiryTypeOptions = [
   "General Inquiry",
+  "Schedule Event",
   "Plan a Proton Pet Drive",
   "Joining Questions",
   "Media or Press",
   "Other",
 ] as const;
 
-export const eventInquiryTypeAllowlist = ["Plan a Proton Pet Drive"] as const;
+export const eventInquiryTypeAllowlist = ["Schedule Event", "Plan a Proton Pet Drive"] as const;
 
 export const eventInquiryValues = new Set<string>(eventInquiryTypeAllowlist);
 
