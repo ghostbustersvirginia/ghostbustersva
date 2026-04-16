@@ -324,8 +324,8 @@ const arcHitWish = buildFullArcBandPath(ARC_BAND_OUTER_3, ARC_BAND_INNER_3);
   const CACHE_KEY = "gbva:donation-meter-cache-v3";
   const PIVOT_X = 300;
   const PIVOT_Y = 248;
-  const STARTUP_DURATION_MS = 5000;
-  const NEEDLE_START_DELAY_MS = 1500;
+  const NEEDLE_ANIM_DURATION_MS = 5000;
+  const NEEDLE_START_DELAY_MS = 500;
   const ARC_BAND_OUTER_1 = 189; // green / total  (flush with inner edge of major ticks)
   const ARC_BAND_OUTER_2 = 147; // orange / giveback  (189 − 42)
   const ARC_BAND_OUTER_3 = 105; // yellow / wish      (147 − 42)
@@ -643,37 +643,84 @@ const arcHitWish = buildFullArcBandPath(ARC_BAND_OUTER_3, ARC_BAND_INNER_3);
     overloadTimers.set(needle, timer);
   }
 
-  async function animateNeedleAndAmount(
-    root: HTMLElement,
+  async function animateNeedle(
     needle: SVGGElement,
-    raisedEl: Element,
-    goalEl: Element,
-    statusNode: HTMLElement,
-    palette: MeterRaisedPalette,
     fromRatio: number,
-    ratio: number,
-    fromAmount: number,
-    toAmount: number,
-    fromGoal: number,
-    toGoal: number,
-    durationMs: number,
+    toRatio: number,
     mechanical: boolean,
-    overload: boolean,
+    overload = false,
   ): Promise<void> {
-    const targetRatio = clamp(ratio, 0, 1);
+    const targetRatio = clamp(toRatio, 0, 1);
     const startRatio = clamp(fromRatio, 0, 1);
-    const startAmount = Math.max(0, fromAmount);
-    const endAmount = Math.max(0, toAmount);
-    const startGoal = Math.max(0, fromGoal);
-    const endGoal = Math.max(0, toGoal);
     const startAngle = toNeedleAngle(startRatio);
     const targetAngle = toNeedleAngle(targetRatio);
+    const durationMs = NEEDLE_ANIM_DURATION_MS * Math.max(targetRatio, 0.2);
     const token = bumpMotionToken(needle);
 
     stopOverloadTeeter(needle);
 
     if (hasReducedMotion()) {
       setNeedle(needle, targetRatio);
+      return;
+    }
+
+    await new Promise<void>((resolve) => {
+      const start = performance.now();
+      const frameDuration = Math.max(220, durationMs);
+
+      const frame = (now: number) => {
+        if (!isCurrentToken(needle, token)) {
+          resolve();
+          return;
+        }
+
+        const progress = clamp((now - start) / frameDuration, 0, 1);
+        const angle = mechanical
+          ? getMechanicalAngle(progress, startAngle, targetAngle)
+          : lerp(startAngle, targetAngle, easeInOutSine(progress));
+
+        setNeedleAngle(needle, angle);
+
+        if (progress < 1) {
+          window.requestAnimationFrame(frame);
+          return;
+        }
+
+        resolve();
+      };
+
+      window.requestAnimationFrame(frame);
+    });
+
+    if (!isCurrentToken(needle, token)) {
+      return;
+    }
+
+    setNeedleAngle(needle, targetAngle);
+
+    if (overload) {
+      startOverloadTeeter(needle, targetAngle, token);
+    }
+  }
+
+  async function animateAmount(
+    root: HTMLElement,
+    raisedEl: Element,
+    goalEl: Element,
+    statusNode: HTMLElement,
+    palette: MeterRaisedPalette,
+    fromAmount: number,
+    toAmount: number,
+    fromGoal: number,
+    toGoal: number,
+    durationMs: number,
+  ): Promise<void> {
+    const startAmount = Math.max(0, fromAmount);
+    const endAmount = Math.max(0, toAmount);
+    const startGoal = Math.max(0, fromGoal);
+    const endGoal = Math.max(0, toGoal);
+
+    if (hasReducedMotion()) {
       updateReadout(root, raisedEl, goalEl, statusNode, endAmount, endGoal, palette);
       return;
     }
@@ -683,22 +730,17 @@ const arcHitWish = buildFullArcBandPath(ARC_BAND_OUTER_3, ARC_BAND_INNER_3);
       const frameDuration = Math.max(220, durationMs);
 
       const frame = (now: number) => {
-        if (!isCurrentToken(needle, token)) {
-          resolve();
-          return;
-        }
-
         const progress = clamp((now - start) / frameDuration, 0, 1);
-        const amountProgress = easeOutQuint(progress);
-        const amountValue = lerp(startAmount, endAmount, amountProgress);
-        const goalValue = lerp(startGoal, endGoal, amountProgress);
-        updateReadout(root, raisedEl, goalEl, statusNode, amountValue, goalValue, palette);
-
-        const angle = mechanical
-          ? getMechanicalAngle(progress, startAngle, targetAngle)
-          : lerp(startAngle, targetAngle, easeInOutSine(progress));
-
-        setNeedleAngle(needle, angle);
+        const eased = easeOutQuint(progress);
+        updateReadout(
+          root,
+          raisedEl,
+          goalEl,
+          statusNode,
+          lerp(startAmount, endAmount, eased),
+          lerp(startGoal, endGoal, eased),
+          palette,
+        );
 
         if (progress < 1) {
           window.requestAnimationFrame(frame);
@@ -711,71 +753,7 @@ const arcHitWish = buildFullArcBandPath(ARC_BAND_OUTER_3, ARC_BAND_INNER_3);
       window.requestAnimationFrame(frame);
     });
 
-    if (!isCurrentToken(needle, token)) {
-      return;
-    }
-
-    setNeedleAngle(needle, targetAngle);
     updateReadout(root, raisedEl, goalEl, statusNode, endAmount, endGoal, palette);
-
-    if (overload) {
-      startOverloadTeeter(needle, targetAngle, token);
-    }
-  }
-
-  async function animateNeedlePosition(
-    needle: SVGGElement,
-    fromRatio: number,
-    toRatio: number,
-    durationMs: number,
-    mechanical: boolean,
-  ): Promise<void> {
-    const targetRatio = clamp(toRatio, 0, 1);
-    const startRatio = clamp(fromRatio, 0, 1);
-    const startAngle = toNeedleAngle(startRatio);
-    const targetAngle = toNeedleAngle(targetRatio);
-    const token = bumpMotionToken(needle);
-
-    stopOverloadTeeter(needle);
-
-    if (hasReducedMotion()) {
-      setNeedle(needle, targetRatio);
-      return;
-    }
-
-    await new Promise<void>((resolve) => {
-      const start = performance.now();
-      const frameDuration = Math.max(220, durationMs);
-
-      const frame = (now: number) => {
-        if (!isCurrentToken(needle, token)) {
-          resolve();
-          return;
-        }
-
-        const progress = clamp((now - start) / frameDuration, 0, 1);
-        const angle = mechanical
-          ? getMechanicalAngle(progress, startAngle, targetAngle)
-          : lerp(startAngle, targetAngle, easeInOutSine(progress));
-
-        setNeedleAngle(needle, angle);
-
-        if (progress < 1) {
-          window.requestAnimationFrame(frame);
-          return;
-        }
-
-        resolve();
-      };
-
-      window.requestAnimationFrame(frame);
-    });
-
-    if (!isCurrentToken(needle, token)) {
-      return;
-    }
-
-    setNeedleAngle(needle, targetAngle);
   }
 
   type MeterCache = {
@@ -921,7 +899,7 @@ const arcHitWish = buildFullArcBandPath(ARC_BAND_OUTER_3, ARC_BAND_INNER_3);
         showArcBand(arcWish);
       }
       if (wishNeedle) {
-        animateNeedlePosition(wishNeedle, 0, cachedWishRatio, 1350, true).catch((e: unknown) =>
+        animateNeedle(wishNeedle, 0, cachedWishRatio, true).catch((e: unknown) =>
           console.warn("Wish needle cache animation failed.", e),
         );
       }
@@ -957,7 +935,7 @@ const arcHitWish = buildFullArcBandPath(ARC_BAND_OUTER_3, ARC_BAND_INNER_3);
       if (labelGiveback) setCurrencyText(labelGiveback, cached!.givebackRaised);
       if (labelTotal) setCurrencyText(labelTotal, 2 * cached!.givebackRaised);
       if (givebackNeedle) {
-        animateNeedlePosition(givebackNeedle, 0, cachedGivebackRatio, 1350, true).catch(
+        animateNeedle(givebackNeedle, 0, cachedGivebackRatio, true).catch(
           (e: unknown) => console.warn("Giveback needle cache animation failed.", e),
         );
       }
@@ -987,11 +965,10 @@ const arcHitWish = buildFullArcBandPath(ARC_BAND_OUTER_3, ARC_BAND_INNER_3);
     // Animate giveback needle (needle 2) from cached position to live value.
     // Fade in the giveback arc band after the needle reaches its position.
     if (givebackNeedle && givebackRaised > 0) {
-      animateNeedlePosition(
+      animateNeedle(
         givebackNeedle,
         cachedGivebackRatio,
         getProgressRatio(givebackRaised, FALLBACK_GOAL),
-        STARTUP_DURATION_MS,
         true,
       )
         .then(() => showArcBand(arcGiveback))
@@ -1032,23 +1009,22 @@ const arcHitWish = buildFullArcBandPath(ARC_BAND_OUTER_3, ARC_BAND_INNER_3);
         currentGoal = cached.goal;
         currentRatio = getProgressRatio(cached.raised, cached.goal);
 
-        await animateNeedleAndAmount(
-          root,
-          needle,
-          raisedNode,
-          goalNode,
-          statusNode,
-          palette,
-          0,
-          currentRatio,
-          0,
-          currentAmount,
-          FALLBACK_GOAL,
-          currentGoal,
-          1350,
-          true,
-          false,
-        );
+        const cacheDuration = NEEDLE_ANIM_DURATION_MS * Math.max(currentRatio, 0.2);
+        await Promise.all([
+          animateNeedle(needle, 0, currentRatio, true),
+          animateAmount(
+            root,
+            raisedNode,
+            goalNode,
+            statusNode,
+            palette,
+            0,
+            currentAmount,
+            FALLBACK_GOAL,
+            currentGoal,
+            cacheDuration,
+          ),
+        ]);
       }
 
       let stopIdle: (() => { ratio: number; amount: number }) | null = null;
@@ -1067,27 +1043,23 @@ const arcHitWish = buildFullArcBandPath(ARC_BAND_OUTER_3, ARC_BAND_INNER_3);
       // Needle 1 tracks totalRaised (2× giveback matching funds) against the $50k goal.
       const ratio = getProgressRatio(totalRaised, FALLBACK_GOAL);
       const isOverload = totalRaised >= FALLBACK_GOAL;
-      const ratioDelta = Math.abs(ratio - currentRatio);
-      const duration =
-        cached || ratioDelta > 0.07 ? STARTUP_DURATION_MS : Math.round(1800 + ratioDelta * 3000);
+      const liveDuration = NEEDLE_ANIM_DURATION_MS * Math.max(ratio, 0.2);
 
-      await animateNeedleAndAmount(
-        root,
-        needle,
-        raisedNode,
-        goalNode,
-        statusNode,
-        palette,
-        currentRatio,
-        ratio,
-        currentAmount,
-        totalRaised,
-        currentGoal,
-        FALLBACK_GOAL,
-        duration,
-        true,
-        isOverload,
-      );
+      await Promise.all([
+        animateNeedle(needle, currentRatio, ratio, true, isOverload),
+        animateAmount(
+          root,
+          raisedNode,
+          goalNode,
+          statusNode,
+          palette,
+          currentAmount,
+          totalRaised,
+          currentGoal,
+          FALLBACK_GOAL,
+          liveDuration,
+        ),
+      ]);
 
       // Total needle reached its position — fade in the total arc band.
       showArcBand(arcTotal);
@@ -1108,11 +1080,10 @@ const arcHitWish = buildFullArcBandPath(ARC_BAND_OUTER_3, ARC_BAND_INNER_3);
 
       // Needle 3 (green / Make-a-Wish) — fire-and-forget, non-blocking.
       if (wishNeedle) {
-        animateNeedlePosition(
+        animateNeedle(
           wishNeedle,
           cachedWishRatio,
           getProgressRatio(wishRaised, FALLBACK_GOAL),
-          STARTUP_DURATION_MS,
           true,
         )
           .then(() => showArcBand(arcWish))
