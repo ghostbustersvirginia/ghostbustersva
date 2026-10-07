@@ -37,7 +37,8 @@ const heroTagline = String(
     `Giving back to the community through a love of Ghostbusters, supporting local charities and turning fandom into real-world impact.`,
 );
 const heroPrimaryCtaLabel = "Donate with PayPal";
-const heroSecondaryCtaLabel = "Donate to Make-A-Wish";
+// const heroSecondaryCtaLabel = "Donate to Make-A-Wish";
+const heroSecondaryCtaLabel = "Donate for Lymphoma";
 const heroLogoSrc = getSafeImageAssetPath(copy.heroLogoSrc) || "/images/logo.png";
 const heroLogoAlt = String(copy.heroLogoAlt || "Ghostbusters Virginia logo");
 const missionHeading = copy.missionHeading || "Who We Are";
@@ -105,14 +106,17 @@ const supportDonateImageAlt = String(
 const protonPetsImagePath = "/images/ProtonPets2026.jpg";
 const protonPetsImageAlt = "Proton Pets — pet pantry and shelter support initiative";
 const defaultPaypalDonateUrl = "https://www.paypal.com/US/fundraiser/charity/4434256";
-const defaultMakeAWishDonateUrl =
-  "https://secure2.wish.org/site/TR;jsessionid=00000000.app20002b?team_id=58435&fr_id=7464&pg=team&NONCE_TOKEN=16AE47C509ECB858ECB963CD3D174802";
+// const defaultMakeAWishDonateUrl =
+//   "https://secure2.wish.org/site/TR;jsessionid=00000000.app20002b?team_id=58435&fr_id=7464&pg=team&NONCE_TOKEN=16AE47C509ECB858ECB963CD3D174802";
+const defaultLymphomaDonateUrl = "https://giving.lymphoma.org/ghostbustersva";
+
 const safeHeroPrimaryCtaHref = isSafeExternalUrl(settings.paypalUrl)
   ? settings.paypalUrl
   : defaultPaypalDonateUrl;
 const safeHeroSecondaryCtaHref = isSafeExternalUrl(settings.donateUrl)
   ? settings.donateUrl
-  : defaultMakeAWishDonateUrl;
+  : defaultLymphomaDonateUrl;
+  // : defaultMakeAWishDonateUrl;
 const safeEventsCtaHref = `${getSafeHref(eventsCtaHref) || "/events"}#past-events`;
 const safeNoUpcomingEventsContactHref = getSafeHref(noUpcomingEventsContactHref) || "/contact";
 const safeJoinCtaHref = getSafeHref(joinCtaHref) || "/join";

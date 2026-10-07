@@ -8,6 +8,9 @@ interface Props {
   secondaryCtaLabel?: string;
   secondaryCtaHref?: string;
   secondaryCtaExternal?: boolean;
+  tertiaryCtaLabel?: string;
+  tertiaryCtaHref?: string;
+  tertiaryCtaExternal?: boolean;
 }
 
 const {
@@ -17,6 +20,9 @@ const {
   secondaryCtaLabel,
   secondaryCtaHref,
   secondaryCtaExternal = false,
+  tertiaryCtaLabel,
+  tertiaryCtaHref,
+  tertiaryCtaExternal = false,
 } = Astro.props;
 ---
 
@@ -39,4 +45,16 @@ const {
       {secondaryCtaLabel}
     </Button>
   ) : null
+}
+{
+  tertiaryCtaLabel && tertiaryCtaHref ? (
+  <Button
+    variant="secondary"
+    class="btn--lg"
+    href={tertiaryCtaHref}
+    external={tertiaryCtaExternal}
+  >
+    {tertiaryCtaLabel}
+  </Button>
+    ) : null
 }
