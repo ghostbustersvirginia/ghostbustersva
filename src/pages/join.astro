@@ -83,6 +83,11 @@ const costumeRequirements = [
 
 const backgroundHeading = `Background Screening`;
 const backgroundText = `Because members regularly interact with the public, community organizations, and charitable partners, all applicants must successfully complete a background screening with no felonies and do not appear on the National Sex Offender Registry.`;
+
+const applicationHeading = `Membership Application`;
+const applicationFormUrl =
+  "https://docs.google.com/forms/d/e/1FAIpQLSdCixegeyuGucf8A98afdM7AbB3ONHdPQD61PpYztIpRWv67Q/viewform";
+const applicationEmbedUrl = `${applicationFormUrl}?embedded=true`;
 ---
 
 <BaseLayout
@@ -134,15 +139,11 @@ const backgroundText = `Because members regularly interact with the public, comm
               positive, inclusive environment for members and the communities we serve.
             </p>
             <p class="prose-text">
-              Once you've reviewed these documents, complete our membership application at the link below
+              Once you've reviewed these documents, complete our membership application below
               to begin the process.
             </p>
             <div class="join-cta-wrapper">
-              <Button
-                variant="secondary-alt"
-                href="https://docs.google.com/forms/d/e/1FAIpQLSdCixegeyuGucf8A98afdM7AbB3ONHdPQD61PpYztIpRWv67Q/viewform?pli=1"
-                external
-              >Join Today</Button>
+              <Button variant="secondary-alt" href="/join#apply">Join Today</Button>
             </div>
           </div>
           <LightboxImageTrigger
@@ -220,6 +221,25 @@ const backgroundText = `Because members regularly interact with the public, comm
           <h3 class="callout__heading">{backgroundHeading}</h3>
           <p>{backgroundText}</p>
         </div>
+      </div>
+    </div>
+
+    <div id="apply" class="page-band page-band--alt apply-band">
+      <div class="container container--mid">
+        <SectionHeading>{applicationHeading}</SectionHeading>
+        <div class="apply-frame">
+          <iframe
+            src={applicationEmbedUrl}
+            title="Ghostbusters Virginia membership application form"
+            loading="lazy"
+          >Loading…</iframe>
+        </div>
+        <p class="prose-text apply-fallback">
+          Having trouble with the form?
+          <a href={applicationFormUrl} target="_blank" rel="noopener noreferrer"
+            >Open the application in Google Forms</a
+          >.
+        </p>
       </div>
     </div>
   </section>
@@ -468,6 +488,45 @@ const backgroundText = `Because members regularly interact with the public, comm
     font-size: var(--text-sm);
     color: var(--color-text-muted);
     margin-bottom: 0;
+  }
+
+  .apply-band {
+    scroll-margin-top: var(--space-2xl);
+  }
+
+  .apply-frame {
+    max-width: 680px;
+    margin: var(--space-xl) auto 0;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-panel);
+    overflow: hidden;
+  }
+
+  .apply-frame iframe {
+    display: block;
+    width: 100%;
+    height: 1950px;
+    border: 0;
+  }
+
+  @media (max-width: 767px) {
+    .apply-frame iframe {
+      height: 2500px;
+    }
+  }
+
+  @media (max-width: 379px) {
+    .apply-frame iframe {
+      height: 2620px;
+    }
+  }
+
+  .apply-fallback {
+    margin-top: var(--space-lg);
+    text-align: center;
+    font-size: var(--text-sm);
   }
 
   a {
