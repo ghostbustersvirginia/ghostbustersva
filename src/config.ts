@@ -8,17 +8,6 @@ export const siteConfig = {
   description: "",
   copyright: `© ${new Date().getFullYear()} Ghostbusters Virginia. All rights reserved.`,
 
-  /** Navigation links shown in the header (and optionally the footer). */
-  nav: [
-    { label: "About", href: "/about" },
-    { label: "Join", href: "/join" },
-    { label: "Proton Pets", href: "/proton-pets" },
-    { label: "Events", href: "/events" },
-    { label: "Press", href: "/press" },
-    { label: "Contact", href: "/contact" },
-    { label: "Donate", href: "/donate" },
-    { label: "Games", href: "/games" },
-  ],
 
   /** Footer logo images — paths relative to /images */
   footerLogos: [

@@ -50,14 +50,6 @@ export interface SiteSettings {
   reducedMotionToggleEnabledLabel: string;
 }
 
-/** Default nav items derived from the static siteConfig. */
-const defaultNavItems: NavItem[] = siteConfig.nav.map((n) => ({
-  label: n.label,
-  href: n.href,
-  external: false,
-  group: "primary",
-}));
-
 /** Default footer logos from siteConfig. */
 const defaultFooterLogos: FooterLogo[] = siteConfig.footerLogos.map((l) => ({
   src: l.src,
@@ -99,7 +91,7 @@ export async function getSiteSettings(): Promise<SiteSettings> {
             };
           })
           .filter((item): item is NavItem => Boolean(item))
-      : defaultNavItems;
+      : [];
 
   const safeNavLogo = getSafeImageAssetPath(d.navLogo) || "/images/logo.png";
   const safeFooterLogos =
