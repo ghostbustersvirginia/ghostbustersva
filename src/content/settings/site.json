@@ -22,8 +22,8 @@
   "navSubtitle": "Virginia",
   "navItems": [
     { "label": "Donate", "href": "/donate", "external": false, "group": "primary" },
-    { "label": "Join", "href": "/join", "external": false, "group": "more" },
-    { "label": "Events", "href": "/events", "external": false, "group": "primary" },
+    { "label": "Join", "href": "/join", "external": false, "group": "primary" },
+    { "label": "Events", "href": "/events", "external": false, "group": "more" },
     { "label": "Contact", "href": "/contact", "external": false, "group": "primary" },
     { "label": "About", "href": "/about", "external": false, "group": "more" },
     { "label": "Press", "href": "/press", "external": false, "group": "primary" },
