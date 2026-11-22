@@ -407,6 +407,27 @@ const codeOfConductPageCopy = z.object({
   ogImage: z.string().optional(),
 });
 
+const privacyPageCopy = z.object({
+  page: z.literal("privacy"),
+  pageTitle: z.string(),
+  pageIntro: z.string(),
+  lastUpdated: z.string(),
+  sections: z
+    .array(
+      z.object({
+        heading: z.string(),
+        paragraphs: z.array(z.string()).min(1),
+        items: z.array(z.string()).optional(),
+      }),
+    )
+    .min(1),
+  metaTitle: z.string().optional(),
+  metaDescription: z.string().optional(),
+  ogTitle: z.string().optional(),
+  ogDescription: z.string().optional(),
+  ogImage: z.string().optional(),
+});
+
 const pageCopy = defineCollection({
   loader: glob({ pattern: "**/*.json", base: "src/content/page-copy" }),
   schema: z.discriminatedUnion("page", [
@@ -418,6 +439,7 @@ const pageCopy = defineCollection({
     contactPageCopy,
     donatePageCopy,
     codeOfConductPageCopy,
+    privacyPageCopy,
   ]),
 });
 

@@ -1,0 +1,61 @@
+---
+/**
+ * Member Calendar — members-only view of the GBVA Events Google Calendar
+ * with chapter filters and RSVPs. PRD 008.
+ *
+ * The page shell is static; the React island talks to /api/auth/* and
+ * /api/calendar/*, which do all Google access server-side.
+ */
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import PageHeader from "../../components/ui/PageHeader.astro";
+import MemberCalendarApp from "../../components/MemberCalendar/MemberCalendarApp";
+---
+
+<BaseLayout
+  title="Member Calendar"
+  description="Members-only calendar of Ghostbusters Virginia events, with RSVPs."
+  canonical="/members/calendar"
+  robots="noindex,nofollow"
+>
+  <section class="page" aria-labelledby="member-calendar-title">
+    <div class="page-band page-band--white">
+      <div class="container container--mid">
+        <PageHeader
+          id="member-calendar-title"
+          title="Member Calendar"
+          subtitle="Every GBVA event in one place. Filter by chapter and RSVP with your Google account."
+        />
+      </div>
+    </div>
+
+    <div class="page-band page-band--alt">
+      <div class="container member-calendar-container">
+        <MemberCalendarApp client:only="react" />
+        <noscript>
+          <p class="member-calendar-noscript">
+            The member calendar needs JavaScript. Please enable it and reload the page.
+          </p>
+        </noscript>
+      </div>
+    </div>
+  </section>
+
+  <style>
+    .member-calendar-container {
+      max-width: var(--content-width-wide);
+      margin-inline: auto;
+      padding-inline: var(--space-lg);
+    }
+
+    .member-calendar-noscript {
+      text-align: center;
+      color: var(--color-text-muted);
+    }
+
+    @media (max-width: 768px) {
+      .member-calendar-container {
+        padding-inline: var(--space-md);
+      }
+    }
+  </style>
+</BaseLayout>

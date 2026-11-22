@@ -1,0 +1,91 @@
+/** Browser-side calls to the member calendar API (PRD 008). */
+import type {
+  ApiError,
+  CalendarEvent,
+  EventsResponse,
+  RsvpChoice,
+  RsvpResponse,
+  RsvpScope,
+  SessionState,
+} from "../../lib/member-calendar/types";
+
+export class ApiRequestError extends Error {
+  constructor(
+    public readonly status: number,
+    public readonly code: string,
+    message: string,
+  ) {
+    super(message);
+  }
+}
+
+const FRIENDLY: Record<string, string> = {
+  unauthorized: "Your sign-in expired. Please sign in again.",
+  not_member: "Your account is no longer on the member list.",
+  rate_limited: "Too many requests. Wait a minute and try again.",
+  server_error: "Something went wrong talking to Google. Please try again.",
+};
+
+async function request<T>(url: string, init?: RequestInit): Promise<T> {
+  let res: Response;
+  try {
+    res = await fetch(url, {
+      credentials: "same-origin",
+      ...init,
+      headers: { Accept: "application/json", ...(init?.headers ?? {}) },
+    });
+  } catch {
+    throw new ApiRequestError(0, "network", "You appear to be offline. Check your connection.");
+  }
+  const data = (await res.json().catch(() => null)) as (T & { ok?: boolean }) | ApiError | null;
+  if (!res.ok || !data || (data as ApiError).ok === false) {
+    const err = data as ApiError | null;
+    const code = err?.error ?? "server_error";
+    throw new ApiRequestError(
+      res.status,
+      code,
+      err?.message ?? FRIENDLY[code] ?? FRIENDLY.server_error,
+    );
+  }
+  return data as T;
+}
+
+export const getSession = () => request<SessionState>("/api/auth/session");
+
+export const signIn = (credential: string) =>
+  request<SessionState>("/api/auth/session", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ credential }),
+  });
+
+export const signOut = () => request<{ ok: true }>("/api/auth/logout", { method: "POST" });
+
+export async function fetchEvents(
+  start: Date,
+  end: Date,
+  signal?: AbortSignal,
+): Promise<CalendarEvent[]> {
+  const params = new URLSearchParams({ start: start.toISOString(), end: end.toISOString() });
+  const data = await request<EventsResponse>(`/api/calendar/events?${params}`, { signal });
+  return data.events;
+}
+
+export async function fetchEvent(id: string): Promise<CalendarEvent | null> {
+  try {
+    const data = await request<EventsResponse>(
+      `/api/calendar/events?${new URLSearchParams({ id })}`,
+    );
+    return data.events[0] ?? null;
+  } catch (error) {
+    if (error instanceof ApiRequestError && error.status === 404) return null;
+    throw error;
+  }
+}
+
+export const sendRsvp = (eventId: string, choice: RsvpChoice, scope: RsvpScope) =>
+  request<RsvpResponse>("/api/calendar/rsvp", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ eventId, choice, scope }),
+  });
