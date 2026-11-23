@@ -1,0 +1,130 @@
+---
+/**
+ * Privacy Policy — what the site and members area collect, and member choices.
+ * Linked as the privacy policy URL on the Google OAuth consent screen (PRD 008).
+ * Copy lives in src/content/page-copy/privacy.json.
+ */
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import PageHeader from "../../components/ui/PageHeader.astro";
+import { getPageCopy } from "../../lib/page-copy";
+
+const copy = await getPageCopy("privacy");
+
+const pageTitle = copy.pageTitle;
+const pageIntro = copy.pageIntro;
+const metaTitle = copy.metaTitle || "Privacy Policy";
+const metaDescription =
+  copy.metaDescription || "How Ghostbusters Virginia collects, uses, and protects information.";
+const ogTitleVal = copy.ogTitle || "Privacy Policy | Ghostbusters Virginia";
+const ogDescriptionVal = copy.ogDescription || metaDescription;
+const ogImage = copy.ogImage || "";
+---
+
+<BaseLayout
+  title={metaTitle}
+  description={metaDescription}
+  canonical="/members/privacy"
+  ogTitle={ogTitleVal}
+  ogDescription={ogDescriptionVal}
+  {...ogImage ? { ogImage } : {}}
+>
+  <section class="page" aria-labelledby="privacy-title">
+    <div class="page-band page-band--white">
+      <div class="container container--mid">
+        <PageHeader id="privacy-title" title={pageTitle} subtitle={pageIntro} />
+      </div>
+    </div>
+
+    <div class="page-band page-band--alt">
+      <div class="container container--mid">
+        <article class="policy">
+          <p class="policy__updated">Last updated: {copy.lastUpdated}</p>
+
+          {
+            copy.sections.map((section) => (
+              <section class="policy__section">
+                <h2 class="policy__heading">{section.heading}</h2>
+                {section.paragraphs.map((paragraph) => (
+                  <p class="policy__text">{paragraph}</p>
+                ))}
+                {section.items && section.items.length > 0 && (
+                  <ul class="policy__list">
+                    {section.items.map((item) => (
+                      <li>{item}</li>
+                    ))}
+                  </ul>
+                )}
+              </section>
+            ))
+          }
+
+          <p class="policy__text policy__contact">
+            <a href="/contact">Contact Ghostbusters Virginia</a>
+          </p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <style>
+    .policy {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-panel);
+      padding: var(--space-xl);
+      max-width: 72ch;
+      margin-inline: auto;
+    }
+
+    .policy__updated {
+      margin: 0 0 var(--space-lg);
+      color: var(--color-text-muted);
+      font-family: var(--font-body);
+      font-size: var(--text-sm);
+    }
+
+    .policy__section + .policy__section {
+      margin-top: var(--space-xl);
+    }
+
+    .policy__heading {
+      margin: 0 0 var(--space-sm);
+      color: var(--color-heading-section);
+      font-family: var(--font-display);
+      font-size: var(--text-xl);
+      font-weight: var(--weight-bold);
+      letter-spacing: var(--tracking-wide);
+      line-height: var(--leading-tight);
+      text-transform: uppercase;
+    }
+
+    .policy__text,
+    .policy__list {
+      margin: 0 0 var(--space-sm);
+      color: var(--color-text-muted);
+      font-family: var(--font-body);
+      font-size: var(--text-base);
+      line-height: var(--leading-loose);
+    }
+
+    .policy__list {
+      padding-left: var(--space-lg);
+    }
+
+    .policy__list li + li {
+      margin-top: var(--space-xs);
+    }
+
+    .policy__contact {
+      margin-top: var(--space-xl);
+      font-weight: var(--weight-bold);
+    }
+
+    @media (max-width: 768px) {
+      .policy {
+        padding: var(--space-lg);
+      }
+    }
+  </style>
+</BaseLayout>

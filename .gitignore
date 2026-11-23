@@ -27,3 +27,6 @@ pnpm-debug.log*
 # AI / internal docs — previously ignored, now tracked for team reference.
 # copilot-instructions.md   ← tracked (AI coding rules for all contributors)
 # docs/prds/                ← tracked (PRD workflow and archive)
+.vercel
+.env*
+!.env.example

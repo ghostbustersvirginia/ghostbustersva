@@ -1,0 +1,89 @@
+{
+  "page": "privacy",
+  "pageTitle": "Privacy Policy",
+  "pageIntro": "What we collect, why we collect it, and the choices you have.",
+  "lastUpdated": "November 22, 2026",
+  "sections": [
+    {
+      "heading": "Who We Are",
+      "paragraphs": [
+        "Ghostbusters Virginia (\"GBVA\", \"we\") is a volunteer-run 501(c)(3) nonprofit. This policy covers ghostbustersva.com, including the members-only area. We collect as little information as we can, and we never sell it."
+      ]
+    },
+    {
+      "heading": "Information You Send Us",
+      "paragraphs": [
+        "When you use our contact or appearance request forms, we collect what you enter. That can include your name, email address, phone number, organization, and event details. The forms are delivered by email to GBVA volunteers, and we use the information only to reply to you and plan the appearance you asked about."
+      ]
+    },
+    {
+      "heading": "Information Collected Automatically",
+      "paragraphs": [
+        "Like most websites, our hosting provider keeps standard server logs. These can include your IP address, browser type, and the pages you visited. We use IP addresses briefly to block spam and abuse of our forms.",
+        "We do not use advertising or tracking cookies. Some features save settings in your own browser, such as motion preferences, game progress, or member calendar filters. That information never leaves your device."
+      ],
+      "items": [
+        "The appearance request form uses Google Maps to look up venue addresses, so Google receives the address text you type.",
+        "Our forms may use a spam-protection check that runs in your browser."
+      ]
+    },
+    {
+      "heading": "Member Sign-In",
+      "paragraphs": [
+        "Members can sign in to the members area with Google. When you sign in, Google shares your name, email address, and profile picture with us. We use your email to confirm you are a current GBVA member. We do not get your Google password or access to your other Google data.",
+        "After you sign in, we set one cookie to keep you signed in. It expires on its own, and it ends when you sign out. We store your name so it can be shown next to your event RSVPs."
+      ]
+    },
+    {
+      "heading": "Event RSVPs",
+      "paragraphs": [
+        "When you RSVP to an event in the member calendar, your response is saved on the GBVA Events Google Calendar. Other signed-in members and GBVA officers can see your name and your response.",
+        "If you change a \"Yes\" RSVP within two hours of an event's start time, or after the event has started, we keep a record of the change. Only GBVA officers can see these records, which help with event planning. They are kept for up to two years."
+      ]
+    },
+    {
+      "heading": "How We Share Information",
+      "paragraphs": [
+        "We do not sell, rent, or trade your information. We share it only with the service providers that run this site on our behalf, or when the law requires it."
+      ],
+      "items": [
+        "Google: sign-in, calendar, groups, and maps",
+        "Vercel: website hosting",
+        "Resend: delivering form emails",
+        "Upstash: short-term storage for spam protection and RSVP records"
+      ]
+    },
+    {
+      "heading": "How Long We Keep It",
+      "paragraphs": [
+        "Form messages stay in volunteer inboxes only as long as they are needed. RSVPs stay on the calendar event until you change or remove them, or the event is deleted. Late RSVP change records are deleted after two years. Server logs are kept for a limited time by our hosting provider."
+      ]
+    },
+    {
+      "heading": "Your Choices",
+      "paragraphs": ["You are in control of your information:"],
+      "items": [
+        "Change or remove any RSVP at any time from the member calendar.",
+        "Sign out of the members area at any time.",
+        "Remove GBVA's sign-in access from your Google Account under Security → Third-party apps & services.",
+        "Ask us to see, correct, or delete the information we hold about you through our contact page."
+      ]
+    },
+    {
+      "heading": "Children",
+      "paragraphs": [
+        "This website is not directed to children under 13, and we do not knowingly collect personal information from them. Parents or guardians should submit forms on a child's behalf. If you believe a child has sent us personal information, contact us and we will delete it."
+      ]
+    },
+    {
+      "heading": "Changes and Contact",
+      "paragraphs": [
+        "We may update this policy as the site changes, and the date at the top shows the latest version. Questions or requests? Reach us through our contact page."
+      ]
+    }
+  ],
+  "metaTitle": "Privacy Policy",
+  "metaDescription": "How Ghostbusters Virginia collects, uses, and protects information on ghostbustersva.com and in the members area.",
+  "ogTitle": "Privacy Policy | Ghostbusters Virginia",
+  "ogDescription": "What Ghostbusters Virginia collects, why, and the choices you have."
+}
