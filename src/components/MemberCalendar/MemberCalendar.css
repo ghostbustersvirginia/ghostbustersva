@@ -475,6 +475,7 @@
   overflow: hidden;
   font-size: 0.8rem;
   line-height: 1.3;
+  padding: 0.2rem;
 }
 
 .mc-event__time {
