@@ -8,7 +8,8 @@ import type {
   RsvpScope,
 } from "../../lib/member-calendar/types";
 import { sendRsvp } from "./api";
-import { formatEventWhen, formatShortDate, mapsUrl, STATUS_LABEL } from "./format";
+import { formatEventWhen, formatShortDate, STATUS_LABEL } from "./format";
+import EventLocation from "./EventLocation";
 
 interface Props {
   event: CalendarEvent;
@@ -126,14 +127,7 @@ export default function EventDialog({ event, onClose, onUpdated, onAuthError }: 
             This event is gauging interest. RSVP to let the organizers know if you'd join.
           </p>
         )}
-        {event.location && (
-          <p className="mc-dialog__where">
-            <a href={mapsUrl(event.location)} target="_blank" rel="noopener noreferrer">
-              {event.location}
-              <span className="sr-only"> (opens map in new tab)</span>
-            </a>
-          </p>
-        )}
+        {(event.location || event.mapUrl) && <EventLocation event={event} />}
 
         {event.changedSinceRsvp && (
           <div className="mc-alert mc-alert--warn" role="status">

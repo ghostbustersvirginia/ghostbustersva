@@ -34,6 +34,12 @@ export default defineConfig({
   env: {
     schema: {
       GOOGLE_MAPS_API_KEY: envField.string({ context: "client", access: "public", optional: true }),
+      // Member calendar maps (PRD 009): browser key restricted to the site's referrers.
+      PUBLIC_GOOGLE_MAPS_BROWSER_KEY: envField.string({
+        context: "client",
+        access: "public",
+        optional: true,
+      }),
       RESEND_API_KEY: envField.string({ context: "server", access: "secret" }),
       CONTACT_FROM_EMAIL: envField.string({ context: "server", access: "secret" }),
       CONTACT_TO_EMAIL: envField.string({ context: "server", access: "secret" }),

@@ -33,6 +33,12 @@ export interface CalendarEvent {
   end: string;
   allDay: boolean;
   location: string | null;
+  /** Where to map the event: location text, or a place read from a Google Maps link. */
+  mapQuery: string | null;
+  /** Place text to show when the location field is empty or just a link. */
+  mapLabel: string | null;
+  /** The event's Google Maps link, if it has one. */
+  mapUrl: string | null;
   /** Sanitized HTML. */
   descriptionHtml: string | null;
   htmlLink: string | null;

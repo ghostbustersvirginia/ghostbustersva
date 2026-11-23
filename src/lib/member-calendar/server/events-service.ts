@@ -6,6 +6,8 @@ import { memberEnv } from "./env";
 import { getCalendarEvent, listCalendarEvents, type GoogleEvent } from "./google-api";
 import { normalizeEmail, normalizeEvent, personAttendees, toResponseStatus } from "./logic";
 import { getFingerprints, getMemberNames, writeSnapshots } from "./store";
+import { findMapsLinks } from "../maps-links";
+import { resolveShortLinks } from "./maps-resolver";
 
 const MAX_RANGE_DAYS = 100;
 
@@ -34,12 +36,13 @@ export async function normalizeForViewer(
   const emails = events.flatMap((e) =>
     personAttendees(e, calendarId, excludedEmails).map((a) => normalizeEmail(a.email)),
   );
-  const [names, fingerprints] = await Promise.all([
+  const [names, fingerprints, resolvedLinks] = await Promise.all([
     getMemberNames(emails),
     getFingerprints(
       events.map((e) => e.id),
       viewer,
     ),
+    resolveShortLinks(events.flatMap((e) => findMapsLinks(e.location, e.description))),
   ]);
   return events.map((event) =>
     normalizeEvent(event, {
@@ -48,6 +51,7 @@ export async function normalizeForViewer(
       viewerEmail: viewer,
       storedNames: names,
       storedFingerprint: fingerprints.get(event.id),
+      resolvedLinks,
     }),
   );
 }
