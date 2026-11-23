@@ -64,6 +64,13 @@ export interface GoogleEventDateTime {
   timeZone?: string;
 }
 
+export interface GoogleAttachment {
+  fileId?: string;
+  fileUrl?: string;
+  mimeType?: string;
+  title?: string;
+}
+
 export interface GoogleEvent {
   id: string;
   etag?: string;
@@ -78,6 +85,7 @@ export interface GoogleEvent {
   organizer?: { email?: string; self?: boolean };
   attendees?: GoogleAttendee[];
   attendeesOmitted?: boolean;
+  attachments?: GoogleAttachment[];
   guestsCanSeeOtherGuests?: boolean;
 }
 
@@ -257,4 +265,46 @@ export async function isGroupMember(groupEmail: string, memberEmail: string): Pr
     );
     return status !== 404;
   }
+}
+
+/* ------------------------------------------------------------------ */
+/* Drive (event images, PRD 009)                                       */
+/* ------------------------------------------------------------------ */
+
+const DRIVE_BASE = "https://www.googleapis.com/drive/v3/files";
+
+export interface DriveFileMeta {
+  id: string;
+  mimeType: string;
+  size?: string;
+  modifiedTime?: string;
+}
+
+/** File metadata, read as the service account itself (no delegation). */
+export async function getDriveFileMeta(fileId: string): Promise<DriveFileMeta | null> {
+  const params = new URLSearchParams({
+    fields: "id,mimeType,size,modifiedTime",
+    supportsAllDrives: "true",
+  });
+  const { data } = await googleFetch<DriveFileMeta>(
+    `${DRIVE_BASE}/${encodeURIComponent(fileId)}?${params}`,
+    [SCOPES.drive],
+    { allow404: true },
+  );
+  return data;
+}
+
+/** Downloads a Drive file's bytes. */
+export async function downloadDriveFile(fileId: string): Promise<ArrayBuffer> {
+  const token = await getGoogleAccessToken([SCOPES.drive]);
+  const params = new URLSearchParams({ alt: "media", supportsAllDrives: "true" });
+  const res = await fetch(`${DRIVE_BASE}/${encodeURIComponent(fileId)}?${params}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    console.error(`[member-calendar] Drive download ${res.status}: ${text.slice(0, 200)}`);
+    throw new GoogleApiError(res.status, text.slice(0, 200));
+  }
+  return res.arrayBuffer();
 }

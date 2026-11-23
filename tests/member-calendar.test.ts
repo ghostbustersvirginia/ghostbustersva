@@ -70,6 +70,7 @@ function cEvent(overrides: Partial<CalendarEvent> = {}): CalendarEvent {
     mapQuery: null,
     mapLabel: null,
     mapUrl: null,
+    image: null,
     descriptionHtml: null,
     htmlLink: null,
     myStatus: null,

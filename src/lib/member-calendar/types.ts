@@ -39,6 +39,8 @@ export interface CalendarEvent {
   mapLabel: string | null;
   /** The event's Google Maps link, if it has one. */
   mapUrl: string | null;
+  /** Hero image (first PNG/JPEG attachment); `version` changes when it does. */
+  image: { version: string } | null;
   /** Sanitized HTML. */
   descriptionHtml: string | null;
   htmlLink: string | null;

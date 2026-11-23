@@ -524,6 +524,31 @@
   padding: 0.2rem;
 }
 
+/* List view rows with a hero image: chips, image, title (PRD 009, R2.1). */
+.mc-event--stacked {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.35rem;
+  white-space: normal;
+}
+
+.mc-event__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 0.3rem;
+}
+
+.mc-event__image {
+  display: block;
+  width: 100%;
+  max-width: 40rem;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  border-radius: var(--radius-md);
+  background: var(--color-surface-alt);
+}
+
 .mc-event__time {
   font-weight: var(--weight-bold);
 }
@@ -661,6 +686,16 @@
 }
 
 .mc-dialog__close:hover {
+  background: var(--color-surface-alt);
+}
+
+.mc-dialog__image {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  margin-top: var(--space-sm);
+  object-fit: cover;
+  border-radius: var(--radius-md);
   background: var(--color-surface-alt);
 }
 
