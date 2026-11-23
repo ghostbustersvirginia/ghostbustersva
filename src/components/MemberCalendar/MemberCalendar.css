@@ -369,7 +369,8 @@
   background: var(--color-action-secondary-hover-bg);
 }
 
-.mc-togglebar__btn[aria-pressed="true"] {
+.mc-togglebar__btn[aria-pressed="true"],
+.mc-togglebar__btn.is-active {
   background: var(--color-gb-green);
   color: #ffffff;
 }
@@ -382,6 +383,31 @@
 .mc-togglebar__btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+/* A toggle-bar button that opens a menu (RSVP filter). */
+.mc-menu {
+  position: relative;
+  overflow: visible;
+}
+
+.mc-menu > summary {
+  list-style: none;
+  border-radius: var(--radius-full);
+}
+
+.mc-menu > summary::-webkit-details-marker {
+  display: none;
+}
+
+.mc-menu__chevron {
+  width: 0.7rem !important;
+  height: 0.7rem !important;
+  transition: transform 0.15s ease;
+}
+
+.mc-menu[open] .mc-menu__chevron {
+  transform: rotate(180deg);
 }
 
 /* Icon-only on phones; the label stays available to screen readers. */

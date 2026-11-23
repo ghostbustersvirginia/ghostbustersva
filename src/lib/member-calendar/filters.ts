@@ -47,6 +47,39 @@ export function saveHiddenChapters(hidden: Iterable<ChapterKey>): void {
   }
 }
 
+/** Your RSVP state for an event, for the RSVP filter. */
+export type RsvpState = "going" | "maybe" | "notGoing" | "none";
+
+export const RSVP_STATES: readonly RsvpState[] = ["going", "maybe", "notGoing", "none"];
+
+export const RSVP_STATE_LABELS: Record<RsvpState, string> = {
+  going: "Going",
+  maybe: "Maybe",
+  notGoing: "Not going",
+  none: "No response",
+};
+
+export function rsvpStateOf(event: Pick<CalendarEvent, "myStatus">): RsvpState {
+  switch (event.myStatus) {
+    case "accepted":
+      return "going";
+    case "tentative":
+      return "maybe";
+    case "declined":
+      return "notGoing";
+    default:
+      return "none";
+  }
+}
+
+/** Is the event's RSVP state one of the states selected to show? */
+export function matchesRsvpFilter(
+  event: Pick<CalendarEvent, "myStatus">,
+  shown: ReadonlySet<RsvpState>,
+): boolean {
+  return shown.has(rsvpStateOf(event));
+}
+
 /** General (un-prefixed) events always show. */
 export function isEventVisible(
   event: Pick<CalendarEvent, "chapter">,
