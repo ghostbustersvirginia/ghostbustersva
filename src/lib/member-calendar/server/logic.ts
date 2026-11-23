@@ -56,11 +56,18 @@ export function eventFingerprint(event: GoogleEvent): string {
 
 /* --- Attendees ---------------------------------------------------------- */
 
-/** People who RSVP'd, excluding the calendar itself and room resources. */
-export function personAttendees(event: GoogleEvent, calendarId: string): GoogleAttendee[] {
-  const calendar = normalizeEmail(calendarId);
+/**
+ * People on the guest list. Excludes the calendar itself, room resources, and any
+ * `excluded` addresses (e.g. the members/officers groups invited as guests).
+ */
+export function personAttendees(
+  event: GoogleEvent,
+  calendarId: string,
+  excluded: readonly string[] = [],
+): GoogleAttendee[] {
+  const skip = new Set([calendarId, ...excluded].map(normalizeEmail));
   return (event.attendees ?? []).filter(
-    (a) => a.email && !a.resource && normalizeEmail(a.email) !== calendar,
+    (a) => a.email && !a.resource && !skip.has(normalizeEmail(a.email)),
   );
 }
 
@@ -96,6 +103,8 @@ const STATUS_ORDER: Record<GoogleResponseStatus, number> = {
 
 export interface NormalizeContext {
   calendarId: string;
+  /** Non-person guest addresses to leave out, such as invited groups. */
+  excludedEmails?: readonly string[];
   viewerEmail: string;
   storedNames: Map<string, string>;
   /** Fingerprint stored when the viewer last RSVP'd, if any. */
@@ -106,7 +115,7 @@ export function normalizeEvent(event: GoogleEvent, ctx: NormalizeContext): Calen
   const parsed = parseEventTitle(event.summary);
   const allDay = Boolean(event.start?.date && !event.start?.dateTime);
   const viewer = normalizeEmail(ctx.viewerEmail);
-  const people = personAttendees(event, ctx.calendarId);
+  const people = personAttendees(event, ctx.calendarId, ctx.excludedEmails);
 
   const attendees: AttendeeSummary[] = people
     .map((a) => ({
@@ -242,6 +251,7 @@ export function buildLateChangeRecord(input: {
 export function diffEventSnapshot(input: {
   event: GoogleEvent;
   calendarId: string;
+  excludedEmails?: readonly string[];
   snapshot: Map<string, SnapshotStatus>;
   names: Map<string, string>;
   nowMs: number;
@@ -251,8 +261,9 @@ export function diffEventSnapshot(input: {
   updates: { eventId: string; email: string; status: SnapshotStatus }[];
 } {
   const { event, calendarId, snapshot, names, nowMs, windowMinutes } = input;
+  const excluded = new Set((input.excludedEmails ?? []).map(normalizeEmail));
   const current = new Map<string, { status: SnapshotStatus; attendee: GoogleAttendee }>();
-  for (const a of personAttendees(event, calendarId)) {
+  for (const a of personAttendees(event, calendarId, input.excludedEmails)) {
     current.set(normalizeEmail(a.email), {
       status: toResponseStatus(a.responseStatus),
       attendee: a,
@@ -262,7 +273,7 @@ export function diffEventSnapshot(input: {
   const lateChanges: LateChangeRecord[] = [];
   const updates: { eventId: string; email: string; status: SnapshotStatus }[] = [];
   const startMs = eventStartMs(event);
-  const emails = new Set([...snapshot.keys(), ...current.keys()]);
+  const emails = new Set([...snapshot.keys(), ...current.keys()].filter((e) => !excluded.has(e)));
 
   for (const email of emails) {
     const previous = snapshot.get(email);

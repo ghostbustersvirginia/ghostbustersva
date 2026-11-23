@@ -29,9 +29,10 @@ export async function normalizeForViewer(
   viewerEmail: string,
 ): Promise<CalendarEvent[]> {
   const calendarId = memberEnv.calendarId();
+  const excludedEmails = memberEnv.groupAddresses();
   const viewer = normalizeEmail(viewerEmail);
   const emails = events.flatMap((e) =>
-    personAttendees(e, calendarId).map((a) => normalizeEmail(a.email)),
+    personAttendees(e, calendarId, excludedEmails).map((a) => normalizeEmail(a.email)),
   );
   const [names, fingerprints] = await Promise.all([
     getMemberNames(emails),
@@ -43,6 +44,7 @@ export async function normalizeForViewer(
   return events.map((event) =>
     normalizeEvent(event, {
       calendarId,
+      excludedEmails,
       viewerEmail: viewer,
       storedNames: names,
       storedFingerprint: fingerprints.get(event.id),
@@ -57,11 +59,12 @@ export async function normalizeForViewer(
  */
 export async function seedSnapshots(events: GoogleEvent[]): Promise<void> {
   const calendarId = memberEnv.calendarId();
+  const excludedEmails = memberEnv.groupAddresses();
   const cutoff = Date.now() - 2 * 24 * 60 * 60 * 1000;
   const updates = events
     .filter((e) => new Date(e.end?.dateTime ?? e.end?.date ?? 0).getTime() >= cutoff)
     .flatMap((e) =>
-      personAttendees(e, calendarId).map((a) => ({
+      personAttendees(e, calendarId, excludedEmails).map((a) => ({
         eventId: e.id,
         email: normalizeEmail(a.email),
         status: toResponseStatus(a.responseStatus),

@@ -39,8 +39,11 @@ export async function syncRecentEvents(): Promise<{ events: number; lateChanges:
   return withSyncLock(async () => {
     const events: GoogleEvent[] = await listCalendarEvents(calendarId, timeMin, timeMax);
     const snapshots = await getSnapshots(events.map((e) => e.id));
+    const excludedEmails = memberEnv.groupAddresses();
     const names = await getMemberNames(
-      events.flatMap((e) => personAttendees(e, calendarId).map((a) => normalizeEmail(a.email))),
+      events.flatMap((e) =>
+        personAttendees(e, calendarId, excludedEmails).map((a) => normalizeEmail(a.email)),
+      ),
     );
 
     const lateChanges: LateChangeRecord[] = [];
@@ -49,6 +52,7 @@ export async function syncRecentEvents(): Promise<{ events: number; lateChanges:
       const diff = diffEventSnapshot({
         event,
         calendarId,
+        excludedEmails,
         snapshot: snapshots.get(event.id) ?? new Map(),
         names,
         nowMs: Date.now(),

@@ -270,6 +270,24 @@ describe("normalizeEvent (R2)", () => {
     expect(result.rsvpAllowed).toBe(true);
   });
 
+  it("leaves invited group addresses out of attendees and counts", () => {
+    const event = gEvent({
+      attendees: [
+        { email: "All-Members@ghostbustersva.com", responseStatus: "accepted" },
+        { email: "officers@ghostbustersva.com", responseStatus: "declined" },
+        { email: "pal@gmail.com", responseStatus: "accepted", displayName: "Pal" },
+      ],
+    });
+    const result = normalizeEvent(event, {
+      calendarId: CAL,
+      excludedEmails: ["all-members@ghostbustersva.com", "officers@ghostbustersva.com"],
+      viewerEmail: "me@gmail.com",
+      storedNames: new Map(),
+    });
+    expect(result.attendees.map((a) => a.name)).toEqual(["Pal"]);
+    expect(result.counts).toEqual({ yes: 1, maybe: 0, no: 0 });
+  });
+
   it("flags changes since RSVP only when the viewer has RSVP'd", () => {
     const event = gEvent({ attendees: [{ email: "me@gmail.com", responseStatus: "accepted" }] });
     const ctx = { calendarId: CAL, viewerEmail: "me@gmail.com", storedNames: new Map() };
@@ -337,6 +355,20 @@ describe("late changes (R7)", () => {
       ["gone@gmail.com", "removed", "google"],
     ]);
     expect(diff.lateChanges[0].minutesBeforeStart).toBe(30);
+  });
+
+  it("never snapshots or logs excluded group addresses", () => {
+    const group = "all-members@ghostbustersva.com";
+    const diff = diffEventSnapshot({
+      event: gEvent({ attendees: [{ email: group, responseStatus: "needsAction" }] }),
+      calendarId: CAL,
+      excludedEmails: [group],
+      snapshot: new Map([[group, "accepted" as const]]),
+      names: new Map(),
+      nowMs: start,
+      windowMinutes: 120,
+    });
+    expect(diff).toEqual({ lateChanges: [], updates: [] });
   });
 
   it("exports CSV with the PRD columns and defuses formulas", () => {

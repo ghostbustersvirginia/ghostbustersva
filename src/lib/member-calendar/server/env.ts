@@ -36,6 +36,8 @@ export const memberEnv = {
   calendarId: () => required("GBVA_EVENTS_CALENDAR_ID"),
   membersGroup: () => read("GBVA_MEMBERS_GROUP") ?? "all-members@ghostbustersva.com",
   organizersGroup: () => read("GBVA_ORGANIZERS_GROUP") ?? "officers@ghostbustersva.com",
+  /** Group addresses that may be invited as guests but are not people. */
+  groupAddresses: (): string[] => [memberEnv.membersGroup(), memberEnv.organizersGroup()],
   accessMode: (): AccessMode =>
     read("GOOGLE_ACCESS_MODE") === "delegated" ? "delegated" : "direct",
   delegatedUser: () => read("GOOGLE_DELEGATED_USER") ?? "calendar-automation@ghostbustersva.com",

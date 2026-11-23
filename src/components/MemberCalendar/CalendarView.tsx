@@ -278,6 +278,7 @@ export default function CalendarView({ onAuthError }: Props) {
         timeZone={CALENDAR_TIME_ZONE}
         height="auto"
         events={eventInputs}
+        eventDisplay="block"
         datesSet={handleDatesSet}
         eventClick={handleEventClick}
         eventContent={eventContent}
