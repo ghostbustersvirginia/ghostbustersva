@@ -47,6 +47,17 @@ import EventDialog, { VirtualIcon } from "./EventDialog";
 import { cellDateKey, eventImageUrl } from "./format";
 import SearchResults from "./SearchResults";
 import EventHoverCard from "./EventHoverCard";
+import MapPanel from "./MapPanel";
+import { useHomeLocation, useMapToggle, useVenueCoords } from "./use-geo";
+import {
+  distanceMiles,
+  formatDistance,
+  groupVenues,
+  isWithin,
+  WITHIN_OPTIONS,
+  type GeoResult,
+  type WithinMiles,
+} from "../../lib/member-calendar/geo";
 import ListRangeControls from "./ListRangeControls";
 import {
   addDays,
@@ -289,12 +300,43 @@ export default function CalendarView({ onAuthError }: Props) {
     return () => controller.abort();
   }, [searching, showPast, searchPool, onAuthError]);
 
+  /* --- Maps and home location (PRD 009, R5, R7) ------------------------ */
+
+  const [mapOn, setMapOn] = useMapToggle();
+  const { home, setHome, setWithin } = useHomeLocation();
+  const within: WithinMiles = home?.within ?? null;
+  const [highlightEventId, setHighlightEventId] = useState<string | null>(null);
+  // Venues are located while the map is showing or distances are needed.
+  const geoEnabled = mapOn || Boolean(home);
+  const geoQueries = useMemo(() => {
+    const pool = searching && searchPool ? searchPool.events : [];
+    return [...events, ...pool].flatMap((e) => (e.mapQuery ? [e.mapQuery] : []));
+  }, [events, searching, searchPool]);
+  const { coords, error: geoError } = useVenueCoords(geoQueries, geoEnabled);
+  const coordsFor = useCallback(
+    (event: CalendarEvent): GeoResult | null =>
+      event.mapQuery ? (coords.get(event.mapQuery) ?? null) : null,
+    [coords],
+  );
+  const distanceFor = useCallback(
+    (event: CalendarEvent): string | null => {
+      const at = coordsFor(event);
+      return home && at ? formatDistance(distanceMiles(home, at)) : null;
+    },
+    [coordsFor, home],
+  );
+  const passesWithin = useCallback(
+    (event: CalendarEvent) => isWithin(coordsFor(event), home, within),
+    [coordsFor, home, within],
+  );
+
   const searchMatches = useMemo(() => {
     if (!searching || !searchPool || searchPool.includePast !== showPast) return [];
     return searchPool.events.filter(
-      (e) => matchesSearch(e, deferredSearch) && (showPast || !isPastEvent(e, now)),
+      (e) =>
+        matchesSearch(e, deferredSearch) && (showPast || !isPastEvent(e, now)) && passesWithin(e),
     );
-  }, [searching, searchPool, showPast, deferredSearch, now]);
+  }, [searching, searchPool, showPast, deferredSearch, now, passesWithin]);
   const searchResults = useMemo(
     () => searchMatches.filter((e) => isEventVisible(e, hidden)),
     [searchMatches, hidden],
@@ -316,16 +358,42 @@ export default function CalendarView({ onAuthError }: Props) {
     () => (includePast ? searchedEvents : searchedEvents.filter((e) => !isPastEvent(e, now))),
     [searchedEvents, includePast, now],
   );
+  // "Within N miles" (R7.4) applies before the chapter filter.
+  const nearbyEvents = useMemo(
+    () => (within ? timeFilteredEvents.filter(passesWithin) : timeFilteredEvents),
+    [timeFilteredEvents, within, passesWithin],
+  );
   const visibleEvents = useMemo(
-    () => timeFilteredEvents.filter((e) => isEventVisible(e, hidden)),
-    [timeFilteredEvents, hidden],
+    () => nearbyEvents.filter((e) => isEventVisible(e, hidden)),
+    [nearbyEvents, hidden],
   );
   const eventInputs = useMemo(() => visibleEvents.map(toEventInput), [visibleEvents]);
   const hiddenCounts = useMemo(
-    () => hiddenCountsByDay(timeFilteredEvents, hidden),
-    [timeFilteredEvents, hidden],
+    () => hiddenCountsByDay(nearbyEvents, hidden),
+    [nearbyEvents, hidden],
   );
-  const hiddenTotal = timeFilteredEvents.length - visibleEvents.length;
+  const hiddenTotal = nearbyEvents.length - visibleEvents.length;
+
+  // Map panel data: the visible events grouped by venue (R5.2, R5.5).
+  const mapData = useMemo(() => {
+    const located: { event: CalendarEvent; geo: GeoResult }[] = [];
+    let unmappable = 0;
+    let locating = 0;
+    for (const event of visibleEvents) {
+      if (!event.mapQuery) {
+        unmappable++;
+        continue;
+      }
+      if (!coords.has(event.mapQuery)) {
+        locating++;
+        continue;
+      }
+      const geo = coords.get(event.mapQuery);
+      if (geo) located.push({ event, geo });
+      else unmappable++;
+    }
+    return { venues: groupVenues(located), mapped: located.length, unmappable, locating };
+  }, [visibleEvents, coords]);
 
   // Month view hides past weeks with nothing to show. A week with only
   // filtered-out events stays, so its "+N hidden" marker is still visible.
@@ -389,10 +457,19 @@ export default function CalendarView({ onAuthError }: Props) {
 
   const eventDidMount = useCallback(
     (info: EventDisplayInfo & { el: HTMLElement }) => {
-      if (info.view.type === LIST_VIEW) return;
       const source = info.event.extendedProps.source as CalendarEvent | undefined;
       if (!source) return;
       const el = info.el;
+      // Highlight the event's map marker while the pointer is over it (R5.6).
+      const highlight = new AbortController();
+      el.addEventListener("pointerenter", () => setHighlightEventId(source.id), {
+        signal: highlight.signal,
+      });
+      el.addEventListener("pointerleave", () => setHighlightEventId(null), {
+        signal: highlight.signal,
+      });
+      listeners.current.set(el, highlight);
+      if (info.view.type === LIST_VIEW) return;
       const controller = new AbortController();
       const { signal } = controller;
       // Mouse and pen only: a touch tap opens the dialog instead (R3.5).
@@ -409,7 +486,9 @@ export default function CalendarView({ onAuthError }: Props) {
         { signal },
       );
       el.addEventListener("focusout", scheduleHide, { signal });
-      listeners.current.set(el, controller);
+      // Abort both sets of listeners together on unmount.
+      highlight.signal.addEventListener("abort", () => controller.abort());
+      listeners.current.set(el, highlight);
     },
     [scheduleShow, scheduleHide],
   );
@@ -633,6 +712,28 @@ export default function CalendarView({ onAuthError }: Props) {
           />
           History
         </label>
+        <label className="mc-toggle">
+          <input type="checkbox" checked={mapOn} onChange={(e) => setMapOn(e.target.checked)} />
+          Map
+        </label>
+        {home && (
+          <label className="mc-within">
+            <span>Within</span>
+            <select
+              value={within ?? ""}
+              onChange={(e) =>
+                setWithin(e.target.value ? (Number(e.target.value) as WithinMiles) : null)
+              }
+            >
+              <option value="">Any distance</option>
+              {WITHIN_OPTIONS.map((miles) => (
+                <option key={miles} value={miles}>
+                  {miles} miles
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
         <ChapterFilter hidden={hidden} onChange={updateHidden} />
         <div className="mc-toolbar__status" aria-live="polite">
           {loading && <span>Loading events…</span>}
@@ -715,6 +816,21 @@ export default function CalendarView({ onAuthError }: Props) {
           anchor={hover.anchor}
           onPointerEnter={() => window.clearTimeout(hideTimer.current)}
           onPointerLeave={scheduleHide}
+          distance={distanceFor(hover.event)}
+        />
+      )}
+
+      {mapOn && (
+        <MapPanel
+          venues={mapData.venues}
+          mappedCount={mapData.mapped}
+          unmappableCount={mapData.unmappable}
+          locating={mapData.locating > 0 && !geoError}
+          error={geoError}
+          home={home}
+          onHomeChange={setHome}
+          highlightEventId={highlightEventId}
+          onSelectEvent={openEvent}
         />
       )}
 
@@ -727,6 +843,8 @@ export default function CalendarView({ onAuthError }: Props) {
           onClose={closeDialog}
           onUpdated={handleUpdated}
           onAuthError={onAuthError}
+          home={home}
+          distance={distanceFor(selected)}
         />
       )}
     </div>

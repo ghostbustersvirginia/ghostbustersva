@@ -40,6 +40,16 @@ export default defineConfig({
         access: "public",
         optional: true,
       }),
+      PUBLIC_GOOGLE_MAPS_MAP_ID: envField.string({
+        context: "client",
+        access: "public",
+        optional: true,
+      }),
+      GOOGLE_GEOCODING_KEY: envField.string({
+        context: "server",
+        access: "secret",
+        optional: true,
+      }),
       RESEND_API_KEY: envField.string({ context: "server", access: "secret" }),
       CONTACT_FROM_EMAIL: envField.string({ context: "server", access: "secret" }),
       CONTACT_TO_EMAIL: envField.string({ context: "server", access: "secret" }),
