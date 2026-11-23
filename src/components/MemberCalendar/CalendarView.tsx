@@ -32,7 +32,10 @@ import {
   isEventVisible,
   eventDayKey,
   isPastEvent,
+  matchesRsvpFilter,
   matchesSearch,
+  RSVP_STATES,
+  type RsvpState,
   timeGridHours,
   weekKeyFor,
   weeksWithDays,
@@ -47,6 +50,7 @@ import EventDialog, { VirtualIcon } from "./EventDialog";
 import { cellDateKey, eventImageUrl } from "./format";
 import SearchResults from "./SearchResults";
 import { FaClockRotateLeft, FaMapLocationDot } from "react-icons/fa6";
+import RsvpFilterMenu from "./RsvpFilterMenu";
 import EventHoverCard from "./EventHoverCard";
 import MapPanel from "./MapPanel";
 import { useHomeLocation, useMapToggle, useVenueCoords } from "./use-geo";
@@ -131,6 +135,8 @@ export default function CalendarView({ onAuthError }: Props) {
   const [hidden, setHidden] = useState<Set<ChapterKey>>(() => loadHiddenChapters());
   // Past events are hidden until the member turns them on.
   const [showPast, setShowPast] = useState(false);
+  // RSVP states to show (your own response); all by default.
+  const [rsvpFilter, setRsvpFilter] = useState<Set<RsvpState>>(() => new Set(RSVP_STATES));
   const [search, setSearch] = useState("");
   const deferredSearch = useDeferredValue(search);
   const searching = deferredSearch.trim().length > 0;
@@ -335,9 +341,12 @@ export default function CalendarView({ onAuthError }: Props) {
     if (!searching || !searchPool || searchPool.includePast !== showPast) return [];
     return searchPool.events.filter(
       (e) =>
-        matchesSearch(e, deferredSearch) && (showPast || !isPastEvent(e, now)) && passesWithin(e),
+        matchesSearch(e, deferredSearch) &&
+        (showPast || !isPastEvent(e, now)) &&
+        passesWithin(e) &&
+        matchesRsvpFilter(e, rsvpFilter),
     );
-  }, [searching, searchPool, showPast, deferredSearch, now, passesWithin]);
+  }, [searching, searchPool, showPast, deferredSearch, now, passesWithin, rsvpFilter]);
   const searchResults = useMemo(
     () => searchMatches.filter((e) => isEventVisible(e, hidden)),
     [searchMatches, hidden],
@@ -360,9 +369,13 @@ export default function CalendarView({ onAuthError }: Props) {
     [searchedEvents, includePast, now],
   );
   // "Within N miles" (R7.4) applies before the chapter filter.
+  // "Within N miles" (R7.4) and the RSVP filter apply before the chapter filter.
   const nearbyEvents = useMemo(
-    () => (within ? timeFilteredEvents.filter(passesWithin) : timeFilteredEvents),
-    [timeFilteredEvents, within, passesWithin],
+    () =>
+      timeFilteredEvents.filter(
+        (e) => (!within || passesWithin(e)) && matchesRsvpFilter(e, rsvpFilter),
+      ),
+    [timeFilteredEvents, within, passesWithin, rsvpFilter],
   );
   const visibleEvents = useMemo(
     () => nearbyEvents.filter((e) => isEventVisible(e, hidden)),
@@ -730,6 +743,7 @@ export default function CalendarView({ onAuthError }: Props) {
             <span className="mc-togglebar__label">Map</span>
           </button>
         </div>
+        <RsvpFilterMenu shown={rsvpFilter} onChange={setRsvpFilter} />
         {home && (
           <label className="mc-within">
             <span>Within</span>

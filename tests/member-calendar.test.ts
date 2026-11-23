@@ -11,7 +11,10 @@ import {
   hiddenCountsByDay,
   isEventVisible,
   isPastEvent,
+  matchesRsvpFilter,
   matchesSearch,
+  RSVP_STATES,
+  rsvpStateOf,
   splitRange,
   timeGridHours,
   weekKeyFor,
@@ -284,6 +287,34 @@ describe("timeGridHours", () => {
 
   it("falls back to 9–5 with no timed events", () => {
     expect(timeGridHours([])).toEqual({ slotMinTime: "09:00:00", slotMaxTime: "17:00:00" });
+  });
+});
+
+describe("matchesRsvpFilter", () => {
+  const withStatus = (myStatus: CalendarEvent["myStatus"]) => cEvent({ myStatus });
+  const all = new Set(RSVP_STATES);
+
+  it("shows everything with every state selected", () => {
+    for (const status of ["accepted", "declined", "tentative", "needsAction", null] as const) {
+      expect(matchesRsvpFilter(withStatus(status), all)).toBe(true);
+    }
+  });
+
+  it("maps each response to its state", () => {
+    expect(rsvpStateOf(withStatus("accepted"))).toBe("going");
+    expect(rsvpStateOf(withStatus("tentative"))).toBe("maybe");
+    expect(rsvpStateOf(withStatus("declined"))).toBe("notGoing");
+    expect(rsvpStateOf(withStatus("needsAction"))).toBe("none");
+    expect(rsvpStateOf(withStatus(null))).toBe("none");
+  });
+
+  it("shows only the selected states", () => {
+    const goingOrMaybe = new Set(["going", "maybe"] as const);
+    expect(matchesRsvpFilter(withStatus("accepted"), goingOrMaybe)).toBe(true);
+    expect(matchesRsvpFilter(withStatus("tentative"), goingOrMaybe)).toBe(true);
+    expect(matchesRsvpFilter(withStatus("declined"), goingOrMaybe)).toBe(false);
+    expect(matchesRsvpFilter(withStatus(null), goingOrMaybe)).toBe(false);
+    expect(matchesRsvpFilter(withStatus("accepted"), new Set())).toBe(false);
   });
 });
 
