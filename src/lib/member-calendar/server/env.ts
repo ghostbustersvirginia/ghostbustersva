@@ -1,14 +1,20 @@
 /**
  * Server-only configuration for the member calendar (PRD 008).
- * Values are read at request time so Vercel runtime env vars apply.
+ *
+ * Values are read at request time: process.env first (Vercel runtime), then
+ * astro:env's getSecret, which also sees .env / .env.local in `astro dev`.
+ * Never read secrets through import.meta.env: Vite inlines those values into
+ * the build output.
  */
+import { getSecret } from "astro:env/server";
 
-function read(name: string): string | undefined {
-  const fromProcess = typeof process !== "undefined" ? process.env?.[name] : undefined;
-  const fromVite = (import.meta.env as Record<string, string | undefined>)[name];
-  const value = fromProcess ?? fromVite;
+export function readEnv(name: string): string | undefined {
+  const value =
+    (typeof process !== "undefined" ? process.env?.[name] : undefined) ?? getSecret(name);
   return value && value.trim() ? value.trim() : undefined;
 }
+
+const read = readEnv;
 
 export class ConfigError extends Error {
   constructor(name: string) {

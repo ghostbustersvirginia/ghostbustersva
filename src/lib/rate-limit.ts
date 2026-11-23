@@ -1,5 +1,6 @@
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
+import { getSecret } from "astro:env/server";
 
 const DEFAULT_WINDOW_MINUTES = 10;
 const DEFAULT_MAX_REQUESTS = 5;
@@ -25,11 +26,13 @@ function checkMemoryRateLimit(key: string, max: number, windowMs: number): { lim
 
 const limiters = new Map<string, Ratelimit>();
 
-/** Runtime env first (Vercel), then build-time values. Accepts Marketplace KV_* names. */
+/**
+ * Runtime env (Vercel), then astro:env (which also covers .env files in dev).
+ * Not import.meta.env, which would inline the secret into the build output.
+ */
 function readEnv(name: string): string | undefined {
   const value =
-    (typeof process !== "undefined" ? process.env?.[name] : undefined) ??
-    (import.meta.env as Record<string, string | undefined>)[name];
+    (typeof process !== "undefined" ? process.env?.[name] : undefined) ?? getSecret(name);
   return value && value.trim() ? value.trim() : undefined;
 }
 

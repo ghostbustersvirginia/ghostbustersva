@@ -15,7 +15,7 @@
  */
 import { ExternalAccountClient, JWT, OAuth2Client } from "google-auth-library";
 import { getVercelOidcToken } from "@vercel/oidc";
-import { memberEnv } from "./env";
+import { memberEnv, readEnv } from "./env";
 
 export const SCOPES = {
   calendar: "https://www.googleapis.com/auth/calendar.events",
@@ -54,11 +54,27 @@ function externalAccountClient(scopes: string[]) {
     subject_token_type: "urn:ietf:params:oauth:token-type:jwt",
     token_url: "https://sts.googleapis.com/v1/token",
     service_account_impersonation_url: `https://iamcredentials.googleapis.com/v1/projects/-/serviceAccounts/${serviceAccount}:generateAccessToken`,
-    subject_token_supplier: { getSubjectToken: () => getVercelOidcToken() },
+    subject_token_supplier: { getSubjectToken: vercelOidcToken },
     scopes,
   });
   if (!client) throw new Error("Could not create Workload Identity Federation client");
   return client;
+}
+
+/**
+ * The Vercel OIDC token for Workload Identity Federation.
+ *
+ * On Vercel, @vercel/oidc reads it from the request's x-vercel-oidc-token header,
+ * which takes precedence over process.env. In `astro dev`, a token pulled into
+ * .env.local (`vercel env pull`) isn't in process.env, where @vercel/oidc looks,
+ * so copy it there first.
+ */
+async function vercelOidcToken(): Promise<string> {
+  if (!process.env.VERCEL_OIDC_TOKEN) {
+    const fromEnvFile = readEnv("VERCEL_OIDC_TOKEN");
+    if (fromEnvFile) process.env.VERCEL_OIDC_TOKEN = fromEnvFile;
+  }
+  return getVercelOidcToken();
 }
 
 async function tokenFromClient(client: {
