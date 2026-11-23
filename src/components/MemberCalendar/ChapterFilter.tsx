@@ -1,10 +1,5 @@
 import { useEffect, useRef } from "react";
-import {
-  CHAPTERS,
-  GENERAL_COLOR,
-  GENERAL_LABEL,
-  type ChapterKey,
-} from "../../lib/member-calendar/chapters";
+import { CHAPTERS, GENERAL_LABEL, type ChapterKey } from "../../lib/member-calendar/chapters";
 
 interface Props {
   hidden: ReadonlySet<ChapterKey>;
@@ -12,7 +7,8 @@ interface Props {
 }
 
 /**
- * Multi-select chapter filter with a legend (PRD 008, R4.4–R4.6).
+ * Multi-select chapter filter (PRD 008, R4.4–R4.5). The color legend, which also
+ * toggles chapters, is ChapterLegend below the calendar.
  * General (un-prefixed) events always show and aren't listed as a filter.
  */
 export default function ChapterFilter({ hidden, onChange }: Props) {
@@ -87,31 +83,6 @@ export default function ChapterFilter({ hidden, onChange }: Props) {
           <p className="mc-filter__note">{GENERAL_LABEL} events (no chapter prefix) always show.</p>
         </div>
       </details>
-
-      <ul className="mc-legend" aria-label="Chapter colors">
-        {CHAPTERS.map((chapter) => (
-          <li
-            key={chapter.key}
-            className={`mc-legend__item${hidden.has(chapter.key) ? " is-hidden" : ""}`}
-          >
-            <span
-              className={`mc-swatch${chapter.virtual ? " mc-swatch--virtual" : ""}`}
-              style={{ backgroundColor: chapter.color }}
-              aria-hidden="true"
-            />
-            {chapter.label}
-            {hidden.has(chapter.key) && <span className="sr-only"> (hidden)</span>}
-          </li>
-        ))}
-        <li className="mc-legend__item">
-          <span
-            className="mc-swatch"
-            style={{ backgroundColor: GENERAL_COLOR }}
-            aria-hidden="true"
-          />
-          {GENERAL_LABEL}
-        </li>
-      </ul>
     </div>
   );
 }
