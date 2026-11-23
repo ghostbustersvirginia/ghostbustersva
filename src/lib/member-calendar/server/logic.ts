@@ -5,6 +5,7 @@
 import { createHash } from "node:crypto";
 import sanitizeHtml from "sanitize-html";
 import { parseEventTitle } from "../chapters";
+import { deriveMapLocation } from "../maps-links";
 import type { AttendeeSummary, CalendarEvent, GoogleResponseStatus, RsvpChoice } from "../types";
 import type { GoogleAttendee, GoogleEvent } from "./google-api";
 import { REMOVED, type LateChangeRecord, type SnapshotStatus } from "./records";
@@ -109,6 +110,8 @@ export interface NormalizeContext {
   storedNames: Map<string, string>;
   /** Fingerprint stored when the viewer last RSVP'd, if any. */
   storedFingerprint?: string;
+  /** Google Maps short links resolved to full URLs (server-side). */
+  resolvedLinks?: ReadonlyMap<string, string>;
 }
 
 export function normalizeEvent(event: GoogleEvent, ctx: NormalizeContext): CalendarEvent {
@@ -143,6 +146,12 @@ export function normalizeEvent(event: GoogleEvent, ctx: NormalizeContext): Calen
     end: event.end?.dateTime ?? event.end?.date ?? "",
     allDay,
     location: event.location?.trim() || null,
+    ...deriveMapLocation({
+      location: event.location,
+      description: event.description,
+      chapter: parsed.chapter,
+      resolvedLinks: ctx.resolvedLinks,
+    }),
     descriptionHtml: sanitizeDescription(event.description),
     htmlLink: event.htmlLink ?? null,
     myStatus,

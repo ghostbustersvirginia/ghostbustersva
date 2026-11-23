@@ -114,20 +114,24 @@ export function normalizeSearchText(text: string): string {
 
 /** Title, full raw title, location and description text, ready to match. */
 export function eventSearchText(
-  event: Pick<CalendarEvent, "title" | "rawTitle" | "location" | "descriptionHtml">,
+  event: Pick<CalendarEvent, "title" | "rawTitle" | "location" | "descriptionHtml"> &
+    Partial<Pick<CalendarEvent, "mapLabel">>,
 ): string {
   const description = (event.descriptionHtml ?? "")
     .replace(/<br\s*\/?>|<\/(p|div|li)>/gi, " ")
     .replace(/<[^>]*>/g, "")
     .replace(/&(amp|lt|gt|quot|#39|apos|nbsp);/g, (_, name: string) => ENTITIES[name]);
   return normalizeSearchText(
-    [event.title, event.rawTitle, event.location ?? "", description].join(" "),
+    [event.title, event.rawTitle, event.location ?? "", event.mapLabel ?? "", description].join(
+      " ",
+    ),
   );
 }
 
 /** Every word in the query must appear somewhere in the event's text. */
 export function matchesSearch(
-  event: Pick<CalendarEvent, "title" | "rawTitle" | "location" | "descriptionHtml">,
+  event: Pick<CalendarEvent, "title" | "rawTitle" | "location" | "descriptionHtml"> &
+    Partial<Pick<CalendarEvent, "mapLabel">>,
   query: string,
 ): boolean {
   const terms = normalizeSearchText(query).split(" ").filter(Boolean);

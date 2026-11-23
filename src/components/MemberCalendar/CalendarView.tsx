@@ -62,7 +62,9 @@ const PLUGINS = [formaTheme, dayGridPlugin, timeGridPlugin, listPlugin];
 /** List view covers 6 months at a time (loaded in chunks; the API caps 100 days). */
 const LIST_VIEW = "listSixMonths";
 const VIEWS = { [LIST_VIEW]: { type: "list", duration: { months: 6 } } };
-const BUTTONS = { [LIST_VIEW]: { text: "List" } };
+// The custom list view has no single unit, so FullCalendar's default "Today" hint
+// would read "This undefined"; give it an explicit one.
+const BUTTONS = { [LIST_VIEW]: { text: "List" }, today: { hint: "Go to today" } };
 const HEADER_TOOLBAR = {
   start: "prev,next today",
   center: "title",
