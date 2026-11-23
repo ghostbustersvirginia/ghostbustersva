@@ -24,6 +24,7 @@ export type ChapterKey =
 export interface Chapter {
   key: ChapterKey;
   label: string;
+  short: string;
   aliases: readonly string[];
   /** Event background. Must give at least 4.5:1 contrast with `textColor`. */
   color: string;
@@ -33,6 +34,7 @@ export interface Chapter {
 }
 
 export const GENERAL_LABEL = "General";
+export const GENERAL_SHORT = "Gen";
 export const GENERAL_COLOR = "#3d4650";
 export const GENERAL_TEXT_COLOR = "#ffffff";
 
@@ -40,6 +42,7 @@ export const CHAPTERS: readonly Chapter[] = [
   {
     key: "blue-ridge",
     label: "Blue Ridge",
+    short: "BR",
     aliases: ["Blue Ridge", "CVille", "Charlottesville"],
     color: "#1f5fad",
     textColor: "#ffffff",
@@ -47,6 +50,7 @@ export const CHAPTERS: readonly Chapter[] = [
   {
     key: "central",
     label: "Central",
+    short: "CE",
     aliases: ["Central", "Richmond", "RVA"],
     color: "#b3261e",
     textColor: "#ffffff",
@@ -54,6 +58,7 @@ export const CHAPTERS: readonly Chapter[] = [
   {
     key: "nova",
     label: "NoVA",
+    short: "NO",
     aliases: ["NoVA"],
     color: "#6a3d9a",
     textColor: "#ffffff",
@@ -61,6 +66,7 @@ export const CHAPTERS: readonly Chapter[] = [
   {
     key: "fredericksburg",
     label: "Fredericksburg",
+    short: "FX",
     aliases: ["Fredericksburg", "FXBG"],
     color: "#2e6b30",
     textColor: "#ffffff",
@@ -68,6 +74,7 @@ export const CHAPTERS: readonly Chapter[] = [
   {
     key: "southeast",
     label: "Southeast",
+    short: "SE",
     aliases: ["Southeast", "757"],
     color: "#a14a00",
     textColor: "#ffffff",
@@ -75,6 +82,7 @@ export const CHAPTERS: readonly Chapter[] = [
   {
     key: "virtual",
     label: "Virtual",
+    short: "V",
     aliases: ["Virtual"],
     color: "#0b6e79",
     textColor: "#ffffff",

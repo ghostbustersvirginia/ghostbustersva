@@ -1,4 +1,5 @@
 import { PUBLIC_GOOGLE_MAPS_BROWSER_KEY } from "astro:env/client";
+import { FaDirections } from "react-icons/fa";
 import {
   directionsUrl,
   isUrlLocation,
@@ -33,10 +34,18 @@ export default function EventLocation({ event, home = null, distance = null }: P
     return (
       <div className="mc-location">
         {placeText && (
-          <p className="mc-dialog__where">
-            {placeText}
-            {distance && <span className="mc-distance"> · {distance}</span>}
-          </p>
+          <div className="mc-dialog__where">
+            <a
+              className="mc-btn mc-btn--small"
+              href={directionsUrl(mapQuery, home)}
+              target="_blank"
+              rel="noopener noreferrer"
+            ><FaDirections size={18} /></a>
+            <p>
+              {placeText}
+              {distance && <span className="mc-distance"> · {distance}</span>}
+            </p>
+          </div>
         )}
         {apiKey && (
           <iframe
@@ -49,14 +58,6 @@ export default function EventLocation({ event, home = null, distance = null }: P
           />
         )}
         <div className="mc-location__actions">
-          <a
-            className="mc-btn mc-btn--small"
-            href={directionsUrl(mapQuery, home)}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Get directions<span className="sr-only"> (opens Google Maps in new tab)</span>
-          </a>
           {mapUrl && (
             <a
               className="mc-btn mc-btn--small mc-btn--ghost"
