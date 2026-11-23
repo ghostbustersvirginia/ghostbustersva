@@ -1096,6 +1096,19 @@
   }
 }
 
+/* Mobile browsers (iOS Safari especially) auto-zoom on focus when a field's
+   font size is under 16px; bump focused fields to 16px on touch devices. */
+@media (hover: none) and (pointer: coarse) {
+  .mc-root input:focus,
+  .mc-root textarea:focus,
+  .mc-root select:focus,
+  .mc-dialog input:focus,
+  .mc-dialog textarea:focus,
+  .mc-dialog select:focus {
+    font-size: 16px;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .mc-root *,
   .mc-dialog * {
