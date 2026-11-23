@@ -383,7 +383,6 @@ export default function CalendarView({ onAuthError }: Props) {
   return (
     <div className="mc-calendar">
       <div className="mc-toolbar">
-        <ChapterFilter hidden={hidden} onChange={updateHidden} />
         <label className="mc-search">
           <span className="sr-only">Search events by title or description</span>
           <input
@@ -402,8 +401,9 @@ export default function CalendarView({ onAuthError }: Props) {
             checked={showPast}
             onChange={(e) => setShowPast(e.target.checked)}
           />
-          Show past events
+          Show History
         </label>
+        <ChapterFilter hidden={hidden} onChange={updateHidden} />
         <div className="mc-toolbar__status" aria-live="polite">
           {loading && <span>Loading events…</span>}
         </div>
