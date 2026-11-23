@@ -6,9 +6,12 @@
  *  - Otherwise, Vercel OIDC → Google Workload Identity Federation (preferred).
  *
  * Access mode (GOOGLE_ACCESS_MODE):
- *  - "direct": the service account acts as itself (calendar shared with it,
- *    Groups Reader admin role assigned to it).
- *  - "delegated": domain-wide delegation, acting as GOOGLE_DELEGATED_USER.
+ *  - "direct": the service account acts as itself for everything. Reading
+ *    works, but Google refuses to let a service account add attendees
+ *    (forbiddenForServiceAccounts), so RSVPs can't be saved.
+ *  - "delegated": Calendar calls use domain-wide delegation, acting as
+ *    GOOGLE_DELEGATED_USER, which is needed for real RSVPs. Group checks
+ *    always use the service account itself (Groups Reader admin role).
  */
 import { ExternalAccountClient, JWT, OAuth2Client } from "google-auth-library";
 import { getVercelOidcToken } from "@vercel/oidc";
@@ -108,7 +111,9 @@ async function delegatedTokenViaSignJwt(scopes: string[], subject: string): Prom
 }
 
 async function fetchAccessToken(scopes: string[]): Promise<string> {
-  const delegated = memberEnv.accessMode() === "delegated";
+  // Only Calendar calls are delegated; group lookups use the service account's
+  // own Groups Reader role.
+  const delegated = memberEnv.accessMode() === "delegated" && scopes.includes(SCOPES.calendar);
   const subject = delegated ? memberEnv.delegatedUser() : undefined;
   const rawKey = memberEnv.serviceAccountKey();
 

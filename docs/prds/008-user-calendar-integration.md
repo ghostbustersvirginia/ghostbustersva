@@ -65,14 +65,13 @@ The page lives at `/members/calendar`, which leaves room for a future `/members`
   verification.
 - **Google API access:** through a service account. The setup steps are in
   [`docs/GOOGLE_CALENDAR_SETUP.md`](../GOOGLE_CALENDAR_SETUP.md).
-  - **Preferred (`GOOGLE_ACCESS_MODE=direct`):**
-    - The GBVA Events calendar is shared with the service account ("Make changes to
-      events").
-    - The service account is assigned the Workspace **Groups Reader** admin role.
-    - There is no domain-wide delegation.
-  - **Fallback (`delegated`):** domain-wide delegation, with the service account acting as
-    `calendar-automation@ghostbustersva.com`.
-  - In both modes, group checks use Cloud Identity
+  - **Group checks:** the service account itself, with the Workspace **Groups Reader**
+    admin role.
+  - **Calendar (`GOOGLE_ACCESS_MODE=delegated`):** domain-wide delegation limited to the
+    `calendar.events` scope, acting as `calendar-automation@ghostbustersva.com`. This is
+    required: Google rejects attendee changes made directly by a service account
+    (`forbiddenForServiceAccounts`). `direct` mode can only read the calendar.
+  - Group checks use Cloud Identity
     `groups.memberships.checkTransitiveMembership`. Transitive means members of nested
     groups count too.
 - **Credentials:** prefer Vercel OIDC with Google Workload Identity Federation, so there

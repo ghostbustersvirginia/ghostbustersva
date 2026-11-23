@@ -96,7 +96,7 @@ Write down each value marked **📝** as you go. Step 10 lists all of them.
   - do not create a key yet
 - 📝 Service account **email**, e.g.
   `gbva-calendar-proxy@gbva-site.iam.gserviceaccount.com`
-- 📝 Service account **Unique ID** (a long number), needed only for Option B in step 5.
+- 📝 Service account **Unique ID** (a long number), needed for domain-wide delegation (step 5, Part B).
   100949542158821650227
 
 ```sh
@@ -105,10 +105,12 @@ gcloud iam service-accounts create gbva-calendar-proxy --display-name="GBVA cale
 
 ## 5. Give the service account access in Workspace (super admin)
 
-There are two ways to do this. **Try Option A first.** It grants far less access than
-Option B, and it makes the Vercel login in step 8 simpler.
+Do **both** parts below. Part A gives the service account its own access to groups and the
+calendar. Part B is still required: Google refuses to let a service account add attendees
+to an event (`forbiddenForServiceAccounts`) unless it uses domain-wide delegation, so
+real RSVPs can't be saved without it.
 
-### Option A (recommended): direct access, no domain-wide delegation
+### Part A: direct access (groups, and reading the calendar)
 
 - [x] **Groups access:**
   - In the Admin console (<https://admin.google.com>), go to Account → **Admin roles** →
@@ -124,39 +126,40 @@ Option B, and it makes the Vercel login in step 8 simpler.
     _External sharing options for primary calendars_ / _secondary calendars_.
   - It needs to allow at least **"Share all information, and outsiders can change
     calendars"** for secondary calendars, or step 6 will fail.
-  - If you don't want to loosen this, use Option B.
+  - If you don't want to loosen this, skip the calendar sharing in step 6. Part B covers
+    calendar access on its own.
 
-### Option B (fallback): domain-wide delegation
+### Part B: domain-wide delegation for the calendar (required for RSVPs)
 
-Domain-wide delegation lets the service account act as **any user** in the domain within
-the granted scopes. Only use it if Option A is blocked.
+Domain-wide delegation lets the service account act as **any user** in the domain, but
+only within the granted scope. Grant only the calendar scope. The server uses it only to
+act as `calendar-automation@` for Calendar calls; group checks keep using Part A.
 
 - [ ] Admin console → Security → Access and data control → API controls → **Manage
       Domain Wide Delegation** → **Add new**:
-  - Client ID: the service account **Unique ID**
-  - Scopes:
+  - Client ID: the service account **Unique ID** (step 4)
+  - Scope:
     ```
-    https://www.googleapis.com/auth/calendar.events,https://www.googleapis.com/auth/cloud-identity.groups.readonly
+    https://www.googleapis.com/auth/calendar.events
     ```
-- [ ] Give `calendar-automation@` permission to read group membership: the **Groups
-      Reader** admin role, assigned to that user. The server will act as
-      `calendar-automation@` for both the calendar and the groups calls.
-- [ ] With Workload Identity Federation (step 8), the service account also needs
-      permission to sign on its own behalf. Run this after step 8:
+- [ ] Confirm `calendar-automation@` can **make changes to events** on GBVA Events. As
+      the calendar's owner, it can.
+- [ ] Let the service account sign on its own behalf. Keyless delegation signs its
+      assertion through the IAM Credentials API, which needs this binding:
   ```sh
   gcloud iam service-accounts add-iam-policy-binding \
-    gbva-calendar-proxy@gbva-site.iam.gserviceaccount.com \
+    gbva-calendar-proxy@gbva-site.iam.gserviceaccount.com --project=gbva-site \
     --role=roles/iam.serviceAccountTokenCreator \
     --member="serviceAccount:gbva-calendar-proxy@gbva-site.iam.gserviceaccount.com"
   ```
-
-📝 Record which option you used. It decides one env var in step 10.
+- [ ] In step 10, set `GOOGLE_ACCESS_MODE=delegated` and
+      `GOOGLE_DELEGATED_USER=calendar-automation@ghostbustersva.com`.
 
 ## 6. Prepare the "GBVA Events" calendar
 
 Sign in as `calendar-automation@ghostbustersva.com`.
 
-- [x] **Option A only:** open calendar settings → _Share with specific people_ → add the
+- [x] **Part A:** open calendar settings → _Share with specific people_ → add the
       service account email with **"Make changes to events"**.
 - [x] Settings → _Integrate calendar_ → copy the **Calendar ID**. It ends in
       `@group.calendar.google.com`.
@@ -266,8 +269,8 @@ Preview unless noted otherwise. Redeploy after saving.
 | `GBVA_EVENTS_CALENDAR_ID`                | Step 6 calendar ID                                       | yes     |
 | `GBVA_MEMBERS_GROUP`                     | `all-members@ghostbustersva.com`                         | no      |
 | `GBVA_ORGANIZERS_GROUP`                  | `officers@ghostbustersva.com`                            | no      |
-| `GOOGLE_ACCESS_MODE`                     | `direct` (Option A) or `delegated` (Option B)            | no      |
-| `GOOGLE_DELEGATED_USER`                  | `calendar-automation@ghostbustersva.com` (Option B only) | no      |
+| `GOOGLE_ACCESS_MODE`                     | `delegated` (needed for RSVPs; `direct` is read-only)    | no      |
+| `GOOGLE_DELEGATED_USER`                  | `calendar-automation@ghostbustersva.com`                 | no      |
 | `GCP_PROJECT_NUMBER`                     | Step 1 project number                                    | no      |
 | `GCP_SERVICE_ACCOUNT_EMAIL`              | Step 4 email                                             | no      |
 | `GCP_WORKLOAD_IDENTITY_POOL_ID`          | `vercel`                                                 | no      |
@@ -309,7 +312,7 @@ These checks prove the setup works before any site code exists.
   ```
 
   This needs you to hold Token Creator on the service account temporarily. It works for
-  Option A only; for Option B, test from Phase 1 code instead.
+  This checks Part A access only. Delegated calendar access is checked from the app.
 
 - [x] **Service account → groups:** the same token with the
       `cloud-identity.groups.readonly` scope, calling
