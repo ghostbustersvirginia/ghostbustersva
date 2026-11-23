@@ -131,6 +131,27 @@ export default defineConfig({
     },
   },
   adapter: vercel(),
+  vite: {
+    ssr: {
+      // sanitize-html is CommonJS but require()s the ESM-only htmlparser2.
+      // Vercel's function loader can't require() ESM, so bundle both into
+      // the server build (with its dependency tree) instead of loading them
+      // from node_modules.
+      noExternal: [
+        "sanitize-html",
+        "htmlparser2",
+        "domhandler",
+        "domutils",
+        "domelementtype",
+        "dom-serializer",
+        "entities",
+        "escape-string-regexp",
+        "is-plain-object",
+        "launder",
+        "parse-srcset",
+      ],
+    },
+  },
   integrations: [
     sitemap({ filter: (page) => !page.includes("/members/calendar") }),
     markdoc(),
