@@ -29,6 +29,7 @@ import {
   CALENDAR_TIME_ZONE,
   hiddenCountsByDay,
   isEventVisible,
+  isPastEvent,
   loadHiddenChapters,
   saveHiddenChapters,
 } from "../../lib/member-calendar/filters";
@@ -78,6 +79,9 @@ function writeEventParam(id: string | null) {
 export default function CalendarView({ onAuthError }: Props) {
   const calendarRef = useRef<CalendarRef>(null);
   const [hidden, setHidden] = useState<Set<ChapterKey>>(() => loadHiddenChapters());
+  // Past events are hidden until the member turns them on.
+  const [showPast, setShowPast] = useState(false);
+  const [now, setNow] = useState(() => new Date());
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [range, setRange] = useState<{ start: Date; end: Date; viewType: string } | null>(null);
   const [loading, setLoading] = useState(false);
@@ -128,13 +132,28 @@ export default function CalendarView({ onAuthError }: Props) {
     saveHiddenChapters(next);
   }, []);
 
+  // Re-evaluate what counts as "past" every few minutes while the page is open.
+  useEffect(() => {
+    const id = window.setInterval(() => setNow(new Date()), 5 * 60 * 1000);
+    return () => window.clearInterval(id);
+  }, []);
+
+  // The past-events toggle applies first; the chapter filter and its
+  // "+N hidden" markers only consider events that pass it.
+  const timeFilteredEvents = useMemo(
+    () => (showPast ? events : events.filter((e) => !isPastEvent(e, now))),
+    [events, showPast, now],
+  );
   const visibleEvents = useMemo(
-    () => events.filter((e) => isEventVisible(e, hidden)),
-    [events, hidden],
+    () => timeFilteredEvents.filter((e) => isEventVisible(e, hidden)),
+    [timeFilteredEvents, hidden],
   );
   const eventInputs = useMemo(() => visibleEvents.map(toEventInput), [visibleEvents]);
-  const hiddenCounts = useMemo(() => hiddenCountsByDay(events, hidden), [events, hidden]);
-  const hiddenTotal = events.length - visibleEvents.length;
+  const hiddenCounts = useMemo(
+    () => hiddenCountsByDay(timeFilteredEvents, hidden),
+    [timeFilteredEvents, hidden],
+  );
+  const hiddenTotal = timeFilteredEvents.length - visibleEvents.length;
 
   const handleDatesSet = useCallback((info: DatesSetInfo) => {
     setRange((prev) =>
@@ -246,6 +265,14 @@ export default function CalendarView({ onAuthError }: Props) {
     <div className="mc-calendar">
       <div className="mc-toolbar">
         <ChapterFilter hidden={hidden} onChange={updateHidden} />
+        <label className="mc-toggle">
+          <input
+            type="checkbox"
+            checked={showPast}
+            onChange={(e) => setShowPast(e.target.checked)}
+          />
+          Show past events
+        </label>
         <div className="mc-toolbar__status" aria-live="polite">
           {loading && <span>Loading events…</span>}
         </div>

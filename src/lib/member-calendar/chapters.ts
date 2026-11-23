@@ -107,9 +107,25 @@ export interface ParsedTitle {
   interest: boolean;
 }
 
-/** First " - ", " – " or " — " separates the prefix from the title. */
-const PREFIX_PATTERN = /^\s*(.+?)\s+[-–—]\s+(.+?)\s*$/s;
-const INTEREST_PATTERN = /^\s*interest\s+[-–—]\s+(.+?)\s*$/is;
+/**
+ * A dash (- – —) with whitespace on at least one side separates segments, so
+ * "NoVA - X" and "Central- X" both split, but hyphenated words like
+ * "Spider-Man" don't.
+ */
+const SEPARATOR = String.raw`(?:\s+[-–—]\s*|\s*[-–—]\s+)`;
+/** First separator splits the prefix from the rest of the title. */
+const PREFIX_PATTERN = new RegExp(String.raw`^\s*(.+?)${SEPARATOR}(.+?)\s*$`, "s");
+/** "Interest", "(Interest)" or "[Interest]" as a leading segment. */
+const INTEREST_PATTERN = new RegExp(
+  String.raw`^\s*[([]?\s*interest\s*[)\]]?${SEPARATOR}(.+?)\s*$`,
+  "is",
+);
+
+/** Removes a leading Interest segment, if there is one. */
+function stripInterest(text: string): { text: string; interest: boolean } {
+  const match = INTEREST_PATTERN.exec(text);
+  return match ? { text: match[1], interest: true } : { text, interest: false };
+}
 
 function parseChapterPrefix(raw: string): { chapter: ChapterKey | null; title: string } {
   const match = PREFIX_PATTERN.exec(raw);
@@ -121,14 +137,23 @@ function parseChapterPrefix(raw: string): { chapter: ChapterKey | null; title: s
   return { chapter, title: match[2] };
 }
 
+/**
+ * The Interest tag may come before or after the chapter:
+ * "Interest - NOVA - Title" and "NOVA - (Interest) - Title" both work.
+ */
 export function parseEventTitle(rawTitle: string | null | undefined): ParsedTitle {
   const raw = (rawTitle ?? "").trim();
   if (!raw) return { chapter: null, title: "(Untitled event)", interest: false };
 
-  const interestMatch = INTEREST_PATTERN.exec(raw);
-  if (interestMatch) return { ...parseChapterPrefix(interestMatch[1]), interest: true };
+  const leading = stripInterest(raw);
+  const { chapter, title } = parseChapterPrefix(leading.text);
+  const trailing = chapter ? stripInterest(title) : { text: title, interest: false };
 
-  return { ...parseChapterPrefix(raw), interest: false };
+  return {
+    chapter,
+    title: trailing.text,
+    interest: leading.interest || trailing.interest,
+  };
 }
 
 /* --- Contrast helpers (WCAG 2.x), used by tests to guard the palette --- */

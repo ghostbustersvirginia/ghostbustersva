@@ -76,6 +76,20 @@ export function eventDayKey(event: Pick<CalendarEvent, "start" | "allDay">): str
   return dateKeyFor(new Date(event.start));
 }
 
+/**
+ * Has the event finished? Timed events are past once their end time passes.
+ * All-day events use an exclusive end date, so they're past from that date
+ * (Eastern) onward.
+ */
+export function isPastEvent(
+  event: Pick<CalendarEvent, "end" | "start" | "allDay">,
+  now: Date = new Date(),
+): boolean {
+  const end = event.end || event.start;
+  if (event.allDay || /^\d{4}-\d{2}-\d{2}$/.test(end)) return end.slice(0, 10) <= dateKeyFor(now);
+  return new Date(end).getTime() <= now.getTime();
+}
+
 /** Count of filtered-out events per day, keyed by YYYY-MM-DD. */
 export function hiddenCountsByDay(
   events: readonly CalendarEvent[],

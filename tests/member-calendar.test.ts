@@ -10,6 +10,7 @@ import {
   eventDayKey,
   hiddenCountsByDay,
   isEventVisible,
+  isPastEvent,
   parseStoredFilters,
   serializeFilters,
 } from "../src/lib/member-calendar/filters";
@@ -86,6 +87,8 @@ describe("parseEventTitle (R4.1)", () => {
     ["Virtual - Movie Night", "virtual", "Movie Night"],
     ["NoVA - Zoo Boo - Day 2", "nova", "Zoo Boo - Day 2"],
     ["Charlottesville - Birthday party", "blue-ridge", "Birthday party"],
+    ["Central- VA Comicon", "central", "VA Comicon"],
+    ["NoVA -5K Run", "nova", "5K Run"],
   ])("%s → %s / %s", (raw, chapter, title) => {
     expect(parseEventTitle(raw)).toEqual({ chapter, title, interest: false });
   });
@@ -104,6 +107,13 @@ describe("parseEventTitle (R4.1)", () => {
       '"Professional" Paranormal Investigation',
     ],
     ["Interest - Bake Sale", null, "Bake Sale"],
+    [
+      "NOVA - (Interest) - Colton's Cars (Anything's PAWSible)",
+      "nova",
+      "Colton's Cars (Anything's PAWSible)",
+    ],
+    ["(Interest) - RVA - Parade", "central", "Parade"],
+    ["757 - [interest] - Ghost Walk", "southeast", "Ghost Walk"],
   ])("Interest: %s → %s / %s", (raw, chapter, title) => {
     expect(parseEventTitle(raw)).toEqual({ chapter, title, interest: true });
   });
@@ -113,6 +123,12 @@ describe("parseEventTitle (R4.1)", () => {
     expect(parseEventTitle("Zoo Boo - Day 2")).toEqual(general("Zoo Boo - Day 2"));
     expect(parseEventTitle("Annual Meeting")).toEqual(general("Annual Meeting"));
     expect(parseEventTitle("NoVA-Zoo Boo")).toEqual(general("NoVA-Zoo Boo"));
+    expect(parseEventTitle("Spider-Man - Movie Night")).toEqual(
+      general("Spider-Man - Movie Night"),
+    );
+    expect(parseEventTitle("Zoo Boo - (Interest) - Day 2")).toEqual(
+      general("Zoo Boo - (Interest) - Day 2"),
+    );
     expect(parseEventTitle("GBVA Game Night - Online")).toEqual(
       general("GBVA Game Night - Online"),
     );
@@ -162,6 +178,32 @@ describe("filters (R4.3–R4.7)", () => {
     expect(counts.get("2026-10-19")).toBe(2);
     expect(counts.get("2026-10-20")).toBe(1);
     expect(eventDayKey(events[0])).toBe("2026-10-19");
+  });
+});
+
+describe("isPastEvent", () => {
+  const now = new Date("2026-11-23T16:00:00Z"); // 11:00 AM Eastern
+
+  it("treats timed events as past once they end", () => {
+    expect(isPastEvent(cEvent({ end: "2026-11-23T10:30:00-05:00" }), now)).toBe(true);
+    expect(isPastEvent(cEvent({ end: "2026-11-23T11:00:00-05:00" }), now)).toBe(true);
+    // In progress: started earlier, still running.
+    expect(
+      isPastEvent(
+        cEvent({ start: "2026-11-23T10:00:00-05:00", end: "2026-11-23T12:00:00-05:00" }),
+        now,
+      ),
+    ).toBe(false);
+  });
+
+  it("uses the exclusive Eastern end date for all-day events", () => {
+    const allDay = (start: string, end: string) => cEvent({ allDay: true, start, end });
+    expect(isPastEvent(allDay("2026-11-22", "2026-11-23"), now)).toBe(true);
+    expect(isPastEvent(allDay("2026-11-23", "2026-11-24"), now)).toBe(false);
+    // 11 PM Eastern on Nov 23 is already Nov 24 in UTC; still "today" in Eastern.
+    expect(isPastEvent(allDay("2026-11-23", "2026-11-24"), new Date("2026-11-24T04:00:00Z"))).toBe(
+      false,
+    );
   });
 });
 
