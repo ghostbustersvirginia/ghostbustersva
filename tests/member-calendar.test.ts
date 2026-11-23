@@ -13,6 +13,9 @@ import {
   isPastEvent,
   matchesSearch,
   splitRange,
+  timeGridHours,
+  weekKeyFor,
+  weeksWithDays,
   parseStoredFilters,
   serializeFilters,
 } from "../src/lib/member-calendar/filters";
@@ -230,6 +233,53 @@ describe("splitRange", () => {
   it("returns nothing for an empty range", () => {
     const d = new Date("2026-01-01T00:00:00Z");
     expect(splitRange(d, d)).toEqual([]);
+  });
+});
+
+describe("month weeks", () => {
+  it("maps a day to the Sunday that starts its week", () => {
+    expect(weekKeyFor("2026-11-22")).toBe("2026-11-22"); // Sunday
+    expect(weekKeyFor("2026-11-28")).toBe("2026-11-22"); // Saturday
+    expect(weekKeyFor("2026-12-02")).toBe("2026-11-29"); // across a month boundary
+  });
+
+  it("collects the weeks that have events", () => {
+    expect([...weeksWithDays(["2026-11-23", "2026-11-27", "2026-12-05"])]).toEqual([
+      "2026-11-22",
+      "2026-11-29",
+    ]);
+  });
+});
+
+describe("timeGridHours", () => {
+  const timed = (start: string, end: string) => cEvent({ start, end });
+
+  it("spans the earliest start hour to the latest end hour (Eastern)", () => {
+    expect(
+      timeGridHours([
+        timed("2026-11-23T11:45:00-05:00", "2026-11-23T12:45:00-05:00"),
+        timed("2026-11-24T20:00:00-05:00", "2026-11-24T21:00:00-05:00"),
+      ]),
+    ).toEqual({ slotMinTime: "11:00:00", slotMaxTime: "21:00:00" });
+  });
+
+  it("rounds a partial end hour up and ignores all-day events", () => {
+    expect(
+      timeGridHours([
+        timed("2026-11-23T14:00:00-05:00", "2026-11-23T15:30:00-05:00"),
+        cEvent({ allDay: true, start: "2026-11-24", end: "2026-11-25" }),
+      ]),
+    ).toEqual({ slotMinTime: "14:00:00", slotMaxTime: "16:00:00" });
+  });
+
+  it("extends to midnight for events that cross into the next day", () => {
+    expect(
+      timeGridHours([timed("2026-11-23T22:00:00-05:00", "2026-11-24T01:00:00-05:00")]),
+    ).toEqual({ slotMinTime: "22:00:00", slotMaxTime: "24:00:00" });
+  });
+
+  it("falls back to 9–5 with no timed events", () => {
+    expect(timeGridHours([])).toEqual({ slotMinTime: "09:00:00", slotMaxTime: "17:00:00" });
   });
 });
 

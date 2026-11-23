@@ -138,6 +138,65 @@ export function matchesSearch(
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
+/** The Sunday that starts the week containing a YYYY-MM-DD day (weeks start Sunday). */
+export function weekKeyFor(dayKey: string): string {
+  const d = new Date(`${dayKey.slice(0, 10)}T00:00:00Z`);
+  d.setUTCDate(d.getUTCDate() - d.getUTCDay());
+  return d.toISOString().slice(0, 10);
+}
+
+/** Weeks (by Sunday key) that contain at least one of the given days. */
+export function weeksWithDays(dayKeys: Iterable<string>): Set<string> {
+  const weeks = new Set<string>();
+  for (const key of dayKeys) weeks.add(weekKeyFor(key));
+  return weeks;
+}
+
+const easternClock = new Intl.DateTimeFormat("en-CA", {
+  timeZone: CALENDAR_TIME_ZONE,
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+  hour: "2-digit",
+  minute: "2-digit",
+  hourCycle: "h23",
+});
+
+function easternParts(date: Date): { day: string; hour: number; minute: number } {
+  const parts = Object.fromEntries(easternClock.formatToParts(date).map((p) => [p.type, p.value]));
+  return {
+    day: `${parts.year}-${parts.month}-${parts.day}`,
+    hour: Number(parts.hour) % 24,
+    minute: Number(parts.minute),
+  };
+}
+
+const pad2 = (n: number) => String(n).padStart(2, "0");
+
+/**
+ * Hours to show in the week view: from the earliest timed event's start hour to
+ * the latest one's end hour (Eastern), so empty early/late hours are hidden.
+ * Falls back to 9 AM–5 PM when there are no timed events.
+ */
+export function timeGridHours(events: readonly Pick<CalendarEvent, "start" | "end" | "allDay">[]): {
+  slotMinTime: string;
+  slotMaxTime: string;
+} {
+  let min = 24;
+  let max = 0;
+  for (const event of events) {
+    if (event.allDay || /^\d{4}-\d{2}-\d{2}$/.test(event.start)) continue;
+    const start = easternParts(new Date(event.start));
+    const end = easternParts(new Date(event.end || event.start));
+    min = Math.min(min, start.hour);
+    const endHour =
+      end.day > start.day ? 24 : end.minute > 0 ? end.hour + 1 : Math.max(end.hour, start.hour + 1);
+    max = Math.max(max, endHour);
+  }
+  if (min >= max) return { slotMinTime: "09:00:00", slotMaxTime: "17:00:00" };
+  return { slotMinTime: `${pad2(min)}:00:00`, slotMaxTime: `${pad2(max)}:00:00` };
+}
+
 /**
  * Splits [start, end) into consecutive windows of at most `maxDays`, so a long
  * range can be fetched within the events API's per-request limit.
