@@ -11,6 +11,21 @@ const productionSiteUrl = (process.env.SITE_URL || "https://gbva-site.vercel.app
   "",
 );
 
+const isBuild = process.argv.includes("build");
+const SANITIZE_HTML_BUNDLE = [
+  "sanitize-html",
+  "htmlparser2",
+  "domhandler",
+  "domutils",
+  "domelementtype",
+  "dom-serializer",
+  "entities",
+  "escape-string-regexp",
+  "is-plain-object",
+  "launder",
+  "parse-srcset",
+];
+
 // https://astro.build/config
 export default defineConfig({
   output: "static",
@@ -137,22 +152,11 @@ export default defineConfig({
   vite: {
     ssr: {
       // sanitize-html is CommonJS but require()s the ESM-only htmlparser2.
-      // Vercel's function loader can't require() ESM, so bundle both into
-      // the server build (with its dependency tree) instead of loading them
-      // from node_modules.
-      noExternal: [
-        "sanitize-html",
-        "htmlparser2",
-        "domhandler",
-        "domutils",
-        "domelementtype",
-        "dom-serializer",
-        "entities",
-        "escape-string-regexp",
-        "is-plain-object",
-        "launder",
-        "parse-srcset",
-      ],
+      // Vercel's function loader can't require() ESM, so the production build
+      // bundles them (with their dependency tree) instead of loading them from
+      // node_modules. Only for builds: the dev server doesn't convert bundled
+      // CommonJS, and Node loads them fine in dev.
+      noExternal: isBuild ? SANITIZE_HTML_BUNDLE : [],
     },
   },
   integrations: [
