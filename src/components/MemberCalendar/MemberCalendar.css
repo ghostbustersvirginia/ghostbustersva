@@ -497,6 +497,12 @@
   flex-shrink: 0;
 }
 
+/* Month view: hide week rows with no events (cells tagged by dayCellClass). */
+/* !important: FullCalendar's flex utility classes on the row are !important too. */
+.mc-calendar [role="row"]:has(> .mc-week--empty) {
+  display: none !important;
+}
+
 /* Days with filtered-out events (R4.7): hatch + "+N hidden" label. */
 .mc-day--hidden {
   background-image: repeating-linear-gradient(

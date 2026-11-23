@@ -29,8 +29,12 @@ import {
   CALENDAR_TIME_ZONE,
   hiddenCountsByDay,
   isEventVisible,
+  eventDayKey,
   isPastEvent,
   matchesSearch,
+  timeGridHours,
+  weekKeyFor,
+  weeksWithDays,
   loadHiddenChapters,
   saveHiddenChapters,
 } from "../../lib/member-calendar/filters";
@@ -221,6 +225,16 @@ export default function CalendarView({ onAuthError }: Props) {
   );
   const hiddenTotal = timeFilteredEvents.length - visibleEvents.length;
 
+  // Month view hides weeks with nothing to show. A week with only filtered-out
+  // events stays, so its "+N hidden" marker is still visible.
+  const activeWeeks = useMemo(
+    () => weeksWithDays([...visibleEvents.map(eventDayKey), ...hiddenCounts.keys()]),
+    [visibleEvents, hiddenCounts],
+  );
+  // Week view trims empty hours before the first and after the last event.
+  const weekHours = useMemo(() => timeGridHours(visibleEvents), [visibleEvents]);
+  const monthIsEmpty = range?.viewType === "dayGridMonth" && activeWeeks.size === 0 && !loading;
+
   const handleDatesSet = useCallback((info: DatesSetInfo) => {
     setRange((prev) =>
       prev &&
@@ -298,9 +312,16 @@ export default function CalendarView({ onAuthError }: Props) {
   }, []);
 
   const dayCellClass = useCallback(
-    (info: DayCellInfo) =>
-      hiddenCounts.get(cellDateKey(info.date)) ? "mc-day--hidden" : undefined,
-    [hiddenCounts],
+    (info: DayCellInfo) => {
+      const key = cellDateKey(info.date);
+      const classes = [];
+      if (hiddenCounts.get(key)) classes.push("mc-day--hidden");
+      if (info.view.type === "dayGridMonth" && !activeWeeks.has(weekKeyFor(key))) {
+        classes.push("mc-week--empty");
+      }
+      return classes.join(" ") || undefined;
+    },
+    [hiddenCounts, activeWeeks],
   );
 
   const dayCellTopContent = useCallback(
@@ -400,6 +421,12 @@ export default function CalendarView({ onAuthError }: Props) {
         </p>
       )}
 
+      {monthIsEmpty && (
+        <p className="mc-alert mc-alert--info">
+          No events this month{showPast ? "" : " (past events are hidden)"}.
+        </p>
+      )}
+
       <FullCalendar
         ref={calendarRef}
         plugins={PLUGINS}
@@ -417,6 +444,8 @@ export default function CalendarView({ onAuthError }: Props) {
         dayCellTopContent={dayCellTopContent}
         dayHeaderContent={dayHeaderContent}
         dayMaxEvents={4}
+        slotMinTime={weekHours.slotMinTime}
+        slotMaxTime={weekHours.slotMaxTime}
         nowIndicator
       />
 
