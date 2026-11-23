@@ -27,8 +27,7 @@
     { "label": "Contact", "href": "/contact", "external": false, "group": "primary" },
     { "label": "About", "href": "/about", "external": false, "group": "more" },
     { "label": "Press", "href": "/press", "external": false, "group": "primary" },
-    { "label": "Games", "href": "/games", "external": false, "group": "more" },
-    { "label": "Member Calendar", "href": "/members/calendar", "external": false, "group": "more" }
+    { "label": "Games", "href": "/games", "external": false, "group": "more" }
   ],
   "footerCopyrightText": "",
   "codeOfConductUrl": "/code-of-conduct",
