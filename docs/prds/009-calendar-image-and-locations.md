@@ -238,24 +238,24 @@ List view has no hover card, since its rows already show the image and details.
 
 ## Setup prerequisites (not code)
 
-- [ ] **Shared Drive folder:** create a GBVA folder for event images, e.g. in a shared
+- [x] **Shared Drive folder:** create a GBVA folder for event images, e.g. in a shared
       drive. Share it **directly with the service account**
       (`gbva-calendar-proxy@gbva-site.iam.gserviceaccount.com`) as **Viewer**.
   - The service account's address is outside the domain, so Drive's external sharing
     settings (Admin console → Apps → Google Workspace → Drive and Docs → Sharing settings)
     must allow sharing with it.
   - No domain-wide delegation change is needed.
-- [ ] **Organizer convention:** attach event images from that folder, as PNG or JPEG.
-- [ ] **Google Cloud:** enable the **Maps Embed API**, **Maps JavaScript API** and
+- [x] **Organizer convention:** attach event images from that folder, as PNG or JPEG.
+- [x] **Google Cloud:** enable the **Maps Embed API**, **Maps JavaScript API** and
       **Geocoding API**. Create a **Map ID** (vector) for Advanced Markers.
-- [ ] **API keys:**
+- [x] **API keys:**
   - a browser key (Embed + Maps JavaScript) restricted to `ghostbustersva.com`, the
     staging domain and localhost;
   - a server key (Geocoding only).
   - Env vars: `PUBLIC_GOOGLE_MAPS_BROWSER_KEY`, `PUBLIC_GOOGLE_MAPS_MAP_ID` and
     `GOOGLE_GEOCODING_KEY`.
-- [ ] **Vercel Blob** store for resized images, private (Marketplace integration).
-- [ ] **Privacy policy:** add that member calendar maps load content from Google Maps, and
+- [x] **Vercel Blob** store for resized images, private (Marketplace integration).
+- [x] **Privacy policy:** add that member calendar maps load content from Google Maps, and
       that event locations are sent to Google for geocoding.
       Also add the optional home location:
   - it's sent to Google once to geocode;

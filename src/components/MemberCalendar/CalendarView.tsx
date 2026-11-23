@@ -403,7 +403,7 @@ export default function CalendarView({ onAuthError }: Props) {
             checked={showPast}
             onChange={(e) => setShowPast(e.target.checked)}
           />
-          Show History
+          History
         </label>
         <ChapterFilter hidden={hidden} onChange={updateHidden} />
         <div className="mc-toolbar__status" aria-live="polite">
