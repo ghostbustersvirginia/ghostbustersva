@@ -46,6 +46,7 @@ import ChapterLegend from "./ChapterLegend";
 import EventDialog, { VirtualIcon } from "./EventDialog";
 import { cellDateKey, eventImageUrl } from "./format";
 import SearchResults from "./SearchResults";
+import { FaClockRotateLeft, FaMapLocationDot } from "react-icons/fa6";
 import EventHoverCard from "./EventHoverCard";
 import MapPanel from "./MapPanel";
 import { useHomeLocation, useMapToggle, useVenueCoords } from "./use-geo";
@@ -700,22 +701,35 @@ export default function CalendarView({ onAuthError }: Props) {
             }}
           />
         </label>
-        <label
-          className={`mc-toggle${historyIgnored ? " is-disabled" : ""}`}
-          title={historyIgnored ? "Past events in the chosen range always show" : undefined}
-        >
-          <input
-            type="checkbox"
-            checked={includePast}
+        <div className="mc-togglebar" role="group" aria-label="Show">
+          <button
+            type="button"
+            className="mc-togglebar__btn"
+            aria-pressed={includePast}
             disabled={historyIgnored}
-            onChange={(e) => setShowPast(e.target.checked)}
-          />
-          History
-        </label>
-        <label className="mc-toggle">
-          <input type="checkbox" checked={mapOn} onChange={(e) => setMapOn(e.target.checked)} />
-          Map
-        </label>
+            title={
+              historyIgnored
+                ? "Past events in the chosen range always show"
+                : includePast
+                  ? "Hide past events"
+                  : "Show past events"
+            }
+            onClick={() => setShowPast(!showPast)}
+          >
+            <FaClockRotateLeft aria-hidden="true" />
+            <span className="mc-togglebar__label">History</span>
+          </button>
+          <button
+            type="button"
+            className="mc-togglebar__btn"
+            aria-pressed={mapOn}
+            title={mapOn ? "Hide the map" : "Show the map"}
+            onClick={() => setMapOn(!mapOn)}
+          >
+            <FaMapLocationDot aria-hidden="true" />
+            <span className="mc-togglebar__label">Map</span>
+          </button>
+        </div>
         {home && (
           <label className="mc-within">
             <span>Within</span>
