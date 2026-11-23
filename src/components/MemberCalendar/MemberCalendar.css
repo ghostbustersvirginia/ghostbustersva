@@ -642,6 +642,58 @@
   white-space: nowrap;
 }
 
+/* --- Hover card (month/week, PRD 009 R3) --------------------------------- */
+
+.mc-hovercard {
+  position: fixed;
+  z-index: 40;
+  width: min(18rem, calc(100vw - 1rem));
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-text);
+  box-shadow: var(--shadow-elevated-soft);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  line-height: 1.4;
+}
+
+.mc-hovercard__image {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  background: var(--color-surface-alt);
+}
+
+.mc-hovercard__body {
+  display: grid;
+  gap: 0.3rem;
+  padding: 0.6rem 0.75rem 0.7rem;
+}
+
+.mc-hovercard__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+
+.mc-hovercard__title {
+  margin: 0;
+  font-weight: var(--weight-bold);
+  font-size: var(--text-base);
+}
+
+.mc-hovercard__line {
+  margin: 0;
+  color: var(--color-text-muted);
+}
+
+.mc-hovercard__rsvp strong {
+  color: var(--color-gb-green);
+}
+
 /* --- Event dialog ----------------------------------------------------------- */
 
 .mc-dialog {

@@ -18,7 +18,7 @@ import listPlugin from "@fullcalendar/react/list";
 import "@fullcalendar/react/skeleton.css";
 import "@fullcalendar/react/themes/forma/theme.css";
 import "@fullcalendar/react/themes/forma/palettes/green.css";
-import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useDeferredValue, useEffect, useId, useMemo, useRef, useState } from "react";
 import {
   GENERAL_COLOR,
   GENERAL_TEXT_COLOR,
@@ -46,6 +46,7 @@ import ChapterLegend from "./ChapterLegend";
 import EventDialog, { VirtualIcon } from "./EventDialog";
 import { cellDateKey, eventImageUrl } from "./format";
 import SearchResults from "./SearchResults";
+import EventHoverCard from "./EventHoverCard";
 import ListRangeControls from "./ListRangeControls";
 import {
   addDays,
@@ -353,13 +354,103 @@ export default function CalendarView({ onAuthError }: Props) {
     );
   }, []);
 
-  const handleEventClick = useCallback((info: EventClickInfo) => {
-    info.jsEvent.preventDefault();
-    const source = info.event.extendedProps.source as CalendarEvent | undefined;
-    if (!source) return;
-    setSelected(source);
-    writeEventParam(source.id);
+  /* --- Hover card for month/week events (PRD 009, R3) ------------------ */
+
+  const hoverCardId = useId();
+  const [hover, setHover] = useState<{ event: CalendarEvent; anchor: HTMLElement } | null>(null);
+  const showTimer = useRef<number | undefined>(undefined);
+  const hideTimer = useRef<number | undefined>(undefined);
+  const listeners = useRef(new WeakMap<HTMLElement, AbortController>());
+
+  const cancelHoverTimers = useCallback(() => {
+    window.clearTimeout(showTimer.current);
+    window.clearTimeout(hideTimer.current);
   }, []);
+
+  const hideHover = useCallback(() => {
+    cancelHoverTimers();
+    setHover(null);
+  }, [cancelHoverTimers]);
+
+  const scheduleShow = useCallback(
+    (event: CalendarEvent, anchor: HTMLElement) => {
+      cancelHoverTimers();
+      showTimer.current = window.setTimeout(() => setHover({ event, anchor }), 300);
+    },
+    [cancelHoverTimers],
+  );
+
+  // A short grace period lets the pointer move from the event onto the card.
+  const scheduleHide = useCallback(() => {
+    window.clearTimeout(showTimer.current);
+    window.clearTimeout(hideTimer.current);
+    hideTimer.current = window.setTimeout(() => setHover(null), 150);
+  }, []);
+
+  const eventDidMount = useCallback(
+    (info: EventDisplayInfo & { el: HTMLElement }) => {
+      if (info.view.type === LIST_VIEW) return;
+      const source = info.event.extendedProps.source as CalendarEvent | undefined;
+      if (!source) return;
+      const el = info.el;
+      const controller = new AbortController();
+      const { signal } = controller;
+      // Mouse and pen only: a touch tap opens the dialog instead (R3.5).
+      el.addEventListener(
+        "pointerenter",
+        (e) => e.pointerType !== "touch" && scheduleShow(source, el),
+        { signal },
+      );
+      el.addEventListener("pointerleave", scheduleHide, { signal });
+      // Keyboard focus also shows the card (R3.1).
+      el.addEventListener(
+        "focusin",
+        () => el.matches(":focus-visible") && scheduleShow(source, el),
+        { signal },
+      );
+      el.addEventListener("focusout", scheduleHide, { signal });
+      listeners.current.set(el, controller);
+    },
+    [scheduleShow, scheduleHide],
+  );
+
+  const eventWillUnmount = useCallback((info: { el: HTMLElement }) => {
+    listeners.current.get(info.el)?.abort();
+    listeners.current.delete(info.el);
+  }, []);
+
+  // While the card shows: describe the event with it, close on Escape, and
+  // close on scroll or resize (the card is positioned to the viewport).
+  useEffect(() => {
+    if (!hover) return;
+    const { anchor } = hover;
+    anchor.setAttribute("aria-describedby", hoverCardId);
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && hideHover();
+    const onMove = () => hideHover();
+    document.addEventListener("keydown", onKey);
+    window.addEventListener("scroll", onMove, { capture: true, passive: true });
+    window.addEventListener("resize", onMove);
+    return () => {
+      anchor.removeAttribute("aria-describedby");
+      document.removeEventListener("keydown", onKey);
+      window.removeEventListener("scroll", onMove, { capture: true });
+      window.removeEventListener("resize", onMove);
+    };
+  }, [hover, hoverCardId, hideHover]);
+
+  useEffect(() => cancelHoverTimers, [cancelHoverTimers]);
+
+  const handleEventClick = useCallback(
+    (info: EventClickInfo) => {
+      info.jsEvent.preventDefault();
+      hideHover();
+      const source = info.event.extendedProps.source as CalendarEvent | undefined;
+      if (!source) return;
+      setSelected(source);
+      writeEventParam(source.id);
+    },
+    [hideHover],
+  );
 
   const closeDialog = useCallback(() => {
     setSelected(null);
@@ -604,6 +695,8 @@ export default function CalendarView({ onAuthError }: Props) {
         eventDisplay="block"
         datesSet={handleDatesSet}
         eventClick={handleEventClick}
+        eventDidMount={eventDidMount}
+        eventWillUnmount={eventWillUnmount}
         eventContent={eventContent}
         eventClass={eventClass}
         dayCellClass={dayCellClass}
@@ -614,6 +707,16 @@ export default function CalendarView({ onAuthError }: Props) {
         slotMaxTime={weekHours.slotMaxTime}
         nowIndicator
       />
+
+      {hover && !selected && (
+        <EventHoverCard
+          id={hoverCardId}
+          event={hover.event}
+          anchor={hover.anchor}
+          onPointerEnter={() => window.clearTimeout(hideTimer.current)}
+          onPointerLeave={scheduleHide}
+        />
+      )}
 
       <ChapterLegend hidden={hidden} onToggle={toggleChapter} />
 
