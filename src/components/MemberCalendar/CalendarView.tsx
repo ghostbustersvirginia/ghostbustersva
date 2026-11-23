@@ -46,6 +46,18 @@ import ChapterLegend from "./ChapterLegend";
 import EventDialog, { VirtualIcon } from "./EventDialog";
 import { cellDateKey } from "./format";
 import SearchResults from "./SearchResults";
+import ListRangeControls from "./ListRangeControls";
+import {
+  addDays,
+  addMonths,
+  applyRangeToParams,
+  DEFAULT_PRESET,
+  presetRange,
+  rangeFromParams,
+  rangeIgnoresHistory,
+  shiftRange,
+  type ListRange,
+} from "../../lib/member-calendar/list-range";
 
 const MOBILE_QUERY = "(max-width: 768px)";
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -59,14 +71,15 @@ interface SearchPool {
   events: CalendarEvent[];
 }
 const PLUGINS = [formaTheme, dayGridPlugin, timeGridPlugin, listPlugin];
-/** List view covers 6 months at a time (loaded in chunks; the API caps 100 days). */
-const LIST_VIEW = "listSixMonths";
-const VIEWS = { [LIST_VIEW]: { type: "list", duration: { months: 6 } } };
-// The custom list view has no single unit, so FullCalendar's default "Today" hint
-// would read "This undefined"; give it an explicit one.
-const BUTTONS = { [LIST_VIEW]: { text: "List" }, today: { hint: "Go to today" } };
+/**
+ * List view shows a member-chosen range (PRD 009, R6): presets or a custom range,
+ * default the next 6 months. Ranges load in chunks (the API caps 100 days).
+ */
+const LIST_VIEW = "listRange";
+// Custom nav buttons (not FullCalendar's prev/next/today): in list view they move
+// the chosen range, which FullCalendar's own buttons can't do.
 const HEADER_TOOLBAR = {
-  start: "prev,next today",
+  start: "navPrev,navNext navToday",
   center: "title",
   end: `dayGridMonth,timeGridWeek,${LIST_VIEW}`,
 };
@@ -118,9 +131,79 @@ export default function CalendarView({ onAuthError }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [selected, setSelected] = useState<CalendarEvent | null>(null);
   const [reloadKey, setReloadKey] = useState(0);
-  const [initialView] = useState(() =>
-    window.matchMedia(MOBILE_QUERY).matches ? LIST_VIEW : "dayGridMonth",
+  const [listRange, setListRange] = useState<ListRange>(
+    () =>
+      rangeFromParams(new URLSearchParams(window.location.search), dateKeyFor(new Date())) ??
+      presetRange(DEFAULT_PRESET, dateKeyFor(new Date())),
   );
+  const [initialView] = useState(() => {
+    // A shared range link opens the list view.
+    if (rangeFromParams(new URLSearchParams(window.location.search), dateKeyFor(new Date()))) {
+      return LIST_VIEW;
+    }
+    return window.matchMedia(MOBILE_QUERY).matches ? LIST_VIEW : "dayGridMonth";
+  });
+  const inListView = (range?.viewType ?? initialView) === LIST_VIEW;
+  // A range chosen on purpose shows its past events even with History off (R6.3).
+  const historyIgnored = inListView && rangeIgnoresHistory(listRange);
+  const includePast = showPast || historyIgnored;
+
+  const views = useMemo(
+    () => ({
+      [LIST_VIEW]: {
+        type: "list",
+        visibleRange: { start: listRange.start, end: listRange.end },
+      },
+    }),
+    [listRange.start, listRange.end],
+  );
+
+  // In list view, prev/next move the range by its own length and Today restarts
+  // it from today; other views navigate as usual.
+  const buttons = useMemo(() => {
+    const api = () => calendarRef.current?.getApi();
+    const listActive = () => api()?.view.type === LIST_VIEW;
+    return {
+      [LIST_VIEW]: { text: "List" },
+      navPrev: {
+        text: "‹",
+        hint: "Previous",
+        click: () => (listActive() ? setListRange((r) => shiftRange(r, -1)) : api()?.prev()),
+      },
+      navNext: {
+        text: "›",
+        hint: "Next",
+        click: () => (listActive() ? setListRange((r) => shiftRange(r, 1)) : api()?.next()),
+      },
+      navToday: {
+        text: "Today",
+        hint: "Go to today",
+        click: () => {
+          if (!listActive()) return api()?.today();
+          const today = dateKeyFor(new Date());
+          setListRange((r) =>
+            r.preset !== "custom"
+              ? presetRange(r.preset, today)
+              : {
+                  ...r,
+                  start: today,
+                  end:
+                    "months" in r.step
+                      ? addMonths(today, r.step.months)
+                      : addDays(today, r.step.days),
+                },
+          );
+        },
+      },
+    };
+  }, []);
+
+  // Keep the list range in the URL while the list view is showing (R6.4).
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    applyRangeToParams(url.searchParams, inListView ? listRange : null);
+    if (url.toString() !== window.location.href) window.history.replaceState(null, "", url);
+  }, [inListView, listRange]);
 
   // Load events whenever the visible range changes.
   useEffect(() => {
@@ -229,8 +312,8 @@ export default function CalendarView({ onAuthError }: Props) {
     [events, deferredSearch, searching],
   );
   const timeFilteredEvents = useMemo(
-    () => (showPast ? searchedEvents : searchedEvents.filter((e) => !isPastEvent(e, now))),
-    [searchedEvents, showPast, now],
+    () => (includePast ? searchedEvents : searchedEvents.filter((e) => !isPastEvent(e, now))),
+    [searchedEvents, includePast, now],
   );
   const visibleEvents = useMemo(
     () => timeFilteredEvents.filter((e) => isEventVisible(e, hidden)),
@@ -397,10 +480,14 @@ export default function CalendarView({ onAuthError }: Props) {
             }}
           />
         </label>
-        <label className="mc-toggle">
+        <label
+          className={`mc-toggle${historyIgnored ? " is-disabled" : ""}`}
+          title={historyIgnored ? "Past events in the chosen range always show" : undefined}
+        >
           <input
             type="checkbox"
-            checked={showPast}
+            checked={includePast}
+            disabled={historyIgnored}
             onChange={(e) => setShowPast(e.target.checked)}
           />
           History
@@ -410,6 +497,8 @@ export default function CalendarView({ onAuthError }: Props) {
           {loading && <span>Loading events…</span>}
         </div>
       </div>
+
+      {inListView && <ListRangeControls range={listRange} onChange={setListRange} />}
 
       {error && (
         <div className="mc-alert mc-alert--error" role="alert">
@@ -457,8 +546,8 @@ export default function CalendarView({ onAuthError }: Props) {
         plugins={PLUGINS}
         initialView={initialView}
         headerToolbar={HEADER_TOOLBAR}
-        views={VIEWS}
-        buttons={BUTTONS}
+        views={views}
+        buttons={buttons}
         timeZone={CALENDAR_TIME_ZONE}
         height="auto"
         events={eventInputs}
