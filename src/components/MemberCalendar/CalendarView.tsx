@@ -42,6 +42,7 @@ import {
 import type { CalendarEvent, RsvpResponse, RsvpScope } from "../../lib/member-calendar/types";
 import { fetchEvent, fetchEventsRange } from "./api";
 import ChapterFilter from "./ChapterFilter";
+import ChapterLegend from "./ChapterLegend";
 import EventDialog, { VirtualIcon } from "./EventDialog";
 import { cellDateKey } from "./format";
 import SearchResults from "./SearchResults";
@@ -158,6 +159,16 @@ export default function CalendarView({ onAuthError }: Props) {
     setHidden(next);
     saveHiddenChapters(next);
   }, []);
+
+  const toggleChapter = useCallback(
+    (key: ChapterKey) => {
+      const next = new Set(hidden);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      updateHidden(next);
+    },
+    [hidden, updateHidden],
+  );
 
   // Re-evaluate what counts as "past" every few minutes while the page is open.
   useEffect(() => {
@@ -462,6 +473,8 @@ export default function CalendarView({ onAuthError }: Props) {
         slotMaxTime={weekHours.slotMaxTime}
         nowIndicator
       />
+
+      <ChapterLegend hidden={hidden} onToggle={toggleChapter} />
 
       {selected && (
         <EventDialog
