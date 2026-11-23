@@ -90,6 +90,70 @@ export function isPastEvent(
   return new Date(end).getTime() <= now.getTime();
 }
 
+const ENTITIES: Record<string, string> = {
+  amp: "&",
+  lt: "<",
+  gt: ">",
+  quot: '"',
+  "#39": "'",
+  apos: "'",
+  nbsp: " ",
+};
+
+/** Lowercase, accent-free, straight quotes, single spaces: for matching only. */
+export function normalizeSearchText(text: string): string {
+  return text
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[\u2018\u2019\u02bc]/g, "'")
+    .replace(/[\u201c\u201d]/g, '"')
+    .toLowerCase()
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+/** Title, full raw title, location and description text, ready to match. */
+export function eventSearchText(
+  event: Pick<CalendarEvent, "title" | "rawTitle" | "location" | "descriptionHtml">,
+): string {
+  const description = (event.descriptionHtml ?? "")
+    .replace(/<br\s*\/?>|<\/(p|div|li)>/gi, " ")
+    .replace(/<[^>]*>/g, "")
+    .replace(/&(amp|lt|gt|quot|#39|apos|nbsp);/g, (_, name: string) => ENTITIES[name]);
+  return normalizeSearchText(
+    [event.title, event.rawTitle, event.location ?? "", description].join(" "),
+  );
+}
+
+/** Every word in the query must appear somewhere in the event's text. */
+export function matchesSearch(
+  event: Pick<CalendarEvent, "title" | "rawTitle" | "location" | "descriptionHtml">,
+  query: string,
+): boolean {
+  const terms = normalizeSearchText(query).split(" ").filter(Boolean);
+  if (terms.length === 0) return true;
+  const text = eventSearchText(event);
+  return terms.every((term) => text.includes(term));
+}
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+/**
+ * Splits [start, end) into consecutive windows of at most `maxDays`, so a long
+ * range can be fetched within the events API's per-request limit.
+ */
+export function splitRange(start: Date, end: Date, maxDays = 90): { start: Date; end: Date }[] {
+  const windows: { start: Date; end: Date }[] = [];
+  let cursor = start.getTime();
+  const stop = end.getTime();
+  while (cursor < stop) {
+    const next = Math.min(cursor + maxDays * DAY_MS, stop);
+    windows.push({ start: new Date(cursor), end: new Date(next) });
+    cursor = next;
+  }
+  return windows;
+}
+
 /** Count of filtered-out events per day, keyed by YYYY-MM-DD. */
 export function hiddenCountsByDay(
   events: readonly CalendarEvent[],

@@ -11,6 +11,8 @@ import {
   hiddenCountsByDay,
   isEventVisible,
   isPastEvent,
+  matchesSearch,
+  splitRange,
   parseStoredFilters,
   serializeFilters,
 } from "../src/lib/member-calendar/filters";
@@ -178,6 +180,56 @@ describe("filters (R4.3–R4.7)", () => {
     expect(counts.get("2026-10-19")).toBe(2);
     expect(counts.get("2026-10-20")).toBe(1);
     expect(eventDayKey(events[0])).toBe("2026-10-19");
+  });
+});
+
+describe("matchesSearch", () => {
+  const event = cEvent({
+    title: "Colton’s Cars (Anything’s PAWSible)",
+    rawTitle: "NOVA - (Interest) - Colton’s Cars (Anything’s PAWSible)",
+    location: "Café Rio, Herndon VA",
+    descriptionHtml: "<p>Bring the <b>Ecto-1</b> &amp; proton packs<br>Meet at 9</p>",
+  });
+
+  it("matches title, raw title, location and description text, case-insensitively", () => {
+    expect(matchesSearch(event, "colton")).toBe(true);
+    expect(matchesSearch(event, "NOVA")).toBe(true);
+    expect(matchesSearch(event, "herndon")).toBe(true);
+    expect(matchesSearch(event, "ecto-1")).toBe(true);
+    expect(matchesSearch(event, "& proton")).toBe(true);
+  });
+
+  it("requires every word, ignores accents and curly quotes", () => {
+    expect(matchesSearch(event, "proton cars")).toBe(true);
+    expect(matchesSearch(event, "proton trucks")).toBe(false);
+    expect(matchesSearch(event, "cafe")).toBe(true);
+    expect(matchesSearch(event, "colton's")).toBe(true);
+  });
+
+  it("doesn't match HTML tag names, and an empty query matches everything", () => {
+    expect(matchesSearch(event, "<b>")).toBe(false);
+    expect(matchesSearch(event, "<p>")).toBe(false);
+    expect(matchesSearch(event, "   ")).toBe(true);
+  });
+});
+
+describe("splitRange", () => {
+  it("splits a long range into windows of at most 90 days with no gaps", () => {
+    const start = new Date("2026-01-01T00:00:00Z");
+    const end = new Date("2027-01-01T00:00:00Z");
+    const windows = splitRange(start, end);
+    expect(windows).toHaveLength(5);
+    expect(windows[0].start).toEqual(start);
+    expect(windows.at(-1)!.end).toEqual(end);
+    for (let i = 1; i < windows.length; i++) expect(windows[i].start).toEqual(windows[i - 1].end);
+    for (const w of windows) {
+      expect(w.end.getTime() - w.start.getTime()).toBeLessThanOrEqual(90 * 864e5);
+    }
+  });
+
+  it("returns nothing for an empty range", () => {
+    const d = new Date("2026-01-01T00:00:00Z");
+    expect(splitRange(d, d)).toEqual([]);
   });
 });
 

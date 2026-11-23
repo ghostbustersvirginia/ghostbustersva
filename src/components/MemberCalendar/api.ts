@@ -8,6 +8,7 @@ import type {
   RsvpScope,
   SessionState,
 } from "../../lib/member-calendar/types";
+import { splitRange } from "../../lib/member-calendar/filters";
 
 export class ApiRequestError extends Error {
   constructor(
@@ -69,6 +70,22 @@ export async function fetchEvents(
   const params = new URLSearchParams({ start: start.toISOString(), end: end.toISOString() });
   const data = await request<EventsResponse>(`/api/calendar/events?${params}`, { signal });
   return data.events;
+}
+
+/** Fetches a long range in parallel chunks, merged by event ID in start order. */
+export async function fetchEventsRange(
+  start: Date,
+  end: Date,
+  signal?: AbortSignal,
+): Promise<CalendarEvent[]> {
+  const chunks = await Promise.all(
+    splitRange(start, end).map((w) => fetchEvents(w.start, w.end, signal)),
+  );
+  const byId = new Map<string, CalendarEvent>();
+  for (const event of chunks.flat()) byId.set(event.id, event);
+  return [...byId.values()].sort(
+    (a, b) => new Date(a.start).getTime() - new Date(b.start).getTime(),
+  );
 }
 
 export async function fetchEvent(id: string): Promise<CalendarEvent | null> {

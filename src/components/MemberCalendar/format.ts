@@ -42,6 +42,21 @@ export function formatShortDate(value: string): string {
     : shortDate.format(new Date(value));
 }
 
+const resultDay = new Intl.DateTimeFormat("en-US", {
+  timeZone: CALENDAR_TIME_ZONE,
+  weekday: "short",
+  month: "short",
+  day: "numeric",
+  year: "numeric",
+});
+
+/** Compact date for search results, e.g. "Sat, Nov 7, 2026 · 9:00 AM". */
+export function formatResultWhen(event: CalendarEvent): string {
+  if (event.allDay) return `${resultDay.format(allDayDate(event.start))} · All day`;
+  const start = new Date(event.start);
+  return `${resultDay.format(start)} · ${timeFormat.format(start)}`;
+}
+
 export const STATUS_LABEL: Record<GoogleResponseStatus, string> = {
   accepted: "Going",
   tentative: "Maybe",

@@ -189,6 +189,108 @@
   gap: var(--space-xs);
 }
 
+.mc-search input {
+  width: 15rem;
+  max-width: 100%;
+  min-height: 2.25rem;
+  padding: 0.35rem 0.85rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font: inherit;
+  font-size: var(--text-sm);
+}
+
+.mc-search input:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+  border-color: var(--color-focus);
+}
+
+@media (max-width: 768px) {
+  .mc-search,
+  .mc-search input {
+    width: 100%;
+  }
+}
+
+.mc-results {
+  margin: var(--space-sm) 0 var(--space-md);
+  padding: var(--space-md);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+}
+
+.mc-results__summary,
+.mc-results__more {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  line-height: 1.5;
+}
+
+.mc-results__more {
+  margin-top: var(--space-sm);
+}
+
+.mc-results__list {
+  max-height: 22rem;
+  margin: var(--space-sm) 0 0;
+  padding: 0;
+  overflow-y: auto;
+  list-style: none;
+  border-top: 1px solid var(--color-border);
+}
+
+.mc-results__item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem 0.6rem;
+  width: 100%;
+  padding: 0.55rem 0.25rem;
+  border: 0;
+  border-bottom: 1px solid var(--color-border);
+  background: none;
+  color: var(--color-text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.mc-results__item:hover {
+  background: var(--color-surface-alt);
+}
+
+.mc-results__item:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: -2px;
+}
+
+.mc-results__when {
+  min-width: 13.5rem;
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+.mc-results__title {
+  flex: 1 1 12rem;
+  font-weight: var(--weight-bold);
+}
+
+.mc-results__status {
+  font-size: var(--text-sm);
+  color: var(--color-gb-green);
+  font-weight: var(--weight-bold);
+}
+
+.mc-chip--small {
+  padding: 0.05rem 0.45rem;
+  font-size: 0.68rem;
+}
+
 .mc-toggle {
   display: inline-flex;
   align-items: center;
@@ -427,6 +529,8 @@
 /* --- Event dialog ----------------------------------------------------------- */
 
 .mc-dialog {
+  /* The site's global reset removes the browser's default dialog centering. */
+  margin: auto;
   width: min(40rem, calc(100vw - 2rem));
   max-height: calc(100vh - 2rem);
   padding: 0;

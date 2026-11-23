@@ -18,7 +18,7 @@ import listPlugin from "@fullcalendar/react/list";
 import "@fullcalendar/react/skeleton.css";
 import "@fullcalendar/react/themes/forma/theme.css";
 import "@fullcalendar/react/themes/forma/palettes/green.css";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 import {
   GENERAL_COLOR,
   GENERAL_TEXT_COLOR,
@@ -30,16 +30,28 @@ import {
   hiddenCountsByDay,
   isEventVisible,
   isPastEvent,
+  matchesSearch,
   loadHiddenChapters,
   saveHiddenChapters,
 } from "../../lib/member-calendar/filters";
 import type { CalendarEvent, RsvpResponse, RsvpScope } from "../../lib/member-calendar/types";
-import { fetchEvent, fetchEvents } from "./api";
+import { fetchEvent, fetchEvents, fetchEventsRange } from "./api";
 import ChapterFilter from "./ChapterFilter";
 import EventDialog, { VirtualIcon } from "./EventDialog";
 import { cellDateKey } from "./format";
+import SearchResults from "./SearchResults";
 
 const MOBILE_QUERY = "(max-width: 768px)";
+const DAY_MS = 24 * 60 * 60 * 1000;
+/** Search covers the next 12 months, plus the past 6 when past events are shown. */
+const SEARCH_FUTURE_DAYS = 365;
+const SEARCH_PAST_DAYS = 183;
+const MAX_SEARCH_RESULTS = 100;
+
+interface SearchPool {
+  includePast: boolean;
+  events: CalendarEvent[];
+}
 const PLUGINS = [formaTheme, dayGridPlugin, timeGridPlugin, listPlugin];
 const HEADER_TOOLBAR = {
   start: "prev,next today",
@@ -81,6 +93,12 @@ export default function CalendarView({ onAuthError }: Props) {
   const [hidden, setHidden] = useState<Set<ChapterKey>>(() => loadHiddenChapters());
   // Past events are hidden until the member turns them on.
   const [showPast, setShowPast] = useState(false);
+  const [search, setSearch] = useState("");
+  const deferredSearch = useDeferredValue(search);
+  const searching = deferredSearch.trim().length > 0;
+  const [searchPool, setSearchPool] = useState<SearchPool | null>(null);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [searchError, setSearchError] = useState<string | null>(null);
   const [now, setNow] = useState(() => new Date());
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [range, setRange] = useState<{ start: Date; end: Date; viewType: string } | null>(null);
@@ -138,11 +156,59 @@ export default function CalendarView({ onAuthError }: Props) {
     return () => window.clearInterval(id);
   }, []);
 
-  // The past-events toggle applies first; the chapter filter and its
-  // "+N hidden" markers only consider events that pass it.
+  // Wide-range search pool: loaded once per "include past" setting while a
+  // search is active, then filtered locally as the query changes.
+  useEffect(() => {
+    if (!searching) {
+      // Drop results when the search is cleared, so the next one loads fresh data.
+      setSearchPool(null);
+      setSearchError(null);
+      return;
+    }
+    if (searchPool && searchPool.includePast === showPast) return;
+    const controller = new AbortController();
+    const start = showPast
+      ? new Date(Date.now() - SEARCH_PAST_DAYS * DAY_MS)
+      : new Date(Date.now() - DAY_MS);
+    const end = new Date(Date.now() + SEARCH_FUTURE_DAYS * DAY_MS);
+    setSearchLoading(true);
+    setSearchError(null);
+    fetchEventsRange(start, end, controller.signal)
+      .then((list) => setSearchPool({ includePast: showPast, events: list }))
+      .catch((e) => {
+        if (controller.signal.aborted || onAuthError(e)) return;
+        setSearchError(e instanceof Error ? e.message : "Search couldn't load events.");
+      })
+      .finally(() => !controller.signal.aborted && setSearchLoading(false));
+    return () => controller.abort();
+  }, [searching, showPast, searchPool, onAuthError]);
+
+  const searchMatches = useMemo(() => {
+    if (!searching || !searchPool || searchPool.includePast !== showPast) return [];
+    return searchPool.events.filter(
+      (e) => matchesSearch(e, deferredSearch) && (showPast || !isPastEvent(e, now)),
+    );
+  }, [searching, searchPool, showPast, deferredSearch, now]);
+  const searchResults = useMemo(
+    () => searchMatches.filter((e) => isEventVisible(e, hidden)),
+    [searchMatches, hidden],
+  );
+
+  const openEvent = useCallback((event: CalendarEvent) => {
+    calendarRef.current?.getApi().gotoDate(event.start.slice(0, 10));
+    setSelected(event);
+    writeEventParam(event.id);
+  }, []);
+
+  // Filters apply in order: search, past-events toggle, then chapters. The
+  // chapter filter's "+N hidden" markers only count events that pass the first two.
+  const searchedEvents = useMemo(
+    () => (searching ? events.filter((e) => matchesSearch(e, deferredSearch)) : events),
+    [events, deferredSearch, searching],
+  );
   const timeFilteredEvents = useMemo(
-    () => (showPast ? events : events.filter((e) => !isPastEvent(e, now))),
-    [events, showPast, now],
+    () => (showPast ? searchedEvents : searchedEvents.filter((e) => !isPastEvent(e, now))),
+    [searchedEvents, showPast, now],
   );
   const visibleEvents = useMemo(
     () => timeFilteredEvents.filter((e) => isEventVisible(e, hidden)),
@@ -182,6 +248,15 @@ export default function CalendarView({ onAuthError }: Props) {
   const handleUpdated = useCallback((result: RsvpResponse, scope: RsvpScope) => {
     setSelected(result.event);
     setEvents((list) => list.map((e) => (e.id === result.event.id ? result.event : e)));
+    setSearchPool((pool) =>
+      pool
+        ? {
+            ...pool,
+            events: pool.events.map((e) => (e.id === result.event.id ? result.event : e)),
+          }
+        : pool,
+    );
+    if (scope === "following" && result.applied.length > 1) setSearchPool(null);
     // Other instances changed too; reload them.
     if (scope === "following" && result.applied.length > 1) setReloadKey((k) => k + 1);
   }, []);
@@ -265,6 +340,18 @@ export default function CalendarView({ onAuthError }: Props) {
     <div className="mc-calendar">
       <div className="mc-toolbar">
         <ChapterFilter hidden={hidden} onChange={updateHidden} />
+        <label className="mc-search">
+          <span className="sr-only">Search events by title or description</span>
+          <input
+            type="search"
+            value={search}
+            placeholder="Search events…"
+            onChange={(e) => setSearch(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Escape") setSearch("");
+            }}
+          />
+        </label>
         <label className="mc-toggle">
           <input
             type="checkbox"
@@ -285,6 +372,22 @@ export default function CalendarView({ onAuthError }: Props) {
             Retry
           </button>
         </div>
+      )}
+
+      {searching && (
+        <SearchResults
+          query={deferredSearch.trim()}
+          results={searchResults.slice(0, MAX_SEARCH_RESULTS)}
+          total={searchResults.length}
+          hiddenByChapter={searchMatches.length - searchResults.length}
+          includePast={showPast}
+          loading={searchLoading || !searchPool || searchPool.includePast !== showPast}
+          error={searchError}
+          onSelect={openEvent}
+          onShowPast={() => setShowPast(true)}
+          onShowAllChapters={() => updateHidden(new Set())}
+          onClear={() => setSearch("")}
+        />
       )}
 
       {hiddenTotal > 0 && (
