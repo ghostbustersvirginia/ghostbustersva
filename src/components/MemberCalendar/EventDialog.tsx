@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { getChapter, GENERAL_LABEL } from "../../lib/member-calendar/chapters";
+import { getChapter, GENERAL_SHORT } from "../../lib/member-calendar/chapters";
 import type {
   CalendarEvent,
   GoogleResponseStatus,
@@ -114,10 +114,12 @@ export default function EventDialog({
             }
           >
             {chapter?.virtual && <VirtualIcon />}
-            {chapter?.label ?? GENERAL_LABEL}
+            {chapter?.short ?? GENERAL_SHORT}
           </span>
           {event.interest && <span className="mc-chip mc-chip--interest">Interest</span>}
-          <span className="mc-dialog__spacer" />
+          <h2 id={titleId} className="mc-dialog__title">
+            {event.title}
+          </h2>
           <button
             type="button"
             className="mc-dialog__close"
@@ -142,36 +144,11 @@ export default function EventDialog({
           />
         )}
 
-        <h2 id={titleId} className="mc-dialog__title">
-          {event.title}
-        </h2>
         <p className="mc-dialog__when">{formatEventWhen(event)}</p>
         {event.interest && (
           <p className="mc-alert mc-alert--info">
             This event is gauging interest. RSVP to let the organizers know if you'd join.
           </p>
-        )}
-        {(event.location || event.mapUrl) && (
-          <EventLocation event={event} home={home} distance={distance} />
-        )}
-
-        {event.changedSinceRsvp && (
-          <div className="mc-alert mc-alert--warn" role="status">
-            <strong>Changed since you RSVP'd.</strong> The time, place or title was updated.
-            {event.myStatus && event.myStatus !== "needsAction" && (
-              <>
-                {" "}
-                <button
-                  type="button"
-                  className="mc-link-btn"
-                  disabled={pending !== null}
-                  onClick={() => submit(event.myStatus as RsvpChoice)}
-                >
-                  Confirm my RSVP ({STATUS_LABEL[event.myStatus]})
-                </button>
-              </>
-            )}
-          </div>
         )}
 
         {event.descriptionHtml && (
@@ -256,6 +233,31 @@ export default function EventDialog({
             )}
           </div>
         </section>
+
+        {(event.location || event.mapUrl) && (
+          <section className="mc-location-section">
+            <EventLocation event={event} home={home} distance={distance} />
+          </section>
+        )}
+
+        {event.changedSinceRsvp && (
+          <div className="mc-alert mc-alert--warn" role="status">
+            <strong>Changed since you RSVP'd.</strong> The time, place or title was updated.
+            {event.myStatus && event.myStatus !== "needsAction" && (
+              <>
+                {" "}
+                <button
+                  type="button"
+                  className="mc-link-btn"
+                  disabled={pending !== null}
+                  onClick={() => submit(event.myStatus as RsvpChoice)}
+                >
+                  Confirm my RSVP ({STATUS_LABEL[event.myStatus]})
+                </button>
+              </>
+            )}
+          </div>
+        )}
 
         <section className="mc-attendees" aria-label="Who's going">
           <h3 className="mc-rsvp__title">
