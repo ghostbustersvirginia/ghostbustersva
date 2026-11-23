@@ -5,10 +5,15 @@ import {
   locationHref,
   mapsEmbedUrl,
 } from "../../lib/member-calendar/locations";
+import type { LatLng } from "../../lib/member-calendar/geo";
 import type { CalendarEvent } from "../../lib/member-calendar/types";
 
 interface Props {
   event: Pick<CalendarEvent, "location" | "mapQuery" | "mapLabel" | "mapUrl">;
+  /** Member's home (browser-only), the starting point for directions (R7.4). */
+  home?: LatLng | null;
+  /** e.g. "~23 mi away" (R7.4). */
+  distance?: string | null;
 }
 
 /**
@@ -18,7 +23,7 @@ interface Props {
  * - A Maps link with no readable place: just "Open in Google Maps".
  * - A non-map URL (e.g. a meeting link): a link. Anything else: plain text.
  */
-export default function EventLocation({ event }: Props) {
+export default function EventLocation({ event, home = null, distance = null }: Props) {
   const { location, mapQuery, mapLabel, mapUrl } = event;
   const locationIsUrl = Boolean(location && isUrlLocation(location));
   const placeText = locationIsUrl ? mapLabel : (location ?? mapLabel);
@@ -27,7 +32,12 @@ export default function EventLocation({ event }: Props) {
   if (mapQuery) {
     return (
       <div className="mc-location">
-        {placeText && <p className="mc-dialog__where">{placeText}</p>}
+        {placeText && (
+          <p className="mc-dialog__where">
+            {placeText}
+            {distance && <span className="mc-distance"> · {distance}</span>}
+          </p>
+        )}
         {apiKey && (
           <iframe
             className="mc-location__map"
@@ -41,7 +51,7 @@ export default function EventLocation({ event }: Props) {
         <div className="mc-location__actions">
           <a
             className="mc-btn mc-btn--small"
-            href={directionsUrl(mapQuery)}
+            href={directionsUrl(mapQuery, home)}
             target="_blank"
             rel="noopener noreferrer"
           >

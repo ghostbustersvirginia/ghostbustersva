@@ -16,6 +16,9 @@ interface Props {
   onClose: () => void;
   onUpdated: (result: RsvpResponse, scope: RsvpScope) => void;
   onAuthError: (error: unknown) => boolean;
+  /** Home location and distance for directions (PRD 009, R7.4). */
+  home?: { lat: number; lng: number } | null;
+  distance?: string | null;
 }
 
 const CHOICES: { value: Exclude<RsvpChoice, "remove">; label: string }[] = [
@@ -31,7 +34,14 @@ const GROUPS: { status: GoogleResponseStatus; label: string }[] = [
 ];
 
 /** Event details and RSVP (PRD 008, R5, R6). */
-export default function EventDialog({ event, onClose, onUpdated, onAuthError }: Props) {
+export default function EventDialog({
+  event,
+  onClose,
+  onUpdated,
+  onAuthError,
+  home = null,
+  distance = null,
+}: Props) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const [scope, setScope] = useState<RsvpScope>("single");
   const [pending, setPending] = useState<RsvpChoice | null>(null);
@@ -141,7 +151,9 @@ export default function EventDialog({ event, onClose, onUpdated, onAuthError }: 
             This event is gauging interest. RSVP to let the organizers know if you'd join.
           </p>
         )}
-        {(event.location || event.mapUrl) && <EventLocation event={event} />}
+        {(event.location || event.mapUrl) && (
+          <EventLocation event={event} home={home} distance={distance} />
+        )}
 
         {event.changedSinceRsvp && (
           <div className="mc-alert mc-alert--warn" role="status">

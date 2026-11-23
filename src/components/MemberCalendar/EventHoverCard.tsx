@@ -12,6 +12,8 @@ interface Props {
   anchor: HTMLElement;
   onPointerEnter: () => void;
   onPointerLeave: () => void;
+  /** e.g. "~23 mi away" when a home location is set (PRD 009, R7.4). */
+  distance?: string | null;
 }
 
 /**
@@ -24,6 +26,7 @@ export default function EventHoverCard({
   anchor,
   onPointerEnter,
   onPointerLeave,
+  distance = null,
 }: Props) {
   const ref = useRef<HTMLDivElement>(null);
   const [placement, setPlacement] = useState<Placement | null>(null);
@@ -93,7 +96,12 @@ export default function EventHoverCard({
         </div>
         <p className="mc-hovercard__title">{event.title}</p>
         <p className="mc-hovercard__line">{formatEventWhen(event)}</p>
-        {place && <p className="mc-hovercard__line">{place}</p>}
+        {place && (
+          <p className="mc-hovercard__line">
+            {place}
+            {distance && <span className="mc-distance"> · {distance}</span>}
+          </p>
+        )}
         <p className="mc-hovercard__line mc-hovercard__rsvp">
           {event.myStatus && event.myStatus !== "needsAction" && (
             <strong>You: {STATUS_LABEL[event.myStatus]} · </strong>

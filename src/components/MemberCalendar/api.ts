@@ -9,6 +9,7 @@ import type {
   SessionState,
 } from "../../lib/member-calendar/types";
 import { splitRange } from "../../lib/member-calendar/filters";
+import type { GeoResult } from "../../lib/member-calendar/geo";
 
 export class ApiRequestError extends Error {
   constructor(
@@ -105,4 +106,27 @@ export const sendRsvp = (eventId: string, choice: RsvpChoice, scope: RsvpScope) 
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ eventId, choice, scope }),
+  });
+
+/** Venue coordinates for map queries (PRD 009, R5.3). Missing keys = not looked up yet. */
+export async function geocodeVenueQueries(
+  queries: string[],
+): Promise<Record<string, GeoResult | null>> {
+  const data = await request<{ ok: true; results: Record<string, GeoResult | null> }>(
+    "/api/calendar/geocode",
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ queries }),
+    },
+  );
+  return data.results;
+}
+
+/** Looks up a home location; the server stores nothing (PRD 009, R7). */
+export const lookupHomeLocation = (query: string) =>
+  request<{ ok: true; label: string; lat: number; lng: number }>("/api/member/geocode", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ query }),
   });
