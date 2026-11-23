@@ -27,6 +27,7 @@ import {
 } from "../../lib/member-calendar/chapters";
 import {
   CALENDAR_TIME_ZONE,
+  dateKeyFor,
   hiddenCountsByDay,
   isEventVisible,
   eventDayKey,
@@ -39,7 +40,7 @@ import {
   saveHiddenChapters,
 } from "../../lib/member-calendar/filters";
 import type { CalendarEvent, RsvpResponse, RsvpScope } from "../../lib/member-calendar/types";
-import { fetchEvent, fetchEvents, fetchEventsRange } from "./api";
+import { fetchEvent, fetchEventsRange } from "./api";
 import ChapterFilter from "./ChapterFilter";
 import EventDialog, { VirtualIcon } from "./EventDialog";
 import { cellDateKey } from "./format";
@@ -57,10 +58,14 @@ interface SearchPool {
   events: CalendarEvent[];
 }
 const PLUGINS = [formaTheme, dayGridPlugin, timeGridPlugin, listPlugin];
+/** List view covers 6 months at a time (loaded in chunks; the API caps 100 days). */
+const LIST_VIEW = "listSixMonths";
+const VIEWS = { [LIST_VIEW]: { type: "list", duration: { months: 6 } } };
+const BUTTONS = { [LIST_VIEW]: { text: "List" } };
 const HEADER_TOOLBAR = {
   start: "prev,next today",
   center: "title",
-  end: "dayGridMonth,timeGridWeek,listMonth",
+  end: `dayGridMonth,timeGridWeek,${LIST_VIEW}`,
 };
 
 interface Props {
@@ -111,7 +116,7 @@ export default function CalendarView({ onAuthError }: Props) {
   const [selected, setSelected] = useState<CalendarEvent | null>(null);
   const [reloadKey, setReloadKey] = useState(0);
   const [initialView] = useState(() =>
-    window.matchMedia(MOBILE_QUERY).matches ? "listMonth" : "dayGridMonth",
+    window.matchMedia(MOBILE_QUERY).matches ? LIST_VIEW : "dayGridMonth",
   );
 
   // Load events whenever the visible range changes.
@@ -120,7 +125,7 @@ export default function CalendarView({ onAuthError }: Props) {
     const controller = new AbortController();
     setLoading(true);
     setError(null);
-    fetchEvents(range.start, range.end, controller.signal)
+    fetchEventsRange(range.start, range.end, controller.signal)
       .then((list) => setEvents(list))
       .catch((e) => {
         if (controller.signal.aborted || onAuthError(e)) return;
@@ -225,15 +230,21 @@ export default function CalendarView({ onAuthError }: Props) {
   );
   const hiddenTotal = timeFilteredEvents.length - visibleEvents.length;
 
-  // Month view hides weeks with nothing to show. A week with only filtered-out
-  // events stays, so its "+N hidden" marker is still visible.
+  // Month view hides past weeks with nothing to show. A week with only
+  // filtered-out events stays, so its "+N hidden" marker is still visible.
   const activeWeeks = useMemo(
     () => weeksWithDays([...visibleEvents.map(eventDayKey), ...hiddenCounts.keys()]),
     [visibleEvents, hiddenCounts],
   );
   // Week view trims empty hours before the first and after the last event.
   const weekHours = useMemo(() => timeGridHours(visibleEvents), [visibleEvents]);
-  const monthIsEmpty = range?.viewType === "dayGridMonth" && activeWeeks.size === 0 && !loading;
+  // Only empty weeks before the current week are hidden; this week and later always show.
+  const currentWeek = weekKeyFor(dateKeyFor(now));
+  const monthIsEmpty =
+    range?.viewType === "dayGridMonth" &&
+    visibleEvents.length === 0 &&
+    hiddenTotal === 0 &&
+    !loading;
 
   const handleDatesSet = useCallback((info: DatesSetInfo) => {
     setRange((prev) =>
@@ -316,12 +327,13 @@ export default function CalendarView({ onAuthError }: Props) {
       const key = cellDateKey(info.date);
       const classes = [];
       if (hiddenCounts.get(key)) classes.push("mc-day--hidden");
-      if (info.view.type === "dayGridMonth" && !activeWeeks.has(weekKeyFor(key))) {
+      const week = weekKeyFor(key);
+      if (info.view.type === "dayGridMonth" && week < currentWeek && !activeWeeks.has(week)) {
         classes.push("mc-week--empty");
       }
       return classes.join(" ") || undefined;
     },
-    [hiddenCounts, activeWeeks],
+    [hiddenCounts, activeWeeks, currentWeek],
   );
 
   const dayCellTopContent = useCallback(
@@ -432,6 +444,8 @@ export default function CalendarView({ onAuthError }: Props) {
         plugins={PLUGINS}
         initialView={initialView}
         headerToolbar={HEADER_TOOLBAR}
+        views={VIEWS}
+        buttons={BUTTONS}
         timeZone={CALENDAR_TIME_ZONE}
         height="auto"
         events={eventInputs}
