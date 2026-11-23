@@ -1,0 +1,52 @@
+# Member calendar sync (PRD 008, R7.5)
+#
+# Calls the production cron endpoint every 6 hours. It renews the Google
+# Calendar push-notification channel and runs a safety-net sync for RSVP
+# changes made directly in Google Calendar. Vercel's Hobby plan only allows
+# daily cron jobs, so the daily cron in vercel.json stays as a fallback.
+#
+# Requires the repository secret CRON_SECRET, set to the same value as the
+# Production CRON_SECRET in Vercel.
+
+name: Calendar sync
+
+on:
+  schedule:
+    # Every 6 hours, off the top of the hour, when GitHub's scheduler is busiest.
+    - cron: "17 */6 * * *"
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: calendar-sync
+  cancel-in-progress: false
+
+jobs:
+  renew-watch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - name: Call /api/cron/renew-watch
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          ENDPOINT: https://ghostbustersva.com/api/cron/renew-watch
+        run: |
+          if [ -z "$CRON_SECRET" ]; then
+            echo "::error::The CRON_SECRET repository secret is not set."
+            exit 1
+          fi
+
+          status=$(curl --silent --show-error --max-time 290 \
+            --output response.json --write-out '%{http_code}' \
+            --header "Authorization: Bearer ${CRON_SECRET}" \
+            "$ENDPOINT")
+
+          # Logs are public, so only print the outcome, not channel details.
+          echo "HTTP ${status}"
+          jq -c '{ok, sync}' response.json 2>/dev/null || echo "(response was not JSON)"
+
+          if [ "$status" != "200" ] || [ "$(jq -r '.ok' response.json 2>/dev/null)" != "true" ]; then
+            echo "::error::Calendar sync failed (HTTP ${status})."
+            exit 1
+          fi

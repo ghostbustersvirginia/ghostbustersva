@@ -257,6 +257,12 @@ These support detecting RSVP changes made in Google Calendar (PRD R7.5).
 - [x] Vercel cron jobs only run on **Production**. The push channel will be registered for
       the production webhook URL only. Previews won't receive change notifications;
       that's expected.
+- [ ] The Hobby plan only allows a daily Vercel cron, so a GitHub Actions workflow
+      (`.github/workflows/calendar-sync.yml`) calls the same endpoint every 6 hours.
+      Add the secret on GitHub: repo **Settings → Secrets and variables → Actions → New
+      repository secret**, name `CRON_SECRET`, with the same value as Production's
+      `CRON_SECRET` in Vercel. Then run the workflow once from the **Actions** tab
+      ("Calendar sync" → **Run workflow**) to register the channel right away.
 
 ## 10. Add environment variables in Vercel
 
