@@ -44,7 +44,7 @@ import { fetchEvent, fetchEventsRange } from "./api";
 import ChapterFilter from "./ChapterFilter";
 import ChapterLegend from "./ChapterLegend";
 import EventDialog, { VirtualIcon } from "./EventDialog";
-import { cellDateKey } from "./format";
+import { cellDateKey, eventImageUrl } from "./format";
 import SearchResults from "./SearchResults";
 import ListRangeControls from "./ListRangeControls";
 import {
@@ -385,6 +385,56 @@ export default function CalendarView({ onAuthError }: Props) {
   const eventContent = useCallback((info: EventDisplayInfo) => {
     const source = info.event.extendedProps.source as CalendarEvent | undefined;
     const chapter = getChapter(source?.chapter);
+    // List view: chips, then the hero image, then the title (PRD 009, R2.1).
+    if (info.view.type === LIST_VIEW && source?.image) {
+      const small = eventImageUrl(source, 320);
+      const medium = eventImageUrl(source, 640);
+      return (
+        <span className="mc-event mc-event--stacked">
+          <span className="mc-event__meta">
+            {info.timeText && <span className="mc-event__time">{info.timeText}</span>}
+            <span className="mc-event__chapter">
+              {chapter?.virtual && <VirtualIcon />}
+              {chapter?.label ?? "General"}
+            </span>
+            {source.interest && (
+              <span className="mc-event__interest" title="Gauging interest">
+                Interest
+              </span>
+            )}
+            {source.myStatus === "accepted" && (
+              <span className="mc-event__badge" title="You're going">
+                ✓<span className="sr-only"> You're going</span>
+              </span>
+            )}
+            {source.changedSinceRsvp && (
+              <span
+                className="mc-event__badge mc-event__badge--warn"
+                title="Changed since you RSVP'd"
+              >
+                !<span className="sr-only"> Changed since you RSVP'd</span>
+              </span>
+            )}
+          </span>
+          {small && medium && (
+            <img
+              className="mc-event__image"
+              src={medium}
+              srcSet={`${small} 320w, ${medium} 640w`}
+              sizes="(max-width: 768px) 100vw, 640px"
+              // Decorative here: the title follows in the same button.
+              alt=""
+              loading="lazy"
+              decoding="async"
+              onError={(e) => {
+                e.currentTarget.hidden = true;
+              }}
+            />
+          )}
+          <span className="mc-event__title">{info.event.title}</span>
+        </span>
+      );
+    }
     return (
       <span className="mc-event">
         {info.timeText && <span className="mc-event__time">{info.timeText}</span>}

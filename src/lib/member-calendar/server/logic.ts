@@ -7,7 +7,7 @@ import sanitizeHtml from "sanitize-html";
 import { parseEventTitle } from "../chapters";
 import { deriveMapLocation } from "../maps-links";
 import type { AttendeeSummary, CalendarEvent, GoogleResponseStatus, RsvpChoice } from "../types";
-import type { GoogleAttendee, GoogleEvent } from "./google-api";
+import type { GoogleAttachment, GoogleAttendee, GoogleEvent } from "./google-api";
 import { REMOVED, type LateChangeRecord, type SnapshotStatus } from "./records";
 
 const STATUSES: readonly GoogleResponseStatus[] = [
@@ -41,6 +41,31 @@ export function sanitizeDescription(html: string | undefined): string | null {
     },
   }).trim();
   return clean || null;
+}
+
+/* --- Hero images (PRD 009, R1) ------------------------------------------ */
+
+const HERO_IMAGE_TYPES = new Set(["image/png", "image/jpeg"]);
+
+/** The first PNG or JPEG attachment with a Drive file ID, if any. */
+export function heroAttachment(
+  event: Pick<GoogleEvent, "attachments">,
+): (GoogleAttachment & { fileId: string }) | null {
+  const match = (event.attachments ?? []).find(
+    (a) => a.fileId && a.mimeType && HERO_IMAGE_TYPES.has(a.mimeType.toLowerCase()),
+  );
+  return match ? (match as GoogleAttachment & { fileId: string }) : null;
+}
+
+/**
+ * An opaque version for the hero image URL, so browsers refetch when the
+ * attachment changes. The Drive file ID itself never reaches the browser.
+ */
+export function heroImageVersion(attachment: GoogleAttachment & { fileId: string }): string {
+  return createHash("sha256")
+    .update(`${attachment.fileId}\u241f${attachment.title ?? ""}`)
+    .digest("hex")
+    .slice(0, 12);
 }
 
 /* --- Change fingerprints (R6) ------------------------------------------ */
@@ -152,6 +177,10 @@ export function normalizeEvent(event: GoogleEvent, ctx: NormalizeContext): Calen
       chapter: parsed.chapter,
       resolvedLinks: ctx.resolvedLinks,
     }),
+    image: (() => {
+      const hero = heroAttachment(event);
+      return hero ? { version: heroImageVersion(hero) } : null;
+    })(),
     descriptionHtml: sanitizeDescription(event.description),
     htmlLink: event.htmlLink ?? null,
     myStatus,

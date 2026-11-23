@@ -8,7 +8,7 @@ import type {
   RsvpScope,
 } from "../../lib/member-calendar/types";
 import { sendRsvp } from "./api";
-import { formatEventWhen, formatShortDate, STATUS_LABEL } from "./format";
+import { eventImageUrl, formatEventWhen, formatShortDate, STATUS_LABEL } from "./format";
 import EventLocation from "./EventLocation";
 
 interface Props {
@@ -117,6 +117,20 @@ export default function EventDialog({ event, onClose, onUpdated, onAuthError }: 
             ×
           </button>
         </header>
+
+        {event.image && (
+          <img
+            className="mc-dialog__image"
+            src={eventImageUrl(event, 1200) ?? undefined}
+            srcSet={`${eventImageUrl(event, 640)} 640w, ${eventImageUrl(event, 1200)} 1200w`}
+            sizes="(max-width: 700px) 100vw, 640px"
+            alt={event.title}
+            decoding="async"
+            onError={(e) => {
+              e.currentTarget.hidden = true;
+            }}
+          />
+        )}
 
         <h2 id={titleId} className="mc-dialog__title">
           {event.title}

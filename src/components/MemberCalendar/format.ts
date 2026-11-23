@@ -83,3 +83,13 @@ export function cellDateKey(date: Date): string {
 export function mapsUrl(location: string): string {
   return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(location)}`;
 }
+
+/** Members-only hero image URL (PRD 009, R1); the version busts the browser cache. */
+export function eventImageUrl(
+  event: Pick<CalendarEvent, "id" | "image">,
+  width: 320 | 640 | 1200,
+): string | null {
+  if (!event.image) return null;
+  const params = new URLSearchParams({ w: String(width), v: event.image.version });
+  return `/api/calendar/image/${encodeURIComponent(event.id)}?${params}`;
+}

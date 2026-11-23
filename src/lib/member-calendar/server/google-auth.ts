@@ -21,6 +21,8 @@ export const SCOPES = {
   calendar: "https://www.googleapis.com/auth/calendar.events",
   groups: "https://www.googleapis.com/auth/cloud-identity.groups.readonly",
   cloudPlatform: "https://www.googleapis.com/auth/cloud-platform",
+  /** Event images, read from a Drive folder shared with the service account (PRD 009). */
+  drive: "https://www.googleapis.com/auth/drive.readonly",
 } as const;
 
 interface CachedToken {
