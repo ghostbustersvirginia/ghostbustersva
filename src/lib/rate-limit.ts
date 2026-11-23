@@ -25,9 +25,17 @@ function checkMemoryRateLimit(key: string, max: number, windowMs: number): { lim
 
 const limiters = new Map<string, Ratelimit>();
 
+/** Runtime env first (Vercel), then build-time values. Accepts Marketplace KV_* names. */
+function readEnv(name: string): string | undefined {
+  const value =
+    (typeof process !== "undefined" ? process.env?.[name] : undefined) ??
+    (import.meta.env as Record<string, string | undefined>)[name];
+  return value && value.trim() ? value.trim() : undefined;
+}
+
 function getLimiter(max: number, windowMinutes: number): Ratelimit | null {
-  const url = import.meta.env.UPSTASH_REDIS_REST_URL;
-  const token = import.meta.env.UPSTASH_REDIS_REST_TOKEN;
+  const url = readEnv("UPSTASH_REDIS_REST_URL") ?? readEnv("KV_REST_API_URL");
+  const token = readEnv("UPSTASH_REDIS_REST_TOKEN") ?? readEnv("KV_REST_API_TOKEN");
   if (!url || !token) return null;
   const id = `${max}/${windowMinutes}`;
   let limiter = limiters.get(id);

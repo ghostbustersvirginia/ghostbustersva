@@ -47,8 +47,9 @@ export const memberEnv = {
   sessionSecret: () => required("SESSION_SECRET"),
   webhookToken: () => read("CALENDAR_WEBHOOK_TOKEN"),
   cronSecret: () => read("CRON_SECRET"),
-  redisUrl: () => read("UPSTASH_REDIS_REST_URL"),
-  redisToken: () => read("UPSTASH_REDIS_REST_TOKEN"),
+  // Vercel Marketplace Upstash provides KV_REST_API_*; plain Upstash uses UPSTASH_REDIS_REST_*.
+  redisUrl: () => read("UPSTASH_REDIS_REST_URL") ?? read("KV_REST_API_URL"),
+  redisToken: () => read("UPSTASH_REDIS_REST_TOKEN") ?? read("KV_REST_API_TOKEN"),
   /** Re-check group membership after this many minutes (default 12h). */
   membershipTtlMinutes: () => minutes("MEMBERSHIP_TTL_MINUTES", 12 * 60),
   /** Late-change window before an event's start (default 120 minutes). */

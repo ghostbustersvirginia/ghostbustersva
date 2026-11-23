@@ -32,6 +32,9 @@ export default defineConfig({
         access: "secret",
         optional: true,
       }),
+      // Vercel Marketplace Upstash names (used when UPSTASH_REDIS_REST_* are absent).
+      KV_REST_API_URL: envField.string({ context: "server", access: "secret", optional: true }),
+      KV_REST_API_TOKEN: envField.string({ context: "server", access: "secret", optional: true }),
       PUBLIC_TURNSTILE_SITE_KEY: envField.string({
         context: "client",
         access: "public",
