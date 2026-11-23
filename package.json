@@ -27,11 +27,13 @@
     "@types/react-dom": "^19.2.3",
     "@upstash/ratelimit": "^2.0.8",
     "@upstash/redis": "^1.37.0",
+    "@vercel/blob": "^2.9.0",
     "@vercel/oidc": "^4.0.9",
     "astro": "^5.17.1",
     "google-auth-library": "^11.3.4",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
+    "react-icons": "^5.7.0",
     "resend": "^6.12.2",
     "sanitize-html": "^2.18.2",
     "temporal-polyfill": "^1.0.8"

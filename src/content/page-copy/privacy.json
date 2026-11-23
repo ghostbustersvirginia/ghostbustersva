@@ -2,7 +2,7 @@
   "page": "privacy",
   "pageTitle": "Privacy Policy",
   "pageIntro": "What we collect, why we collect it, and the choices you have.",
-  "lastUpdated": "November 22, 2026",
+  "lastUpdated": "November 23, 2026",
   "sections": [
     {
       "heading": "Who We Are",
@@ -42,6 +42,15 @@
       ]
     },
     {
+      "heading": "Maps and Locations",
+      "paragraphs": [
+        "The member calendar uses Google Maps to show where events are. When you view an event's map or turn on the calendar's map, your browser loads it from Google, and Google receives standard technical information from your browser, as it does for any website.",
+        "To place events on the map, we send event locations to Google to look up their map coordinates, and keep the results so we don't have to look them up again. These are the event venues that organizers enter, not information about you.",
+        "You can choose to add a home location, such as a ZIP code or an address, so the calendar can show events near you, distances, and directions. When you enter one, our server sends it to Google once to find it on the map and returns the result to you. We don't store it or log it. Your home location is saved only in your own browser, so no other member or officer can see it, and you can clear it at any time.",
+        "If you use “Use my current location”, your browser asks your permission first. That location stays in your browser and is never sent to us."
+      ]
+    },
+    {
       "heading": "How We Share Information",
       "paragraphs": [
         "We do not sell, rent, or trade your information. We share it only with the service providers that run this site on our behalf, or when the law requires it."
@@ -65,6 +74,7 @@
       "items": [
         "Change or remove any RSVP at any time from the member calendar.",
         "Sign out of the members area at any time.",
+        "Clear your saved home location in the member calendar's map at any time, or don't add one at all.",
         "Remove GBVA's sign-in access from your Google Account under Security → Third-party apps & services.",
         "Ask us to see, correct, or delete the information we hold about you through our contact page."
       ]

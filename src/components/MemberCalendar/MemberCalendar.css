@@ -179,6 +179,10 @@
   color: var(--color-text-muted);
 }
 
+.mc-userbar svg {
+  height: var(--text-body-lh);
+}
+
 .mc-userbar__email {
   overflow-wrap: anywhere;
 }
@@ -190,7 +194,7 @@
 }
 
 .mc-search input {
-  width: 15rem;
+  /* width: 15rem; */
   max-width: 100%;
   min-height: 2.25rem;
   padding: 0.35rem 0.85rem;
@@ -208,12 +212,12 @@
   border-color: var(--color-focus);
 }
 
-@media (max-width: 768px) {
-  .mc-search,
-  .mc-search input {
-    width: 100%;
-  }
-}
+/* @media (max-width: 768px) {*/
+/*  .mc-search,*/
+/*  .mc-search input {*/
+/*    width: 100%;*/
+/*  }*/
+/* }*/
 
 .mc-results {
   margin: var(--space-sm) 0 var(--space-md);

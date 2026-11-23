@@ -3,7 +3,8 @@
  * Handles the signed-out / not-member / member states, and shows the
  * calendar once signed in as a member.
  */
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useState } from "react";
+import { FaRegEnvelope } from "react-icons/fa6";
 import type { SessionState } from "../../lib/member-calendar/types";
 import { ApiRequestError, getSession, signIn, signOut } from "./api";
 import CalendarView from "./CalendarView";
@@ -22,6 +23,18 @@ export default function MemberCalendarApp() {
     getSession()
       .then(setSession)
       .catch((e: Error) => setLoadError(e.message));
+  }, []);
+
+  useLayoutEffect(() => {
+    const subtitle = document.querySelector(".page-intro");
+    const pageBand = document.querySelector(".page-band");
+
+    if (pageBand) {
+      (pageBand as HTMLElement).style.paddingBlockEnd = "var(--space-md)";
+    }
+    if (subtitle) {
+      (subtitle as HTMLElement).style.display = "none";
+    }
   }, []);
 
   const clientId = session?.clientId ?? null;
@@ -102,13 +115,13 @@ export default function MemberCalendarApp() {
     <div className="mc-root">
       <div className="mc-userbar">
         <span>
-          Signed in as <strong>{session.user.name}</strong>{" "}
-          <span className="mc-userbar__email">({session.user.email})</span>
+          <strong>{session.user.name}</strong>{" "}
+          <FaRegEnvelope size={"1em"} title={session.user.email} />
         </span>
         <span className="mc-userbar__actions">
           {session.user.isOrganizer && (
             <a className="mc-btn mc-btn--small" href="/api/calendar/late-changes.csv" download>
-              Export late RSVP changes
+              Export Late Changes
             </a>
           )}
           <button
