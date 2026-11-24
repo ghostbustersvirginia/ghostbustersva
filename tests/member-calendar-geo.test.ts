@@ -71,6 +71,8 @@ describe("parseHome (R7.3)", () => {
     );
     expect(home).toMatchObject({ label: "23510", lat: 36.85, lng: -76.29, within: 50 });
     expect(parseHome(JSON.stringify({ lat: 36.85, lng: -76.29, within: 7 }))?.within).toBeNull();
+    // 10 miles was added in PRD 011 (R3.4).
+    expect(parseHome(JSON.stringify({ lat: 36.85, lng: -76.29, within: 10 }))?.within).toBe(10);
     expect(parseHome(JSON.stringify({ lat: 200, lng: 0 }))).toBeNull();
     expect(parseHome("{bad")).toBeNull();
     expect(parseHome(null)).toBeNull();

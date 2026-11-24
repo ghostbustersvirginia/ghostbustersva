@@ -49,7 +49,7 @@ export function formatDistance(miles: number): string {
   return `~${Math.round(miles)} mi away`;
 }
 
-export const WITHIN_OPTIONS = [25, 50, 100] as const;
+export const WITHIN_OPTIONS = [10, 25, 50, 100] as const;
 export type WithinMiles = (typeof WITHIN_OPTIONS)[number] | null;
 
 /**

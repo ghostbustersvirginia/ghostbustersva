@@ -162,46 +162,100 @@
   color: #1d4d1d;
 }
 
-/* --- Signed-in bar + toolbar --------------------------------------------- */
+/* --- Toolbar ------------------------------------------------------------ */
 
-.mc-userbar,
+/* Controls pack to the left; the user menu takes the right end (PRD 011, R6.3).
+   The toolbar is the anchor for phone dropdowns (see the 600px block below). */
 .mc-toolbar {
+  position: relative;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  justify-content: space-between;
-  gap: var(--space-sm);
+  gap: var(--space-xs) var(--space-sm);
   margin-bottom: var(--space-md);
 }
 
-.mc-userbar {
+/* User menu (PRD 011, R1): always the last item, pushed to the right end. */
+.mc-user {
+  margin-left: auto;
+}
+
+.mc-user__panel {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 0.35rem);
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  min-width: 13rem;
+  max-width: min(20rem, calc(100vw - 2 * var(--space-md)));
+  padding: var(--space-xs) 0;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-elevated-soft);
   font-size: var(--text-sm);
+}
+
+.mc-user__name,
+.mc-user__discord {
+  margin: 0;
+  padding: var(--space-xs) var(--space-md);
+  overflow-wrap: anywhere;
+}
+
+.mc-user__name {
+  font-weight: var(--weight-bold);
+}
+
+.mc-user__discord {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
   color: var(--color-text-muted);
 }
 
-.mc-userbar svg {
-  height: var(--text-body-lh);
+.mc-user__discord svg {
+  flex-shrink: 0;
+  width: 1rem;
+  height: 1rem;
 }
 
-.mc-userbar__email {
-  overflow-wrap: anywhere;
+.mc-user__sep {
+  width: 100%;
+  margin: var(--space-xs) 0;
+  border: 0;
+  border-top: 1px solid var(--color-border);
 }
 
-.mc-userbar__actions {
+.mc-user__item {
   display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-xs);
-}
-
-/* Discord link control (PRD 010, R1.1) */
-.mc-discord {
-  display: inline-flex;
   align-items: center;
-  gap: var(--space-xs);
+  gap: 0.5rem;
+  min-height: 2.5rem;
+  padding: 0 var(--space-md);
+  border: 0;
+  background: none;
+  color: var(--color-text);
+  font: inherit;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
 }
 
-.mc-discord__name {
-  overflow-wrap: anywhere;
+.mc-user__item:hover:not(:disabled),
+.mc-user__item:focus-visible {
+  background: var(--color-action-secondary-hover-bg);
+}
+
+.mc-user__item:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: -2px;
+}
+
+.mc-user__item:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 /* Event popup links (PRD 010, R3.5) */
@@ -217,7 +271,46 @@
   gap: 0.35em;
 }
 
+/* Search box (PRD 011, R2): the field and a close button, above the results. */
+.mc-results__bar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  margin-bottom: var(--space-sm);
+}
+
+.mc-search {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.mc-results__close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 2.5rem;
+  height: 2.5rem;
+  border: 0;
+  border-radius: var(--radius-full);
+  background: none;
+  color: var(--color-text-muted);
+  cursor: pointer;
+}
+
+.mc-results__close:hover {
+  background: var(--color-action-secondary-hover-bg);
+  color: var(--color-text);
+}
+
+.mc-results__close:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
 .mc-search input {
+  box-sizing: border-box;
+  width: 100%;
   max-width: 100%;
   min-height: 2.25rem;
   padding: 0.35rem 0.85rem;
@@ -311,13 +404,25 @@
   font-size: 0.68rem;
 }
 
+/* List period menu (PRD 011, R5): presets, then custom dates, in a dropdown. */
 .mc-range {
+  font-size: var(--text-sm);
+}
+
+.mc-range fieldset {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.mc-range__custom {
   display: flex;
   flex-wrap: wrap;
   align-items: flex-end;
   gap: var(--space-xs) var(--space-sm);
-  margin: 0 0 var(--space-md);
-  font-size: var(--text-sm);
+  margin-top: var(--space-sm);
+  padding-top: var(--space-sm);
+  border-top: 1px solid var(--color-border);
 }
 
 .mc-range__field {
@@ -350,8 +455,7 @@
 }
 
 .mc-range__error {
-  flex-basis: 100%;
-  margin: 0;
+  margin: var(--space-xs) 0 0;
   color: #b3261e;
   font-weight: var(--weight-bold);
 }
@@ -367,9 +471,14 @@
 .mc-togglebar__btn {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 0.4rem;
-  min-height: 2.25rem;
-  padding: 0.35rem 0.85rem;
+  /* At least 40×40px to tap (PRD 011, R6.5). Border-box so <summary> menu
+     buttons come out the same size as <button>s. */
+  box-sizing: border-box;
+  min-width: 2.5rem;
+  min-height: 2.5rem;
+  padding: 0.35rem 0.75rem;
   border: 0;
   background: var(--color-surface);
   color: var(--color-text);
@@ -434,8 +543,20 @@
   transform: rotate(180deg);
 }
 
-/* Icon-only on phones; the label stays available to screen readers. */
-@media (max-width: 480px) {
+/* Small value shown next to a menu icon, even on phones (PRD 011, R3.2, R4.1). */
+.mc-menu__count {
+  font-size: var(--text-xs, 0.75rem);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* Phones (PRD 011, R6.1, R6.4): icons only, with labels kept for screen
+   readers, and dropdowns spanning the toolbar so they always fit on screen. */
+@media (max-width: 600px) {
+  .mc-toolbar {
+    gap: var(--space-xs);
+  }
+
   .mc-togglebar__label {
     position: absolute;
     width: 1px;
@@ -443,6 +564,28 @@
     overflow: hidden;
     clip: rect(0 0 0 0);
     white-space: nowrap;
+  }
+
+  .mc-togglebar__btn {
+    gap: 0.3rem;
+    padding: 0.35rem 0.6rem;
+  }
+
+  .mc-toolbar .mc-menu__chevron {
+    display: none;
+  }
+
+  /* Anchor each dropdown to the toolbar instead of its button. */
+  .mc-toolbar .mc-menu {
+    position: static;
+  }
+
+  .mc-toolbar .mc-filter__panel,
+  .mc-toolbar .mc-user__panel {
+    left: 0;
+    right: 0;
+    min-width: 0;
+    max-width: none;
   }
 }
 
@@ -453,23 +596,13 @@
 
 /* --- Chapter filter + legend --------------------------------------------- */
 
-.mc-filter {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-sm) var(--space-md);
-}
-
-.mc-filter__menu {
-  position: relative;
-}
-
 .mc-filter__panel {
   position: absolute;
   z-index: 20;
   top: calc(100% + 0.35rem);
   left: 0;
   min-width: 15rem;
+  max-width: calc(100vw - 2 * var(--space-md));
   padding: var(--space-md);
   background: var(--color-surface);
   border: 1px solid var(--color-border);
@@ -807,8 +940,7 @@
   flex-basis: 100%;
 }
 
-.mc-home__field input,
-.mc-within select {
+.mc-home__field input {
   min-height: 2.25rem;
   padding: 0.3rem 0.6rem;
   border: 1px solid var(--color-border);
@@ -826,14 +958,6 @@
   flex-basis: 100%;
   margin: 0;
   color: #b3261e;
-  font-weight: var(--weight-bold);
-}
-
-.mc-within {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  font-size: var(--text-sm);
   font-weight: var(--weight-bold);
 }
 
@@ -1120,11 +1244,6 @@
   .mc-panel,
   .mc-dialog__body {
     padding: var(--space-lg);
-  }
-
-  .mc-filter__panel {
-    position: static;
-    margin-top: 0.35rem;
   }
 }
 

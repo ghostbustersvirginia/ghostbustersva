@@ -18,7 +18,16 @@ import listPlugin from "@fullcalendar/react/list";
 import "@fullcalendar/react/skeleton.css";
 import "@fullcalendar/react/themes/forma/theme.css";
 import "@fullcalendar/react/themes/forma/palettes/green.css";
-import { useCallback, useDeferredValue, useEffect, useId, useMemo, useRef, useState } from "react";
+import {
+  useCallback,
+  useDeferredValue,
+  useEffect,
+  useId,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 import {
   GENERAL_COLOR,
   GENERAL_TEXT_COLOR,
@@ -49,8 +58,9 @@ import ChapterLegend from "./ChapterLegend";
 import EventDialog, { VirtualIcon } from "./EventDialog";
 import { cellDateKey, eventImageUrl } from "./format";
 import SearchResults from "./SearchResults";
-import { FaClockRotateLeft, FaMapLocationDot } from "react-icons/fa6";
+import { FaClockRotateLeft, FaMagnifyingGlass, FaMapLocationDot } from "react-icons/fa6";
 import RsvpFilterMenu from "./RsvpFilterMenu";
+import DistanceMenu from "./DistanceMenu";
 import EventHoverCard from "./EventHoverCard";
 import MapPanel from "./MapPanel";
 import { useHomeLocation, useMapToggle, useVenueCoords } from "./use-geo";
@@ -59,7 +69,6 @@ import {
   formatDistance,
   groupVenues,
   isWithin,
-  WITHIN_OPTIONS,
   type GeoResult,
   type WithinMiles,
 } from "../../lib/member-calendar/geo";
@@ -103,6 +112,8 @@ const HEADER_TOOLBAR = {
 
 interface Props {
   onAuthError: (error: unknown) => boolean;
+  /** Rendered at the right end of the toolbar: the user menu (PRD 011, R1.1). */
+  toolbarEnd?: ReactNode;
 }
 
 function toEventInput(event: CalendarEvent): EventInput {
@@ -130,7 +141,7 @@ function writeEventParam(id: string | null) {
   window.history.replaceState(null, "", url);
 }
 
-export default function CalendarView({ onAuthError }: Props) {
+export default function CalendarView({ onAuthError, toolbarEnd }: Props) {
   const calendarRef = useRef<CalendarRef>(null);
   const [hidden, setHidden] = useState<Set<ChapterKey>>(() => loadHiddenChapters());
   // Past events are hidden until the member turns them on.
@@ -138,8 +149,18 @@ export default function CalendarView({ onAuthError }: Props) {
   // RSVP states to show (your own response); all by default.
   const [rsvpFilter, setRsvpFilter] = useState<Set<RsvpState>>(() => new Set(RSVP_STATES));
   const [search, setSearch] = useState("");
+  // Search starts as an icon; the results box, with the field in it, opens on click (PRD 011, R2).
+  const [searchOpen, setSearchOpen] = useState(false);
+  const searchButtonRef = useRef<HTMLButtonElement>(null);
+  const searchBoxId = useId();
   const deferredSearch = useDeferredValue(search);
   const searching = deferredSearch.trim().length > 0;
+  /** Esc or the close button clears the search and closes the box (R2.5, D3). */
+  const closeSearch = useCallback(() => {
+    setSearch("");
+    setSearchOpen(false);
+    searchButtonRef.current?.focus();
+  }, []);
   const [searchPool, setSearchPool] = useState<SearchPool | null>(null);
   const [searchLoading, setSearchLoading] = useState(false);
   const [searchError, setSearchError] = useState<string | null>(null);
@@ -702,18 +723,21 @@ export default function CalendarView({ onAuthError }: Props) {
   return (
     <div className="mc-calendar">
       <div className="mc-toolbar">
-        <label className="mc-search">
-          <span className="sr-only">Search events by title or description</span>
-          <input
-            type="search"
-            value={search}
-            placeholder="Search events…"
-            onChange={(e) => setSearch(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Escape") setSearch("");
-            }}
-          />
-        </label>
+        <div className="mc-togglebar">
+          <button
+            ref={searchButtonRef}
+            type="button"
+            className={`mc-togglebar__btn${searching ? " is-active" : ""}`}
+            aria-expanded={searchOpen}
+            aria-controls={searchOpen ? searchBoxId : undefined}
+            title={searchOpen ? "Close search" : "Search events"}
+            onClick={() => (searchOpen ? closeSearch() : setSearchOpen(true))}
+          >
+            <FaMagnifyingGlass aria-hidden="true" />
+            <span className="mc-togglebar__label">Search</span>
+            {searching && <span className="sr-only">, active</span>}
+          </button>
+        </div>
         <div className="mc-togglebar" role="group" aria-label="Show">
           <button
             type="button"
@@ -744,31 +768,14 @@ export default function CalendarView({ onAuthError }: Props) {
           </button>
         </div>
         <RsvpFilterMenu shown={rsvpFilter} onChange={setRsvpFilter} />
-        {home && (
-          <label className="mc-within">
-            <span>Within</span>
-            <select
-              value={within ?? ""}
-              onChange={(e) =>
-                setWithin(e.target.value ? (Number(e.target.value) as WithinMiles) : null)
-              }
-            >
-              <option value="">Any distance</option>
-              {WITHIN_OPTIONS.map((miles) => (
-                <option key={miles} value={miles}>
-                  {miles} miles
-                </option>
-              ))}
-            </select>
-          </label>
-        )}
+        {home && <DistanceMenu within={within} onChange={setWithin} />}
         <ChapterFilter hidden={hidden} onChange={updateHidden} />
+        {inListView && <ListRangeControls range={listRange} onChange={setListRange} />}
         <div className="mc-toolbar__status" aria-live="polite">
           {loading && <span>Loading events…</span>}
         </div>
+        {toolbarEnd}
       </div>
-
-      {inListView && <ListRangeControls range={listRange} onChange={setListRange} />}
 
       {error && (
         <div className="mc-alert mc-alert--error" role="alert">
@@ -779,8 +786,11 @@ export default function CalendarView({ onAuthError }: Props) {
         </div>
       )}
 
-      {searching && (
+      {searchOpen && (
         <SearchResults
+          id={searchBoxId}
+          value={search}
+          onValueChange={setSearch}
           query={deferredSearch.trim()}
           results={searchResults.slice(0, MAX_SEARCH_RESULTS)}
           total={searchResults.length}
@@ -791,7 +801,7 @@ export default function CalendarView({ onAuthError }: Props) {
           onSelect={openEvent}
           onShowPast={() => setShowPast(true)}
           onShowAllChapters={() => updateHidden(new Set())}
-          onClear={() => setSearch("")}
+          onClose={closeSearch}
         />
       )}
 

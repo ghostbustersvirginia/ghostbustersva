@@ -4,7 +4,6 @@
  * calendar once signed in as a member.
  */
 import { useCallback, useEffect, useLayoutEffect, useState } from "react";
-import { FaRegEnvelope } from "react-icons/fa6";
 import type {
   DiscordLinkState,
   DiscordLinkStatus,
@@ -12,13 +11,11 @@ import type {
 } from "../../lib/member-calendar/types";
 import { ApiRequestError, getSession, signIn, signOut } from "./api";
 import CalendarView from "./CalendarView";
-import DiscordLinkControl, {
-  DISCORD_STATUS_MESSAGES,
-  takeDiscordStatus,
-} from "./DiscordLinkControl";
+import { DISCORD_STATUS_MESSAGES, takeDiscordStatus } from "./discord-status";
 import { forgetGoogleAccount } from "./google-identity";
 import NotMemberPanel from "./NotMemberPanel";
 import SignInPanel from "./SignInPanel";
+import UserMenu from "./UserMenu";
 import "./MemberCalendar.css";
 
 export default function MemberCalendarApp() {
@@ -133,31 +130,6 @@ export default function MemberCalendarApp() {
 
   return (
     <div className="mc-root">
-      <div className="mc-userbar">
-        <span>
-          <strong>{session.user.name}</strong>{" "}
-          <FaRegEnvelope size={"1em"} title={session.user.email} />
-        </span>
-        <span className="mc-userbar__actions">
-          <DiscordLinkControl
-            discord={session.discord}
-            onChange={handleDiscordChange}
-            onError={setDiscordError}
-          />
-          {session.user.isOrganizer && (
-            <a className="mc-btn mc-btn--small" href="/api/calendar/late-changes.csv" download>
-              Export Late Changes
-            </a>
-          )}
-          <button
-            type="button"
-            className="mc-btn mc-btn--small mc-btn--ghost"
-            onClick={handleSignOut}
-          >
-            Sign out
-          </button>
-        </span>
-      </div>
       {discordError ? (
         <p className="mc-alert mc-alert--error" role="alert">
           {discordError}
@@ -173,7 +145,19 @@ export default function MemberCalendarApp() {
           </p>
         )
       )}
-      <CalendarView onAuthError={handleAuthError} />
+      <CalendarView
+        onAuthError={handleAuthError}
+        toolbarEnd={
+          <UserMenu
+            name={session.user.name}
+            isOrganizer={session.user.isOrganizer}
+            discord={session.discord}
+            onDiscordChange={handleDiscordChange}
+            onDiscordError={setDiscordError}
+            onSignOut={handleSignOut}
+          />
+        }
+      />
     </div>
   );
 }
