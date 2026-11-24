@@ -162,9 +162,47 @@ export default defineConfig({
         access: "secret",
         optional: true,
       }),
+      // Calendar Discord integration (PRD 010). Optional: the feature is off unless all are set.
+      DISCORD_CLIENT_ID: envField.string({
+        context: "server",
+        access: "secret",
+        optional: true,
+      }),
+      DISCORD_CLIENT_SECRET: envField.string({
+        context: "server",
+        access: "secret",
+        optional: true,
+      }),
+      DISCORD_BOT_TOKEN: envField.string({
+        context: "server",
+        access: "secret",
+        optional: true,
+      }),
+      DISCORD_GUILD_ID: envField.string({
+        context: "server",
+        access: "secret",
+        optional: true,
+      }),
+      DISCORD_EVENTS_CHANNEL_ID: envField.string({
+        context: "server",
+        access: "secret",
+        optional: true,
+      }),
     },
   },
   adapter: vercel(),
+  security: {
+    // Without this, Astro ignores the Host/X-Forwarded-Host headers on Vercel and
+    // builds every request URL as https://localhost/... That broke anything that
+    // derives URLs from the request, such as the Discord OAuth redirect URI.
+    // Vercel sets X-Forwarded-Host itself, so these patterns are trustworthy.
+    allowedDomains: [
+      { protocol: "https", hostname: "ghostbustersva.com" },
+      { protocol: "https", hostname: "www.ghostbustersva.com" },
+      // Staging (gbva-site.vercel.app) and branch previews (gbva-site-git-*.vercel.app).
+      { protocol: "https", hostname: "*.vercel.app" },
+    ],
+  },
   vite: {
     ssr: {
       // sanitize-html is CommonJS but require()s the ESM-only htmlparser2.

@@ -139,6 +139,21 @@ export interface NormalizeContext {
   resolvedLinks?: ReadonlyMap<string, string>;
 }
 
+/* --- Discord thread link (PRD 010, R3) ---------------------------------- */
+
+/** Private extended property that holds the thread link (R3.1). */
+export const THREAD_URL_PROPERTY = "discordThreadUrl";
+
+/** Only links into Discord are ever shown in the app. */
+export function isDiscordThreadUrl(value: unknown): value is string {
+  return typeof value === "string" && /^https:\/\/discord\.com\/channels\/\d+\/\d+$/.test(value);
+}
+
+export function threadUrlFromEvent(event: GoogleEvent): string | null {
+  const value = event.extendedProperties?.private?.[THREAD_URL_PROPERTY];
+  return isDiscordThreadUrl(value) ? value : null;
+}
+
 export function normalizeEvent(event: GoogleEvent, ctx: NormalizeContext): CalendarEvent {
   const parsed = parseEventTitle(event.summary);
   const allDay = Boolean(event.start?.date && !event.start?.dateTime);
@@ -195,6 +210,7 @@ export function normalizeEvent(event: GoogleEvent, ctx: NormalizeContext): Calen
     ),
     rsvpAllowed: availability.allowed,
     rsvpBlockedReason: availability.reason,
+    discordThreadUrl: threadUrlFromEvent(event),
   };
 }
 

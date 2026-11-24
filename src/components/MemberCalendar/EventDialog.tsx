@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { FaDiscord } from "react-icons/fa6";
 import { getChapter, GENERAL_SHORT } from "../../lib/member-calendar/chapters";
 import type {
   CalendarEvent,
@@ -159,11 +160,24 @@ export default function EventDialog({
           />
         )}
 
-        {event.htmlLink && (
-          <p>
-            <a href={event.htmlLink} target="_blank" rel="noopener noreferrer">
-              View in Google Calendar<span className="sr-only"> (opens in new tab)</span>
-            </a>
+        {(event.htmlLink || event.discordThreadUrl) && (
+          <p className="mc-dialog__links">
+            {event.htmlLink && (
+              <a href={event.htmlLink} target="_blank" rel="noopener noreferrer">
+                View in Google Calendar<span className="sr-only"> (opens in new tab)</span>
+              </a>
+            )}
+            {event.discordThreadUrl && (
+              <a
+                className="mc-dialog__discord"
+                href={event.discordThreadUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <FaDiscord aria-hidden="true" /> Discuss on Discord
+                <span className="sr-only"> (opens in new tab)</span>
+              </a>
+            )}
           </p>
         )}
 

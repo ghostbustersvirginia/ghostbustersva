@@ -82,6 +82,7 @@ function cEvent(overrides: Partial<CalendarEvent> = {}): CalendarEvent {
     changedSinceRsvp: false,
     rsvpAllowed: true,
     rsvpBlockedReason: null,
+    discordThreadUrl: null,
     ...overrides,
   };
 }

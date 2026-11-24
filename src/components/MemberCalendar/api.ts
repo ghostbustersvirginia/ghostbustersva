@@ -63,6 +63,12 @@ export const signIn = (credential: string) =>
 
 export const signOut = () => request<{ ok: true }>("/api/auth/logout", { method: "POST" });
 
+/** Full-page navigation target that starts "Link Discord" (PRD 010, R1.2). */
+export const DISCORD_LINK_START = "/api/auth/discord/start";
+
+export const unlinkDiscord = () =>
+  request<{ ok: true }>("/api/auth/discord/unlink", { method: "POST" });
+
 export async function fetchEvents(
   start: Date,
   end: Date,

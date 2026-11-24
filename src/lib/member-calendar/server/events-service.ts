@@ -6,6 +6,8 @@ import { memberEnv } from "./env";
 import { getCalendarEvent, listCalendarEvents, type GoogleEvent } from "./google-api";
 import { normalizeEmail, normalizeEvent, personAttendees, toResponseStatus } from "./logic";
 import { getFingerprints, getMemberNames, writeSnapshots } from "./store";
+import { getThreadRecords, seriesKey } from "./discord-threads";
+import { isDiscordThreadUrl } from "./logic";
 import { findMapsLinks } from "../maps-links";
 import { resolveShortLinks } from "./maps-resolver";
 
@@ -44,7 +46,7 @@ export async function normalizeForViewer(
     ),
     resolveShortLinks(events.flatMap((e) => findMapsLinks(e.location, e.description))),
   ]);
-  return events.map((event) =>
+  const normalized = events.map((event) =>
     normalizeEvent(event, {
       calendarId,
       excludedEmails,
@@ -54,6 +56,26 @@ export async function normalizeForViewer(
       resolvedLinks,
     }),
   );
+  return withThreadFallback(events, normalized);
+}
+
+/**
+ * Fills `discordThreadUrl` from Redis for events whose own extended property
+ * is missing, such as modified instances that don't inherit the master's (R3.4).
+ */
+async function withThreadFallback(
+  events: GoogleEvent[],
+  normalized: CalendarEvent[],
+): Promise<CalendarEvent[]> {
+  const missing = events.filter((_, i) => !normalized[i].discordThreadUrl);
+  if (missing.length === 0) return normalized;
+  const records = await getThreadRecords(missing.map(seriesKey));
+  if (records.size === 0) return normalized;
+  return normalized.map((event, i) => {
+    if (event.discordThreadUrl) return event;
+    const url = records.get(seriesKey(events[i]))?.url;
+    return isDiscordThreadUrl(url) ? { ...event, discordThreadUrl: url } : event;
+  });
 }
 
 /**
