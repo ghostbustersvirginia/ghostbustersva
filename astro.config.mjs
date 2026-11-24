@@ -191,6 +191,18 @@ export default defineConfig({
     },
   },
   adapter: vercel(),
+  security: {
+    // Without this, Astro ignores the Host/X-Forwarded-Host headers on Vercel and
+    // builds every request URL as https://localhost/... That broke anything that
+    // derives URLs from the request, such as the Discord OAuth redirect URI.
+    // Vercel sets X-Forwarded-Host itself, so these patterns are trustworthy.
+    allowedDomains: [
+      { protocol: "https", hostname: "ghostbustersva.com" },
+      { protocol: "https", hostname: "www.ghostbustersva.com" },
+      // Staging (gbva-site.vercel.app) and branch previews (gbva-site-git-*.vercel.app).
+      { protocol: "https", hostname: "*.vercel.app" },
+    ],
+  },
   vite: {
     ssr: {
       // sanitize-html is CommonJS but require()s the ESM-only htmlparser2.
