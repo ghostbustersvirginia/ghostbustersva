@@ -18,10 +18,12 @@ const {
   backHref,
   backLabel = "Back to Games",
 } = Astro.props;
+/** Optional controls at the right end of the title row (e.g. the member calendar's user menu). */
+const hasActions = Astro.slots.has("actions");
 ---
 
 <header class:list={["page-header", className]}>
-  <div class="page-header__row">
+  <div class:list={["page-header__row", { "page-header__row--actions": hasActions }]}>
     {
       backHref && (
         <a href={backHref} class="page-header__back">
@@ -43,6 +45,13 @@ const {
       )
     }
     <h1 id={id} class="page-title">{title}</h1>
+    {
+      hasActions && (
+        <div class="page-header__actions">
+          <slot name="actions" />
+        </div>
+      )
+    }
   </div>
   <p class="page-intro">{subtitle}</p>
 </header>
@@ -60,6 +69,18 @@ const {
     display: flex;
     align-items: center;
     justify-content: center;
+  }
+
+  /* Room on both sides so the centered title never runs under the actions. */
+  .page-header__row--actions {
+    padding-inline: 3rem;
+  }
+
+  .page-header__actions {
+    position: absolute;
+    right: 0;
+    display: flex;
+    align-items: center;
   }
 
   .page-header__back {
