@@ -233,6 +233,11 @@ export default function EventDialog({
                 )}
               </div>
               <p className="mc-rsvp__note">
+                Yes or Maybe sends you a Google Calendar invitation from
+                calendar-automation@ghostbustersva.com. If the event doesn't appear on your
+                calendar, accept the invitation in the email. Remove takes it off again.
+              </p>
+              <p className="mc-rsvp__note">
                 Changing a Yes within 2 hours of the start time is recorded for organizers.
               </p>
             </>

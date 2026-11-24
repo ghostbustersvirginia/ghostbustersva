@@ -206,6 +206,8 @@ The page lives at `/members/calendar`, which leaves room for a future `/members`
    On a 412 conflict, re-read and retry up to 3 times, so two members RSVPing at once
    cannot overwrite each other.
 5. Always use `sendUpdates=none`. No Google emails are sent for site RSVPs.
+   **Superseded in part by [PRD 012](012-rsvp-calendar-invites.md) (R2):** joining (Yes or
+   Maybe) and leaving (Remove) now use `sendUpdates=all`; every other change stays `none`.
 6. Attendee emails are compared case-insensitively against the signed-in email.
 7. **Recurring events:**
    - The default is "This event only", which patches that instance.
@@ -227,9 +229,13 @@ The page lives at `/members/calendar`, which leaves room for a future `/members`
 12. Whether a site RSVP adds the event to a personal Gmail user's own calendar depends on
     that user's "Add invitations to my calendar" setting, because `sendUpdates=none` sends
     no invite. This is not guaranteed. The "View in Google Calendar" link is the reliable
-    path.
+    path. **Superseded by [PRD 012](012-rsvp-calendar-invites.md):** joining now sends a
+    Google invitation. It appears on its own for "from everyone" and Workspace accounts;
+    others accept it from the email. PRD 012 also adds "Update My Calendar" for existing
+    RSVPs.
 13. Below the RSVP buttons, a short note tells members that late changes are tracked:
-    "Changing a Yes within 2 hours of the start time is recorded for organizers."
+    "Changing a Yes within 2 hours of the start time is recorded for organizers." PRD 012
+    (R5.1) adds a note about the calendar invitation above it.
 14. **Attendee visibility in Google:** events on the GBVA Events calendar should have
     `guestsCanSeeOtherGuests=true`, so Google's view matches the site.
 

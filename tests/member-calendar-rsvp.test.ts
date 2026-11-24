@@ -33,6 +33,7 @@ vi.mock("../src/lib/member-calendar/server/env", () => ({
 }));
 
 import { GoogleApiError } from "../src/lib/member-calendar/server/google-api";
+import { inviteDecision } from "../src/lib/member-calendar/server/logic";
 import { applyRsvp, RsvpNotAllowedError } from "../src/lib/member-calendar/server/rsvp-service";
 
 const member = { email: "Me@Gmail.com", name: "Me" };
@@ -178,5 +179,200 @@ describe("applyRsvp", () => {
     expect(store.appendLateChanges).toHaveBeenCalledWith([]);
     expect(store.deleteFingerprint).toHaveBeenCalledWith("e1", "me@gmail.com");
     expect(google.patchEventAttendees.mock.calls[0][3]).toEqual([]);
+  });
+});
+
+describe("inviteDecision (PRD 012, R2)", () => {
+  const rows: [string, string, "all" | "none", string][] = [
+    // Not on the event, or No → Yes or Maybe: invite.
+    ["removed", "accepted", "all", "join"],
+    ["removed", "tentative", "all", "join"],
+    ["declined", "accepted", "all", "join"],
+    ["declined", "tentative", "all", "join"],
+    // Awaiting a response counts as not going.
+    ["needsAction", "accepted", "all", "join"],
+    // Yes or Maybe → removed: cancel.
+    ["accepted", "removed", "all", "leave"],
+    ["tentative", "removed", "all", "leave"],
+    // Yes ↔ Maybe: already on their calendar.
+    ["accepted", "tentative", "none", "switch"],
+    ["tentative", "accepted", "none", "switch"],
+    // Yes or Maybe → No: stays, shown as declined.
+    ["accepted", "declined", "none", "decline"],
+    ["tentative", "declined", "none", "decline"],
+    // Not on the event → No.
+    ["removed", "declined", "none", "decline-new"],
+    // No → removed: may never have been invited.
+    ["declined", "removed", "none", "remove-declined"],
+    ["needsAction", "removed", "none", "remove-declined"],
+    // No change.
+    ["accepted", "accepted", "none", "unchanged"],
+    ["removed", "removed", "none", "unchanged"],
+  ];
+
+  it.each(rows)("%s → %s sends %s (%s)", (previous, next, sendUpdates, row) => {
+    expect(inviteDecision(previous as never, next as never)).toEqual({ sendUpdates, row });
+  });
+});
+
+describe("applyRsvp invitations (PRD 012, R2, R6)", () => {
+  const sendUpdatesOf = (call: unknown[]) => call[4];
+
+  it("invites a member who joins a one-off event", async () => {
+    google.getCalendarEvent.mockResolvedValue(event("e1", "2030-01-01T10:00:00Z"));
+    await applyRsvp({ eventId: "e1", choice: "accepted", scope: "single", member });
+    expect(sendUpdatesOf(google.patchEventAttendees.mock.calls[0])).toBe("all");
+  });
+
+  it("sends a cancellation when a Yes is removed", async () => {
+    const current = event("e1", "2030-01-01T10:00:00Z", [
+      { email: "me@gmail.com", responseStatus: "tentative" },
+    ]);
+    google.getCalendarEvent.mockResolvedValue(current);
+    await applyRsvp({ eventId: "e1", choice: "remove", scope: "single", member });
+    expect(sendUpdatesOf(google.patchEventAttendees.mock.calls[0])).toBe("all");
+  });
+
+  it("stays silent switching Yes to Maybe", async () => {
+    google.getCalendarEvent.mockResolvedValue(
+      event("e1", "2030-01-01T10:00:00Z", [{ email: "me@gmail.com", responseStatus: "accepted" }]),
+    );
+    await applyRsvp({ eventId: "e1", choice: "tentative", scope: "single", member });
+    expect(sendUpdatesOf(google.patchEventAttendees.mock.calls[0])).toBe("none");
+  });
+
+  it("recomputes from the fresh event after a 412 (R2.3)", async () => {
+    const first = event("e1", "2030-01-01T10:00:00Z", [], '"1"');
+    // Meanwhile the member said Yes in Google, so this is now a switch.
+    const fresh = event(
+      "e1",
+      "2030-01-01T10:00:00Z",
+      [{ email: "me@gmail.com", responseStatus: "accepted" }],
+      '"2"',
+    );
+    google.getCalendarEvent.mockResolvedValueOnce(first).mockResolvedValueOnce(fresh);
+    google.patchEventAttendees
+      .mockRejectedValueOnce(new GoogleApiError(412, "conflict"))
+      .mockImplementationOnce(async (_c, id, _e, attendees) => ({ ...fresh, id, attendees }));
+
+    await applyRsvp({ eventId: "e1", choice: "tentative", scope: "single", member });
+
+    expect(sendUpdatesOf(google.patchEventAttendees.mock.calls[0])).toBe("all");
+    expect(sendUpdatesOf(google.patchEventAttendees.mock.calls[1])).toBe("none");
+  });
+
+  it("saves the RSVP without an invitation when Google refuses to send one (R6.1)", async () => {
+    google.getCalendarEvent.mockResolvedValue(event("e1", "2030-01-01T10:00:00Z"));
+    google.patchEventAttendees.mockRejectedValueOnce(new GoogleApiError(403, "quotaExceeded"));
+    const error = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    const outcome = await applyRsvp({ eventId: "e1", choice: "accepted", scope: "single", member });
+
+    expect(google.patchEventAttendees.mock.calls.map(sendUpdatesOf)).toEqual(["all", "none"]);
+    expect(outcome.applied).toEqual(["e1"]);
+    // Logged with the event ID and row, never the member's email (R6.2).
+    expect(error.mock.calls.flat().join(" ")).toContain("event=e1 row=join");
+    expect(error.mock.calls.flat().join(" ")).not.toContain("me@gmail.com");
+    error.mockRestore();
+  });
+
+  it("doesn't fall back for a silent patch that fails", async () => {
+    google.getCalendarEvent.mockResolvedValue(
+      event("e1", "2030-01-01T10:00:00Z", [{ email: "me@gmail.com", responseStatus: "accepted" }]),
+    );
+    google.patchEventAttendees.mockRejectedValueOnce(new GoogleApiError(403, "forbidden"));
+    await expect(
+      applyRsvp({ eventId: "e1", choice: "tentative", scope: "single", member }),
+    ).rejects.toThrow();
+    expect(google.patchEventAttendees).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("'This and following' invitations (PRD 012, R3, option A)", () => {
+  const sendUpdatesOf = (call: unknown[]) => call[4];
+  const series = (attendeesFor: (id: string) => object[] = () => []) => {
+    const ids = ["s_1", "s_2", "s_3", "s_4"];
+    const instances = ids.map((id, i) =>
+      event(id, `2030-01-${String(8 + i * 7).padStart(2, "0")}T10:00:00Z`, attendeesFor(id)),
+    );
+    google.getCalendarEvent.mockResolvedValue(instances[0]);
+    google.listEventInstances.mockResolvedValue(instances);
+  };
+  const yes = [{ email: "me@gmail.com", responseStatus: "accepted" }];
+
+  it("invites on the first instance only when joining", async () => {
+    series();
+    await applyRsvp({ eventId: "s_1", choice: "accepted", scope: "following", member });
+    expect(google.patchEventAttendees.mock.calls.map(sendUpdatesOf)).toEqual([
+      "all",
+      "none",
+      "none",
+      "none",
+    ]);
+  });
+
+  it("cancels on the first instance only when removing (R3.3)", async () => {
+    series(() => yes);
+    await applyRsvp({ eventId: "s_1", choice: "remove", scope: "following", member });
+    expect(google.patchEventAttendees.mock.calls.map(sendUpdatesOf)).toEqual([
+      "all",
+      "none",
+      "none",
+      "none",
+    ]);
+  });
+
+  it("invites on the first instance where R2 says to, not just the selected one", async () => {
+    // Already Yes on the first two weeks; joining from the third.
+    series((id) => (id === "s_1" || id === "s_2" ? yes : []));
+    await applyRsvp({ eventId: "s_1", choice: "accepted", scope: "following", member });
+    expect(google.patchEventAttendees.mock.calls.map(sendUpdatesOf)).toEqual([
+      "none",
+      "none",
+      "all",
+      "none",
+    ]);
+  });
+
+  it("moves the invitation to the next instance when that patch fails", async () => {
+    // Already Yes on s_0, so s_1 is the first that joins; its patch fails.
+    const instances = [
+      event("s_0", "2030-01-01T10:00:00Z", yes),
+      event("s_1", "2030-01-08T10:00:00Z"),
+      event("s_2", "2030-01-15T10:00:00Z"),
+    ];
+    google.getCalendarEvent.mockResolvedValue(instances[0]);
+    google.listEventInstances.mockResolvedValue(instances);
+    google.patchEventAttendees.mockImplementation(async (_c, id, _e, attendees) => {
+      if (id === "s_1") throw new GoogleApiError(500, "boom");
+      return { ...event(id, "2030-01-15T10:00:00Z"), attendees };
+    });
+    const error = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    const outcome = await applyRsvp({
+      eventId: "s_0",
+      choice: "accepted",
+      scope: "following",
+      member,
+    });
+
+    expect(google.patchEventAttendees.mock.calls.map((c) => [c[1], sendUpdatesOf(c)])).toEqual([
+      ["s_0", "none"],
+      ["s_1", "all"],
+      ["s_2", "all"],
+    ]);
+    expect(outcome.failed.map((f) => f.id)).toEqual(["s_1"]);
+    error.mockRestore();
+  });
+
+  it("sends nothing across the series for a Yes → Maybe switch", async () => {
+    series(() => yes);
+    await applyRsvp({ eventId: "s_1", choice: "tentative", scope: "following", member });
+    expect(google.patchEventAttendees.mock.calls.map(sendUpdatesOf)).toEqual([
+      "none",
+      "none",
+      "none",
+      "none",
+    ]);
   });
 });

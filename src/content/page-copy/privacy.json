@@ -38,6 +38,7 @@
       "heading": "Event RSVPs",
       "paragraphs": [
         "When you RSVP to an event in the member calendar, your response is saved on the GBVA Events Google Calendar. Other signed-in members and GBVA officers can see your name and your response.",
+        "When you RSVP \"Yes\" or \"Maybe\", Google emails you an invitation to the event from calendar-automation@ghostbustersva.com, so it can go on your own Google Calendar. When you remove that RSVP, Google emails you a cancellation. \"Update My Calendar\" in the member calendar's account menu sends invitations again for your \"Yes\" and \"Maybe\" RSVPs in the next three months. We don't read or change anything else on your own calendar.",
         "If you change a \"Yes\" RSVP within two hours of an event's start time, or after the event has started, we keep a record of the change. Only GBVA officers can see these records, which help with event planning. They are kept for up to two years."
       ]
     },

@@ -240,6 +240,51 @@ export function mergeAttendee(
   return list;
 }
 
+/* --- Calendar invitations (PRD 012, R2) --------------------------------- */
+
+export type SendUpdates = "all" | "none";
+
+/** Which row of PRD 012's R2 table a status change falls in, for logs (R6.2). */
+export type InviteRow =
+  | "join"
+  | "leave"
+  | "switch"
+  | "decline"
+  | "decline-new"
+  | "remove-declined"
+  | "unchanged";
+
+const GOING = (status: SnapshotStatus) => status === "accepted" || status === "tentative";
+
+/**
+ * Chooses `sendUpdates` for one instance from the member's status before and
+ * after a site RSVP (PRD 012, R2). Only joining (Yes/Maybe from not going)
+ * and leaving (removed from Yes/Maybe) email the member.
+ *
+ * "Awaiting response" counts as not going: the member may never have been
+ * sent an invitation, so going sends one, and removing sends nothing.
+ */
+export function inviteDecision(
+  previous: SnapshotStatus,
+  next: SnapshotStatus,
+): { sendUpdates: SendUpdates; row: InviteRow } {
+  if (previous === next) return { sendUpdates: "none", row: "unchanged" };
+  if (GOING(next)) {
+    return GOING(previous)
+      ? { sendUpdates: "none", row: "switch" }
+      : { sendUpdates: "all", row: "join" };
+  }
+  if (next === REMOVED) {
+    return GOING(previous)
+      ? { sendUpdates: "all", row: "leave" }
+      : { sendUpdates: "none", row: "remove-declined" };
+  }
+  // next is No (or awaiting response, which the site never sets).
+  return GOING(previous)
+    ? { sendUpdates: "none", row: "decline" }
+    : { sendUpdates: "none", row: "decline-new" };
+}
+
 export function statusOf(event: GoogleEvent, email: string, calendarId: string): SnapshotStatus {
   const target = normalizeEmail(email);
   const match = personAttendees(event, calendarId).find((a) => normalizeEmail(a.email) === target);
