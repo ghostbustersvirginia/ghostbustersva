@@ -175,7 +175,8 @@
   margin-bottom: var(--space-md);
 }
 
-/* User menu (PRD 011, R1): always the last item, pushed to the right end. */
+/* User menu (PRD 011, R1): at the right end of the page header's title row,
+   or of the toolbar if the header slot is missing. */
 .mc-user {
   margin-left: auto;
 }
@@ -571,7 +572,8 @@
     padding: 0.35rem 0.6rem;
   }
 
-  .mc-toolbar .mc-menu__chevron {
+  .mc-toolbar .mc-menu__chevron,
+  .mc-user .mc-menu__chevron {
     display: none;
   }
 

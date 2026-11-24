@@ -4,6 +4,7 @@
  * calendar once signed in as a member.
  */
 import { useCallback, useEffect, useLayoutEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import type {
   DiscordLinkState,
   DiscordLinkStatus,
@@ -18,6 +19,9 @@ import SignInPanel from "./SignInPanel";
 import UserMenu from "./UserMenu";
 import "./MemberCalendar.css";
 
+/** Slot in the page header (calendar.astro) that the user menu is rendered into. */
+const USER_MENU_SLOT_ID = "member-calendar-user-menu";
+
 export default function MemberCalendarApp() {
   const [session, setSession] = useState<SessionState | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -25,6 +29,8 @@ export default function MemberCalendarApp() {
   const [busy, setBusy] = useState(false);
   const [discordStatus, setDiscordStatus] = useState<DiscordLinkStatus | null>(null);
   const [discordError, setDiscordError] = useState<string | null>(null);
+  // client:only island, so the header slot already exists in the document.
+  const [userMenuSlot] = useState(() => document.getElementById(USER_MENU_SLOT_ID));
 
   useEffect(() => {
     setDiscordStatus(takeDiscordStatus());
@@ -128,6 +134,17 @@ export default function MemberCalendarApp() {
     return <NotMemberPanel email={session.email} onSwitchAccount={toSignedOut} />;
   }
 
+  const userMenu = (
+    <UserMenu
+      name={session.user.name}
+      isOrganizer={session.user.isOrganizer}
+      discord={session.discord}
+      onDiscordChange={handleDiscordChange}
+      onDiscordError={setDiscordError}
+      onSignOut={handleSignOut}
+    />
+  );
+
   return (
     <div className="mc-root">
       {discordError ? (
@@ -145,18 +162,11 @@ export default function MemberCalendarApp() {
           </p>
         )
       )}
+      {/* In the page header next to the title; in the toolbar if the slot is missing. */}
+      {userMenuSlot && createPortal(userMenu, userMenuSlot)}
       <CalendarView
         onAuthError={handleAuthError}
-        toolbarEnd={
-          <UserMenu
-            name={session.user.name}
-            isOrganizer={session.user.isOrganizer}
-            discord={session.discord}
-            onDiscordChange={handleDiscordChange}
-            onDiscordError={setDiscordError}
-            onSignOut={handleSignOut}
-          />
-        }
+        toolbarEnd={userMenuSlot ? undefined : userMenu}
       />
     </div>
   );

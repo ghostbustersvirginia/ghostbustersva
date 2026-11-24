@@ -24,7 +24,10 @@ import MemberCalendarApp from "../../components/MemberCalendar/MemberCalendarApp
           id="member-calendar-title"
           title="Member Calendar"
           subtitle="Every GBVA event in one place. Filter by chapter and RSVP with your Google account."
-        />
+        >
+          <!-- The calendar island renders the user menu here once a member signs in. -->
+          <div slot="actions" id="member-calendar-user-menu"></div>
+        </PageHeader>
       </div>
     </div>
 

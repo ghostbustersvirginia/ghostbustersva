@@ -50,7 +50,10 @@ wider screens.
 
 ### R1. User menu
 
-1. A user icon button sits at the right end of the toolbar. It opens the user menu.
+1. A user icon button sits at the right end of the page header's title row, next to "Member
+   Calendar". It opens the user menu. The header stays server-rendered Astro: `PageHeader`
+   has an optional `actions` slot, and the calendar island renders the menu into it with a
+   React portal (D11).
 2. The menu lists, in order:
    - the member's name (no email);
    - the Discord line, only when the Discord integration is on: "Link Discord" when not
@@ -113,8 +116,8 @@ wider screens.
    keeps a `title`. The toolbar fits on one row where possible.
 2. **Wider screens:** the toolbar is shorter than today. Short labels may show where they
    fit, such as the RSVP filter's label and the distance and chapter counts.
-3. Order, left to right: search, History, Map, RSVP filter, distance, chapters, time period
-   (list view), then the user icon pushed to the right end.
+3. Order, left to right: search, History, Map, RSVP filter, distance, chapters, then time period
+   (list view). The user icon is in the page header (R1.1).
 4. Every dropdown and panel stays on screen at 320px wide and doesn't cause horizontal
    page scroll.
 5. Icon buttons are at least 40×40px to tap, and inputs keep the existing anti-zoom font
@@ -140,7 +143,7 @@ wider screens.
 
 ## Acceptance Criteria
 
-- [ ] The signed-in bar is gone. The user icon at the right end of the toolbar opens a menu
+- [ ] The signed-in bar is gone. The user icon at the right of the page title opens a menu
       with the member's name, the Discord line (when Discord is on), a separator, and the
       actions.
 - [ ] "Export Late Changes" shows only for officers.

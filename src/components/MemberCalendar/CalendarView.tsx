@@ -112,7 +112,7 @@ const HEADER_TOOLBAR = {
 
 interface Props {
   onAuthError: (error: unknown) => boolean;
-  /** Rendered at the right end of the toolbar: the user menu (PRD 011, R1.1). */
+  /** Rendered at the right end of the toolbar. Only used if the page header has no user-menu slot. */
   toolbarEnd?: ReactNode;
 }
 
