@@ -17,6 +17,7 @@ import {
   EventNotFoundError,
   RsvpNotAllowedError,
 } from "../../../lib/member-calendar/server/rsvp-service";
+import { scheduleDiscordAfterRsvp } from "../../../lib/member-calendar/server/discord-rsvp";
 import { checkRateLimit } from "../../../lib/rate-limit";
 import type { RsvpChoice, RsvpResponse, RsvpScope } from "../../../lib/member-calendar/types";
 
@@ -66,6 +67,7 @@ export const POST: APIRoute = async ({ request }) => {
       member: { email: session.email, name: session.name },
     });
     const [event] = await normalizeForViewer([outcome.primary], session.email);
+    scheduleDiscordAfterRsvp({ event: outcome.primary, choice, email: session.email });
     return withCookie(
       json({
         ok: true,

@@ -50,7 +50,29 @@ export interface CalendarEvent {
   changedSinceRsvp: boolean;
   rsvpAllowed: boolean;
   rsvpBlockedReason: string | null;
+  /** The series' Discord thread, when one exists (PRD 010, R3.4). */
+  discordThreadUrl: string | null;
 }
+
+/** Discord link state for the signed-in member (PRD 010, R1.1). */
+export interface DiscordLinkState {
+  /** False when the integration is switched off; the UI hides the control. */
+  enabled: boolean;
+  /** The member's own Discord username when linked. */
+  username: string | null;
+}
+
+/**
+ * `?discord=` status the link routes redirect back with (PRD 010, R1.3), plus
+ * "unlinked", which only the browser sets after an unlink.
+ */
+export type DiscordLinkStatus =
+  | "linked"
+  | "unlinked"
+  | "cancelled"
+  | "expired"
+  | "unavailable"
+  | "error";
 
 export type SessionState =
   | { state: "signed-out"; clientId: string | null }
@@ -59,6 +81,7 @@ export type SessionState =
       state: "member";
       user: { email: string; name: string; isOrganizer: boolean };
       clientId: string | null;
+      discord: DiscordLinkState;
     };
 
 export interface EventsResponse {

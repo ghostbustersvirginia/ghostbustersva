@@ -193,6 +193,30 @@
   gap: var(--space-xs);
 }
 
+/* Discord link control (PRD 010, R1.1) */
+.mc-discord {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.mc-discord__name {
+  overflow-wrap: anywhere;
+}
+
+/* Event popup links (PRD 010, R3.5) */
+.mc-dialog__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs) var(--space-md);
+}
+
+.mc-dialog__discord {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35em;
+}
+
 .mc-search input {
   max-width: 100%;
   min-height: 2.25rem;
@@ -939,10 +963,10 @@
   margin: 0;
   overflow-wrap: anywhere;
   font-family: var(--font-display);
-  font-size: var(--text-2xl);
+  font-size: var(--text-xl);
   line-height: var(--leading-tight);
   text-transform: uppercase;
-  letter-spacing: var(--tracking-wide);
+  letter-spacing: var(--tracking-normal);
   color: var(--color-heading-section);
 }
 

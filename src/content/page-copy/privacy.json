@@ -2,7 +2,7 @@
   "page": "privacy",
   "pageTitle": "Privacy Policy",
   "pageIntro": "What we collect, why we collect it, and the choices you have.",
-  "lastUpdated": "November 23, 2026",
+  "lastUpdated": "November 24, 2026",
   "sections": [
     {
       "heading": "Who We Are",
@@ -42,6 +42,14 @@
       ]
     },
     {
+      "heading": "Discord",
+      "paragraphs": [
+        "Members can choose to link their Discord account in the member calendar. When you link it, Discord tells us your Discord user ID and username, and we store both. We use them only to add you to the GBVA Discord server's thread for an event when you RSVP \"Yes\" or \"Maybe\", including events you RSVP'd to before you linked. To make that work, we keep a list of the events each member RSVPs \"Yes\" or \"Maybe\" to, whether or not they've linked Discord. We don't get your Discord password, messages, or server list, and we don't keep any access to your Discord account after linking.",
+        "Only you can see which Discord account you linked. Other members don't see your Discord ID or username on the site, though anyone in an event thread can see who has joined it, as on any Discord thread.",
+        "When the first member RSVPs \"Yes\" or \"Maybe\" to an event, we start a thread for it in the GBVA Discord server. The thread's first message shows the event's title, date, location, and a link to the calendar, and no member names. Messages posted in threads are stored by Discord under Discord's own privacy policy."
+      ]
+    },
+    {
       "heading": "Maps and Locations",
       "paragraphs": [
         "The member calendar uses Google Maps to show where events are. When you view an event's map or turn on the calendar's map, your browser loads it from Google, and Google receives standard technical information from your browser, as it does for any website.",
@@ -57,15 +65,16 @@
       ],
       "items": [
         "Google: sign-in, calendar, groups, and maps",
+        "Discord: event threads for members who link their Discord account",
         "Vercel: website hosting",
         "Resend: delivering form emails",
-        "Upstash: short-term storage for spam protection and RSVP records"
+        "Upstash: short-term storage for spam protection, RSVP records, and linked Discord accounts"
       ]
     },
     {
       "heading": "How Long We Keep It",
       "paragraphs": [
-        "Form messages stay in volunteer inboxes only as long as they are needed. RSVPs stay on the calendar event until you change or remove them, or the event is deleted. Late RSVP change records are deleted after two years. Server logs are kept for a limited time by our hosting provider."
+        "Form messages stay in volunteer inboxes only as long as they are needed. RSVPs stay on the calendar event until you change or remove them, or the event is deleted. Late RSVP change records are deleted after two years. A linked Discord account stays linked until you unlink it, or for two years after you last linked it. The list of events you've RSVP'd \"Yes\" or \"Maybe\" to, which we use to add you to threads, is deleted after two years without a new RSVP. Server logs are kept for a limited time by our hosting provider."
       ]
     },
     {
@@ -75,6 +84,7 @@
         "Change or remove any RSVP at any time from the member calendar.",
         "Sign out of the members area at any time.",
         "Clear your saved home location in the member calendar's map at any time, or don't add one at all.",
+        "Unlink your Discord account in the member calendar at any time. We delete the stored ID and username right away. You stay in threads you already joined, and can leave them in Discord.",
         "Remove GBVA's sign-in access from your Google Account under Security → Third-party apps & services.",
         "Ask us to see, correct, or delete the information we hold about you through our contact page."
       ]

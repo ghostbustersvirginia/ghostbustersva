@@ -28,6 +28,7 @@
     "@upstash/ratelimit": "^2.0.8",
     "@upstash/redis": "^1.37.0",
     "@vercel/blob": "^2.9.0",
+    "@vercel/functions": "^3.11.3",
     "@vercel/oidc": "^4.0.9",
     "astro": "^5.17.1",
     "google-auth-library": "^11.3.4",

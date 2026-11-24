@@ -162,6 +162,32 @@ export default defineConfig({
         access: "secret",
         optional: true,
       }),
+      // Calendar Discord integration (PRD 010). Optional: the feature is off unless all are set.
+      DISCORD_CLIENT_ID: envField.string({
+        context: "server",
+        access: "secret",
+        optional: true,
+      }),
+      DISCORD_CLIENT_SECRET: envField.string({
+        context: "server",
+        access: "secret",
+        optional: true,
+      }),
+      DISCORD_BOT_TOKEN: envField.string({
+        context: "server",
+        access: "secret",
+        optional: true,
+      }),
+      DISCORD_GUILD_ID: envField.string({
+        context: "server",
+        access: "secret",
+        optional: true,
+      }),
+      DISCORD_EVENTS_CHANNEL_ID: envField.string({
+        context: "server",
+        access: "secret",
+        optional: true,
+      }),
     },
   },
   adapter: vercel(),

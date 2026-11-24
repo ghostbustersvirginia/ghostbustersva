@@ -17,6 +17,7 @@ import {
 } from "../../../lib/member-calendar/server/http";
 import { newSession, sessionCookieHeader } from "../../../lib/member-calendar/server/session";
 import { saveMemberName } from "../../../lib/member-calendar/server/store";
+import { discordLinkState } from "../../../lib/member-calendar/server/discord-store";
 import { checkRateLimit, getIp } from "../../../lib/rate-limit";
 import type { SessionState } from "../../../lib/member-calendar/types";
 
@@ -38,6 +39,7 @@ export const GET: APIRoute = async ({ request }) => {
         state: "member",
         clientId,
         user: { email: session.email, name: session.name, isOrganizer: session.isOrganizer },
+        discord: await discordLinkState(session.email),
       } satisfies SessionState),
       check.setCookie,
     );
@@ -87,6 +89,7 @@ export const POST: APIRoute = async ({ request }) => {
         state: "member",
         clientId,
         user: { email: user.email, name: user.name, isOrganizer: membership.isOrganizer },
+        discord: await discordLinkState(user.email),
       } satisfies SessionState,
       200,
       { "Set-Cookie": sessionCookieHeader(session, memberEnv.sessionSecret(), request) },

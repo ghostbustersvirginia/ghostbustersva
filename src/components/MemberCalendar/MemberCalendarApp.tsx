@@ -5,9 +5,17 @@
  */
 import { useCallback, useEffect, useLayoutEffect, useState } from "react";
 import { FaRegEnvelope } from "react-icons/fa6";
-import type { SessionState } from "../../lib/member-calendar/types";
+import type {
+  DiscordLinkState,
+  DiscordLinkStatus,
+  SessionState,
+} from "../../lib/member-calendar/types";
 import { ApiRequestError, getSession, signIn, signOut } from "./api";
 import CalendarView from "./CalendarView";
+import DiscordLinkControl, {
+  DISCORD_STATUS_MESSAGES,
+  takeDiscordStatus,
+} from "./DiscordLinkControl";
 import { forgetGoogleAccount } from "./google-identity";
 import NotMemberPanel from "./NotMemberPanel";
 import SignInPanel from "./SignInPanel";
@@ -18,8 +26,11 @@ export default function MemberCalendarApp() {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [signInError, setSignInError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [discordStatus, setDiscordStatus] = useState<DiscordLinkStatus | null>(null);
+  const [discordError, setDiscordError] = useState<string | null>(null);
 
   useEffect(() => {
+    setDiscordStatus(takeDiscordStatus());
     getSession()
       .then(setSession)
       .catch((e: Error) => setLoadError(e.message));
@@ -50,6 +61,15 @@ export default function MemberCalendarApp() {
       setBusy(false);
     }
   }, []);
+
+  const handleDiscordChange = useCallback(
+    (discord: DiscordLinkState, status?: DiscordLinkStatus) => {
+      setDiscordStatus(status ?? null);
+      setDiscordError(null);
+      setSession((s) => (s?.state === "member" ? { ...s, discord } : s));
+    },
+    [],
+  );
 
   const toSignedOut = useCallback(() => {
     forgetGoogleAccount();
@@ -119,6 +139,11 @@ export default function MemberCalendarApp() {
           <FaRegEnvelope size={"1em"} title={session.user.email} />
         </span>
         <span className="mc-userbar__actions">
+          <DiscordLinkControl
+            discord={session.discord}
+            onChange={handleDiscordChange}
+            onError={setDiscordError}
+          />
           {session.user.isOrganizer && (
             <a className="mc-btn mc-btn--small" href="/api/calendar/late-changes.csv" download>
               Export Late Changes
@@ -133,6 +158,21 @@ export default function MemberCalendarApp() {
           </button>
         </span>
       </div>
+      {discordError ? (
+        <p className="mc-alert mc-alert--error" role="alert">
+          {discordError}
+        </p>
+      ) : (
+        discordStatus &&
+        session.discord.enabled && (
+          <p
+            className={`mc-alert mc-alert--${DISCORD_STATUS_MESSAGES[discordStatus].tone}`}
+            role="status"
+          >
+            {DISCORD_STATUS_MESSAGES[discordStatus].text}
+          </p>
+        )
+      )}
       <CalendarView onAuthError={handleAuthError} />
     </div>
   );

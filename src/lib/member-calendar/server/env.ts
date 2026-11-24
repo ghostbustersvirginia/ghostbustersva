@@ -64,6 +64,21 @@ export const memberEnv = {
   lateChangeWindowMinutes: () => minutes("LATE_CHANGE_WINDOW_MINUTES", 120),
   /** Late-change record retention in days (default 2 years). */
   lateChangeRetentionDays: () => minutes("LATE_CHANGE_RETENTION_DAYS", 730),
+  /* Discord (PRD 010). All optional: the integration is off unless every one is set. */
+  discordClientId: () => read("DISCORD_CLIENT_ID"),
+  discordClientSecret: () => read("DISCORD_CLIENT_SECRET"),
+  discordBotToken: () => read("DISCORD_BOT_TOKEN"),
+  discordGuildId: () => read("DISCORD_GUILD_ID"),
+  discordEventsChannelId: () => read("DISCORD_EVENTS_CHANNEL_ID"),
+  /** True only when every Discord variable is set (PRD 010 feature switch). */
+  discordEnabled: (): boolean =>
+    Boolean(
+      memberEnv.discordClientId() &&
+      memberEnv.discordClientSecret() &&
+      memberEnv.discordBotToken() &&
+      memberEnv.discordGuildId() &&
+      memberEnv.discordEventsChannelId(),
+    ),
   siteOrigin: (): string => {
     const site = read("SITE_URL") ?? import.meta.env.SITE ?? "";
     try {

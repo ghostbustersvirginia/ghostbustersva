@@ -87,6 +87,10 @@ export interface GoogleEvent {
   attendeesOmitted?: boolean;
   attachments?: GoogleAttachment[];
   guestsCanSeeOtherGuests?: boolean;
+  extendedProperties?: {
+    private?: Record<string, string>;
+    shared?: Record<string, string>;
+  };
 }
 
 interface EventsListResponse {
@@ -178,6 +182,31 @@ export async function patchEventAttendees(
       method: "PATCH",
       headers: { "If-Match": etag },
       body: JSON.stringify({ attendees }),
+    },
+  );
+  if (!data) throw new GoogleApiError(500, "Empty patch response");
+  return data;
+}
+
+/**
+ * PATCH only `extendedProperties.private`, with If-Match and no guest
+ * notifications (PRD 010, R3.1). `properties` must already include any
+ * existing private properties to keep. Never touches other fields.
+ * Throws GoogleApiError(412) on an ETag conflict.
+ */
+export async function patchEventPrivateProperties(
+  calendarId: string,
+  eventId: string,
+  etag: string,
+  properties: Record<string, string>,
+): Promise<GoogleEvent> {
+  const { data } = await googleFetch<GoogleEvent>(
+    `${eventsUrl(calendarId, `/${encodeURIComponent(eventId)}`)}?sendUpdates=none`,
+    [SCOPES.calendar],
+    {
+      method: "PATCH",
+      headers: { "If-Match": etag },
+      body: JSON.stringify({ extendedProperties: { private: properties } }),
     },
   );
   if (!data) throw new GoogleApiError(500, "Empty patch response");
