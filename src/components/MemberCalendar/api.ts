@@ -7,6 +7,7 @@ import type {
   RsvpResponse,
   RsvpScope,
   SessionState,
+  UpdateCalendarResponse,
 } from "../../lib/member-calendar/types";
 import { splitRange } from "../../lib/member-calendar/filters";
 import type { GeoResult } from "../../lib/member-calendar/geo";
@@ -113,6 +114,10 @@ export const sendRsvp = (eventId: string, choice: RsvpChoice, scope: RsvpScope) 
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ eventId, choice, scope }),
   });
+
+/** Re-sends invitations for upcoming Yes/Maybe RSVPs (PRD 012, R4). */
+export const updateMyCalendar = () =>
+  request<UpdateCalendarResponse>("/api/calendar/update-my-calendar", { method: "POST" });
 
 /** Venue coordinates for map queries (PRD 009, R5.3). Missing keys = not looked up yet. */
 export async function geocodeVenueQueries(

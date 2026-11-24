@@ -166,17 +166,20 @@ export async function listEventInstances(
 }
 
 /**
- * PATCH an event's attendees with If-Match, never notifying guests (R5.4, R5.5).
- * Throws GoogleApiError(412) on an ETag conflict.
+ * PATCH an event's attendees with If-Match (PRD 008, R5.4). Guests aren't
+ * notified unless `sendUpdates` is "all", which PRD 012 (R2) uses to invite a
+ * member who joins and cancel for one who leaves. Throws GoogleApiError(412)
+ * on an ETag conflict.
  */
 export async function patchEventAttendees(
   calendarId: string,
   eventId: string,
   etag: string,
   attendees: GoogleAttendee[],
+  sendUpdates: "all" | "none" = "none",
 ): Promise<GoogleEvent> {
   const { data } = await googleFetch<GoogleEvent>(
-    `${eventsUrl(calendarId, `/${encodeURIComponent(eventId)}`)}?sendUpdates=none`,
+    `${eventsUrl(calendarId, `/${encodeURIComponent(eventId)}`)}?sendUpdates=${sendUpdates}`,
     [SCOPES.calendar],
     {
       method: "PATCH",

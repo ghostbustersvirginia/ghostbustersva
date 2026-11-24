@@ -10,6 +10,7 @@ import type {
   DiscordLinkStatus,
   SessionState,
 } from "../../lib/member-calendar/types";
+import type { Notice } from "../../lib/member-calendar/update-calendar";
 import { ApiRequestError, getSession, signIn, signOut } from "./api";
 import CalendarView from "./CalendarView";
 import { DISCORD_STATUS_MESSAGES, takeDiscordStatus } from "./discord-status";
@@ -29,6 +30,7 @@ export default function MemberCalendarApp() {
   const [busy, setBusy] = useState(false);
   const [discordStatus, setDiscordStatus] = useState<DiscordLinkStatus | null>(null);
   const [discordError, setDiscordError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<Notice | null>(null);
   // client:only island, so the header slot already exists in the document.
   const [userMenuSlot] = useState(() => document.getElementById(USER_MENU_SLOT_ID));
 
@@ -141,6 +143,7 @@ export default function MemberCalendarApp() {
       discord={session.discord}
       onDiscordChange={handleDiscordChange}
       onDiscordError={setDiscordError}
+      onNotice={setNotice}
       onSignOut={handleSignOut}
     />
   );
@@ -161,6 +164,14 @@ export default function MemberCalendarApp() {
             {DISCORD_STATUS_MESSAGES[discordStatus].text}
           </p>
         )
+      )}
+      {notice && (
+        <p
+          className={`mc-alert mc-alert--${notice.tone}`}
+          role={notice.tone === "error" ? "alert" : "status"}
+        >
+          {notice.text}
+        </p>
       )}
       {/* In the page header next to the title; in the toolbar if the slot is missing. */}
       {userMenuSlot && createPortal(userMenu, userMenuSlot)}

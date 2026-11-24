@@ -98,6 +98,15 @@ export interface RsvpResponse {
   appliedThrough: string | null;
 }
 
+/** "Update My Calendar" result (PRD 012, R4.6, R4.7). */
+export interface UpdateCalendarResponse {
+  ok: true;
+  /** Invitations sent. */
+  sent: number;
+  /** Invitations planned: one per one-off event, one per series. */
+  total: number;
+}
+
 export interface ApiError {
   ok: false;
   error: string;

@@ -14,7 +14,8 @@
     "typecheck": "astro check",
     "test": "vitest run",
     "test:watch": "vitest",
-    "check": "npm run typecheck && npm run lint && npm run format:check && npm run test"
+    "check": "npm run typecheck && npm run lint && npm run format:check && npm run test",
+    "probe:invites": "node --experimental-transform-types --no-warnings --env-file-if-exists=.env.local --import ./scripts/lib/register.mjs scripts/calendar-invite-probe.ts"
   },
   "dependencies": {
     "@astrojs/markdoc": "^0.15.10",
