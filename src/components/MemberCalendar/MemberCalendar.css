@@ -718,6 +718,54 @@
 
 /* --- FullCalendar (Forma theme) overrides --------------------------------- */
 
+/* Calendar header (prev/next/Today, title, view buttons). The class names come
+   from headerToolbarClass / toolbarSectionClass / toolbarTitleClass in
+   CalendarView. When the calendar is too narrow for one line, the controls
+   share the first line and the date title gets its own line below. */
+.mc-calendar {
+  container: mc-calendar / inline-size;
+}
+
+@container mc-calendar (max-width: 640px) {
+  .mc-fc-header {
+    flex-wrap: wrap;
+    row-gap: var(--space-xs);
+  }
+
+  .mc-fc-section--start {
+    order: 1;
+  }
+
+  .mc-fc-section--end {
+    order: 2;
+    margin-left: auto;
+  }
+
+  .mc-fc-section--center {
+    order: 3;
+    flex-basis: 100%;
+    justify-content: center;
+  }
+
+  .mc-fc-title {
+    font-size: var(--text-lg, 1.125rem);
+    text-align: center;
+  }
+}
+
+/* Phones: tighten the buttons so prev/next/Today and Month/Week/List fit on
+   one line down to 320px. */
+@container mc-calendar (max-width: 400px) {
+  .mc-fc-header button {
+    padding-inline: 0.5rem;
+  }
+
+  .mc-fc-section--start,
+  .mc-fc-section--end {
+    gap: 0.25rem;
+  }
+}
+
 .mc-calendar {
   --fc-forma-primary: var(--color-gb-green);
   --fc-forma-primary-over: #336f33;

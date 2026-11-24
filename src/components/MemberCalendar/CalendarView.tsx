@@ -109,6 +109,8 @@ const HEADER_TOOLBAR = {
   center: "title",
   end: `dayGridMonth,timeGridWeek,${LIST_VIEW}`,
 };
+/** Section classes for the header layout in MemberCalendar.css (start, center, end). */
+const headerSectionClass = ({ name }: { name: string }) => `mc-fc-section mc-fc-section--${name}`;
 
 interface Props {
   onAuthError: (error: unknown) => boolean;
@@ -826,6 +828,9 @@ export default function CalendarView({ onAuthError, toolbarEnd }: Props) {
         plugins={PLUGINS}
         initialView={initialView}
         headerToolbar={HEADER_TOOLBAR}
+        headerToolbarClass="mc-fc-header"
+        toolbarSectionClass={headerSectionClass}
+        toolbarTitleClass="mc-fc-title"
         views={views}
         buttons={buttons}
         timeZone={CALENDAR_TIME_ZONE}
