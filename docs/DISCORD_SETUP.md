@@ -22,22 +22,22 @@ Write down each value marked **📝** as you go. Step 6 lists all of them.
 
 ## 1. Create the Discord application
 
-- [ ] Go to <https://discord.com/developers/applications> and choose **New Application**.
+- [x] Go to <https://discord.com/developers/applications> and choose **New Application**.
   - Name: `Ghostbusters Virginia` (members see this name on the "Link Discord" consent
     screen and on the bot's messages).
   - Optional: upload the GBVA logo as the app icon.
-- [ ] Consider creating a **Team** (Developer Portal → Teams) first and creating the app
+- [x] Consider creating a **Team** (Developer Portal → Teams) first and creating the app
       under it, so the app isn't tied to one person's account.
-- [ ] On **General Information**, copy the **Application ID**.
+- [x] On **General Information**, copy the **Application ID**.
   - 📝 `DISCORD_CLIENT_ID` = Application ID
 
 ## 2. OAuth2 settings (for "Link Discord")
 
-- [ ] Open **OAuth2**.
-- [ ] Under **Client Secret**, choose **Reset Secret** and copy the value. Discord shows
+- [x] Open **OAuth2**.
+- [x] Under **Client Secret**, choose **Reset Secret** and copy the value. Discord shows
       it only once.
   - 📝 `DISCORD_CLIENT_SECRET` (secret)
-- [ ] Under **Redirects**, add one URI per environment that will run the link flow:
+- [x] Under **Redirects**, add one URI per environment that will run the link flow:
 
   ```
   https://ghostbustersva.com/api/auth/discord/callback
@@ -50,17 +50,17 @@ Write down each value marked **📝** as you go. Step 6 lists all of them.
   - If production is still served from `gbva-site.vercel.app`, add
     `https://gbva-site.vercel.app/api/auth/discord/callback` as well.
 
-- [ ] You don't need to pick scopes here. The app requests only `identify` at runtime.
+- [x] You don't need to pick scopes here. The app requests only `identify` at runtime.
 
 ## 3. Bot user
 
-- [ ] Open **Bot**.
-- [ ] Choose **Reset Token** and copy the token. Discord shows it only once. Anyone with
+- [x] Open **Bot**.
+- [x] Choose **Reset Token** and copy the token. Discord shows it only once. Anyone with
       this token can act as the bot, so treat it like a password.
   - 📝 `DISCORD_BOT_TOKEN` (secret)
-- [ ] Turn **Public Bot** off, so only the application owner can add it to servers.
-- [ ] Leave **Requires OAuth2 Code Grant** off.
-- [ ] Leave all three **Privileged Gateway Intents** off. The integration uses REST only
+- [x] Turn **Public Bot** off, so only the application owner can add it to servers.
+- [x] Leave **Requires OAuth2 Code Grant** off.
+- [x] Leave all three **Privileged Gateway Intents** off. The integration uses REST only
       and never reads messages.
 
 ## 4. Invite the bot to the GBVA server
@@ -77,16 +77,16 @@ The bot needs these permissions in the events channel:
 
 That's permission integer **`326417517568`**.
 
-- [ ] Open this URL (replace `<CLIENT_ID>`) while signed in as someone with **Manage
+- [x] Open this URL (replace `<CLIENT_ID>`) while signed in as someone with **Manage
       Server** on the GBVA server:
 
   ```
   https://discord.com/oauth2/authorize?client_id=<CLIENT_ID>&scope=bot&permissions=326417517568&guild_id=998292963127988284&disable_guild_select=true
   ```
 
-- [ ] Approve. The bot appears in the member list (offline, which is expected: it never
+- [x] Approve. The bot appears in the member list (offline, which is expected: it never
       connects to the gateway).
-- [ ] Record the server and channel IDs. They come from the channel link
+- [x] Record the server and channel IDs. They come from the channel link
       `https://discord.com/channels/998292963127988284/1233635927490826340`:
   - 📝 `DISCORD_GUILD_ID` = `998292963127988284`
   - 📝 `DISCORD_EVENTS_CHANNEL_ID` = `1233635927490826340`
@@ -99,13 +99,13 @@ That's permission integer **`326417517568`**.
 
 Channel overrides can block what the server-level role allows.
 
-- [ ] Open the events channel → **Edit Channel → Permissions**.
-- [ ] Check that neither `@everyone` nor any role the bot has denies the five permissions
+- [x] Open the events channel → **Edit Channel → Permissions**.
+- [x] Check that neither `@everyone` nor any role the bot has denies the five permissions
       from step 4. If one does, add an override for the bot's role (it has the same name
       as the app) that allows them.
-- [ ] Check that members who should be in event threads can **View Channel**. Discord
+- [x] Check that members who should be in event threads can **View Channel**. Discord
       can't add someone to a thread in a channel they can't see.
-- [ ] Members must already be **in the GBVA server**. The site doesn't add people to the
+- [x] Members must already be **in the GBVA server**. The site doesn't add people to the
       server (PRD 010 excludes `guilds.join`), so a linked member who isn't in it is
       skipped.
 
@@ -143,7 +143,7 @@ vercel env add DISCORD_EVENTS_CHANNEL_ID production
 >   [GOOGLE_CALENDAR_SETUP.md](GOOGLE_CALENDAR_SETUP.md) step 10). Otherwise preview
 >   threads get written into the production thread records.
 
-- [ ] For local development, add the same five values to `.env.local`, pointing at the
+- [x] For local development, add the same five values to `.env.local`, pointing at the
       test channel. `vercel env pull .env.local` works if you set them for Development.
 - [x] The variable names are already in `.env.example`, `astro.config.mjs`, and
       `memberEnv` (phase 1).
@@ -158,14 +158,14 @@ read -rs DISCORD_BOT_TOKEN && export DISCORD_BOT_TOKEN
 UA='DiscordBot (https://ghostbustersva.com, 1.0)'
 ```
 
-- [ ] **Token is valid.** This should return the bot's user, with `"bot": true`:
+- [x] **Token is valid.** This should return the bot's user, with `"bot": true`:
 
   ```sh
   curl -s -H "Authorization: Bot $DISCORD_BOT_TOKEN" -H "User-Agent: $UA" \
     https://discord.com/api/v10/users/@me
   ```
 
-- [ ] **Bot can see the channel.** This should return the channel with `"type": 0` (a
+- [x] **Bot can see the channel.** This should return the channel with `"type": 0` (a
       text channel). A `50001 Missing Access` means the step 5 overrides are blocking it:
 
   ```sh
@@ -173,7 +173,7 @@ UA='DiscordBot (https://ghostbustersva.com, 1.0)'
     https://discord.com/api/v10/channels/1233635927490826340
   ```
 
-- [ ] **Bot can create threads.** Try this against the **test** channel, not the real
+- [x] **Bot can create threads.** Try this against the **test** channel, not the real
       events channel. It should return a thread with `"type": 11`. Delete the thread
       afterwards in the Discord app:
 
@@ -184,7 +184,7 @@ UA='DiscordBot (https://ghostbustersva.com, 1.0)'
     https://discord.com/api/v10/channels/<TEST_CHANNEL_ID>/threads
   ```
 
-- [ ] Run `unset DISCORD_BOT_TOKEN` when you're done.
+- [x] Run `unset DISCORD_BOT_TOKEN` when you're done.
 
 ---
 
@@ -199,8 +199,8 @@ UA='DiscordBot (https://ghostbustersva.com, 1.0)'
 
 ## Done when
 
-- [ ] Every 📝 value is recorded, and the step 6 variables are set in Vercel.
-- [ ] The bot is in the GBVA server, and the step 7 checks pass.
-- [ ] The redirect URIs in step 2 match every environment that will run "Link Discord".
-- [ ] Preview/Development either point at a test channel or have the integration off.
+- [x] Every 📝 value is recorded, and the step 6 variables are set in Vercel.
+- [x] The bot is in the GBVA server, and the step 7 checks pass.
+- [x] The redirect URIs in step 2 match every environment that will run "Link Discord".
+- [x] Preview/Development either point at a test channel or have the integration off.
     
