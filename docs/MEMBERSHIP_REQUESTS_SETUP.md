@@ -24,7 +24,7 @@ The copy isn't connected to AppSheet, so nothing in it adds anyone to `all-membe
 The site's Google access runs as `calendar-automation@ghostbustersva.com` when
 `GOOGLE_ACCESS_MODE=delegated` (production), or as the service account itself otherwise.
 
-- [ ] Share **both** the test copy and the real sheet with
+- [x] Share **both** the test copy and the real sheet with
       `calendar-automation@ghostbustersva.com` as an **Editor**. (In `direct` mode, share
       with the service account's email, `GCP_SERVICE_ACCOUNT_EMAIL`, instead.)
 - [x] In the Google Admin console: **Security → Access and data control → API controls →
@@ -41,7 +41,7 @@ The site's Google access runs as `calendar-automation@ghostbustersva.com` when
 Request emails go to `officers@ghostbustersva.com` (or `OFFICERS_EMAIL`), from the site's
 `CONTACT_FROM_EMAIL` address.
 
-- [ ] In Google Groups, check that `officers@` accepts email from that address: **Group
+- [x] In Google Groups, check that `officers@` accepts email from that address: **Group
       settings → Who can post**. If only members can post, either allow anyone on the web
       or add the sender address as a member who can post.
 
@@ -79,7 +79,7 @@ Request emails go to `officers@ghostbustersva.com` (or `OFFICERS_EMAIL`), from t
   It writes one row (ID, Name and Email only, with a name starting with `=` to show it's
   stored as text), reads it back, and clears those three cells.
 
-- [ ] Point `MEMBERSHIP_SHEET_ID` at the **real** sheet and run the read-only check once
+- [x] Point `MEMBERSHIP_SHEET_ID` at the **real** sheet and run the read-only check once
       more. Don't use `--write-test` there; it refuses anyway.
 
 ## 5. Vercel

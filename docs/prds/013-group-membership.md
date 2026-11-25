@@ -169,19 +169,19 @@ Notes:
 
 ## Acceptance Criteria
 
-- [ ] A non-member signs in and sees "Use a different Google account" and "Request
+- [x] A non-member signs in and sees "Use a different Google account" and "Request
       access", and nothing else.
-- [ ] "Request access" adds one row with ID, Name and Email, and leaves every other
+- [x] "Request access" adds one row with ID, Name and Email, and leaves every other
       column and row untouched.
-- [ ] `officers@` gets one email per new request, with Reply-To set to the applicant.
-- [ ] Asking again, or signing in again later, shows "waiting for approval", adds no row
+- [x] `officers@` gets one email per new request, with Reply-To set to the applicant.
+- [x] Asking again, or signing in again later, shows "waiting for approval", adds no row
       and sends no email.
-- [ ] The endpoint ignores any email or name sent in the request body.
-- [ ] A name starting with `=` is stored as text.
+- [x] The endpoint ignores any email or name sent in the request body.
+- [x] A name starting with `=` is stored as text.
 - [ ] After an officer approves and AppSheet adds them, the applicant signs in and gets
       the calendar.
-- [ ] The spreadsheet ID and link aren't in the repo.
-- [ ] The privacy policy describes the request.
+- [x] The spreadsheet ID and link aren't in the repo.
+- [x] The privacy policy describes the request.
 
 ## Decisions
 
