@@ -79,6 +79,11 @@ export const memberEnv = {
       memberEnv.discordGuildId() &&
       memberEnv.discordEventsChannelId(),
     ),
+  /* Access requests (PRD 013). The sheet ID stays out of the repo: it holds members' details. */
+  membershipSheetId: () => read("MEMBERSHIP_SHEET_ID"),
+  membershipWorksheet: () => read("MEMBERSHIP_WORKSHEET") ?? "Membership",
+  /** Where access requests are emailed (default: the organizers group). */
+  officersEmail: () => read("OFFICERS_EMAIL") ?? memberEnv.organizersGroup(),
   siteOrigin: (): string => {
     const site = read("SITE_URL") ?? import.meta.env.SITE ?? "";
     try {

@@ -198,7 +198,15 @@ export async function readLateChanges(
 
 const LOCK_KEY = "calendar-sync-lock";
 
-export async function withSyncLock<T>(fn: () => Promise<T>, waitMs = 8000): Promise<T> {
+export function withSyncLock<T>(fn: () => Promise<T>, waitMs = 8000): Promise<T> {
+  return withLock(LOCK_KEY, fn, waitMs);
+}
+
+/**
+ * Runs `fn` holding a short Redis lock on `key`, waiting up to `waitMs` for
+ * it. Best-effort: without Redis, or if the wait runs out, `fn` runs anyway.
+ */
+export async function withLock<T>(key: string, fn: () => Promise<T>, waitMs = 8000): Promise<T> {
   const redis = getRedis();
   if (!redis) return fn();
   const owner = crypto.randomUUID();
@@ -206,7 +214,7 @@ export async function withSyncLock<T>(fn: () => Promise<T>, waitMs = 8000): Prom
   let acquired = false;
   try {
     while (!acquired && Date.now() < deadline) {
-      acquired = (await redis.set(LOCK_KEY, owner, { nx: true, px: 20_000 })) === "OK";
+      acquired = (await redis.set(key, owner, { nx: true, px: 20_000 })) === "OK";
       if (!acquired) await new Promise((r) => setTimeout(r, 250));
     }
   } catch (error) {
@@ -217,8 +225,8 @@ export async function withSyncLock<T>(fn: () => Promise<T>, waitMs = 8000): Prom
   } finally {
     if (acquired) {
       try {
-        const current = await redis.get<string>(LOCK_KEY);
-        if (current === owner) await redis.del(LOCK_KEY);
+        const current = await redis.get<string>(key);
+        if (current === owner) await redis.del(key);
       } catch (error) {
         warn("release lock", error);
       }

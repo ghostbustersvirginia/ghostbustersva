@@ -10,6 +10,8 @@ export function escapeHtml(str: string): string {
 }
 
 export interface SendEmailOptions {
+  /** Recipients; defaults to CONTACT_TO_EMAIL. */
+  to?: string[];
   replyTo: string;
   subject: string;
   html: string;
@@ -22,7 +24,7 @@ export async function sendEmail(
 
   const { error } = await resend.emails.send({
     from: import.meta.env.CONTACT_FROM_EMAIL,
-    to: [import.meta.env.CONTACT_TO_EMAIL],
+    to: options.to?.length ? options.to : [import.meta.env.CONTACT_TO_EMAIL],
     replyTo: options.replyTo,
     subject: options.subject,
     html: options.html,
