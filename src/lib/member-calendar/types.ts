@@ -76,7 +76,13 @@ export type DiscordLinkStatus =
 
 export type SessionState =
   | { state: "signed-out"; clientId: string | null }
-  | { state: "not-member"; email: string; clientId: string | null }
+  | {
+      state: "not-member";
+      email: string;
+      clientId: string | null;
+      /** Whether they've already asked for access (PRD 013, R4.4). */
+      request: "none" | "pending";
+    }
   | {
       state: "member";
       user: { email: string; name: string; isOrganizer: boolean };
@@ -105,6 +111,12 @@ export interface UpdateCalendarResponse {
   sent: number;
   /** Invitations planned: one per one-off event, one per series. */
   total: number;
+}
+
+/** "Request access" result (PRD 013, R3). "member": they're on the list now. */
+export interface RequestAccessResponse {
+  ok: true;
+  status: "added" | "pending" | "member";
 }
 
 export interface ApiError {

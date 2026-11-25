@@ -3,6 +3,7 @@ import type {
   ApiError,
   CalendarEvent,
   EventsResponse,
+  RequestAccessResponse,
   RsvpChoice,
   RsvpResponse,
   RsvpScope,
@@ -61,6 +62,10 @@ export const signIn = (credential: string) =>
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ credential }),
   });
+
+/** Asks the officers to add the signed-in non-member (PRD 013, R3). */
+export const requestAccess = () =>
+  request<RequestAccessResponse>("/api/auth/request-access", { method: "POST" });
 
 export const signOut = () => request<{ ok: true }>("/api/auth/logout", { method: "POST" });
 

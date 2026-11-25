@@ -23,6 +23,8 @@ export const SCOPES = {
   cloudPlatform: "https://www.googleapis.com/auth/cloud-platform",
   /** Event images, read from a Drive folder shared with the service account (PRD 009). */
   drive: "https://www.googleapis.com/auth/drive.readonly",
+  /** The membership spreadsheet, for access requests (PRD 013). */
+  sheets: "https://www.googleapis.com/auth/spreadsheets",
 } as const;
 
 interface CachedToken {
@@ -129,9 +131,12 @@ async function delegatedTokenViaSignJwt(scopes: string[], subject: string): Prom
 }
 
 async function fetchAccessToken(scopes: string[]): Promise<string> {
-  // Only Calendar calls are delegated; group lookups use the service account's
-  // own Groups Reader role.
-  const delegated = memberEnv.accessMode() === "delegated" && scopes.includes(SCOPES.calendar);
+  // Calendar and the membership sheet (PRD 013) are delegated, so they act as
+  // calendar-automation@. Group lookups use the service account's own Groups
+  // Reader role, and Drive images a folder shared with the service account.
+  const delegated =
+    memberEnv.accessMode() === "delegated" &&
+    (scopes.includes(SCOPES.calendar) || scopes.includes(SCOPES.sheets));
   const subject = delegated ? memberEnv.delegatedUser() : undefined;
   const rawKey = memberEnv.serviceAccountKey();
 

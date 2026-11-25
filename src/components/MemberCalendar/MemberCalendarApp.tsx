@@ -133,7 +133,14 @@ export default function MemberCalendarApp() {
   }
 
   if (session.state === "not-member") {
-    return <NotMemberPanel email={session.email} onSwitchAccount={toSignedOut} />;
+    return (
+      <NotMemberPanel
+        email={session.email}
+        request={session.request}
+        // Signing out also clears the applicant cookie (PRD 013, R2.4).
+        onSwitchAccount={handleSignOut}
+      />
+    );
   }
 
   const userMenu = (

@@ -225,13 +225,14 @@ Open questions, not blocking phase 1:
 
 ## Phases
 
-0. **Verify:** R1. Test calendar and accounts, the test script, the checks, and the
-   results written into this PRD. R3's A-or-C choice and R4's re-invite method are
-   decided here.
-1. **Invite and cancel:** R2 for single-instance RSVPs, with unit tests for every row.
-2. **Recurring:** R3, using the approach chosen in phase 0.
-3. **Update My Calendar:** R4.
-4. **Copy:** R5.
+0. **Verify:** ✅ Done (results above). R1. Test calendar and accounts, the test script,
+   the checks, and the results written into this PRD. R3's A-or-C choice and R4's
+   re-invite method are decided here.
+1. **Invite and cancel:** ✅ Done (PR #56). R2 for single-instance RSVPs, with unit tests
+   for every row.
+2. **Recurring:** ✅ Done (PR #56). R3, using option A, chosen in phase 0.
+3. **Update My Calendar:** ✅ Done (PR #56). R4.
+4. **Copy:** ✅ Done (PR #56). R5.
 
 ## Acceptance Criteria
 
