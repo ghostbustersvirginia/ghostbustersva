@@ -97,6 +97,32 @@ export function personAttendees(
   );
 }
 
+export interface RsvpCounts {
+  yes: number;
+  maybe: number;
+  no: number;
+}
+
+/**
+ * Yes/Maybe/No counts, the same in the event feed and the Discord summary
+ * (PRD 014, R1.4): group addresses, rooms and the calendar itself are left out,
+ * and attendees who haven't responded aren't counted.
+ */
+export function rsvpCounts(
+  event: GoogleEvent,
+  calendarId: string,
+  excluded: readonly string[] = [],
+): RsvpCounts {
+  const counts: RsvpCounts = { yes: 0, maybe: 0, no: 0 };
+  for (const attendee of personAttendees(event, calendarId, excluded)) {
+    const status = toResponseStatus(attendee.responseStatus);
+    if (status === "accepted") counts.yes++;
+    else if (status === "tentative") counts.maybe++;
+    else if (status === "declined") counts.no++;
+  }
+  return counts;
+}
+
 export function displayNameFor(attendee: GoogleAttendee, storedNames: Map<string, string>): string {
   const email = normalizeEmail(attendee.email);
   return attendee.displayName?.trim() || storedNames.get(email) || email.split("@")[0] || "Member";
@@ -199,11 +225,7 @@ export function normalizeEvent(event: GoogleEvent, ctx: NormalizeContext): Calen
     descriptionHtml: sanitizeDescription(event.description),
     htmlLink: event.htmlLink ?? null,
     myStatus,
-    counts: {
-      yes: attendees.filter((a) => a.status === "accepted").length,
-      maybe: attendees.filter((a) => a.status === "tentative").length,
-      no: attendees.filter((a) => a.status === "declined").length,
-    },
+    counts: rsvpCounts(event, ctx.calendarId, ctx.excludedEmails),
     attendees,
     changedSinceRsvp: Boolean(
       myStatus && ctx.storedFingerprint && ctx.storedFingerprint !== eventFingerprint(event),
@@ -301,6 +323,12 @@ export function eventStartMs(event: Pick<GoogleEvent, "start">): number {
   return /^\d{4}-\d{2}-\d{2}$/.test(value)
     ? new Date(`${value}T00:00:00-05:00`).getTime()
     : new Date(value).getTime();
+}
+
+/** When the event ends; an all-day end date (exclusive) at midnight Eastern, like eventStartMs. */
+export function eventEndMs(event: Pick<GoogleEvent, "start" | "end">): number {
+  const end = eventStartMs({ start: event.end });
+  return Number.isFinite(end) ? end : eventStartMs(event);
 }
 
 /** Yes → anything else, from `windowMinutes` before the start onward, with no cutoff. */

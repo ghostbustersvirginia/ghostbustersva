@@ -2,7 +2,7 @@
   "page": "privacy",
   "pageTitle": "Privacy Policy",
   "pageIntro": "What we collect, why we collect it, and the choices you have.",
-  "lastUpdated": "November 25, 2026",
+  "lastUpdated": "November 26, 2026",
   "sections": [
     {
       "heading": "Who We Are",
@@ -46,9 +46,9 @@
     {
       "heading": "Discord",
       "paragraphs": [
-        "Members can choose to link their Discord account in the member calendar. When you link it, Discord tells us your Discord user ID and username, and we store both. We use them only to add you to the GBVA Discord server's thread for an event when you RSVP \"Yes\" or \"Maybe\", including events you RSVP'd to before you linked. To make that work, we keep a list of the events each member RSVPs \"Yes\" or \"Maybe\" to, whether or not they've linked Discord. We don't get your Discord password, messages, or server list, and we don't keep any access to your Discord account after linking.",
+        "Members can choose to link their Discord account in the member calendar. When you link it, Discord tells us your Discord user ID and username, and we store both. We use them only to add you to the GBVA Discord server's thread for an event when you RSVP \"Yes\" or \"Maybe\", on the site or in Google Calendar, including events you RSVP'd to before you linked. If you remove your RSVP and have no \"Yes\" or \"Maybe\" left on that event, or on the next six months of a repeating event, we remove you from its thread. Changing your RSVP to \"No\" leaves you in the thread. To make that work, we keep a list of the events each member RSVPs \"Yes\" or \"Maybe\" to, whether or not they've linked Discord. We don't get your Discord password, messages, or server list, and we don't keep any access to your Discord account after linking.",
         "Only you can see which Discord account you linked. Other members don't see your Discord ID or username on the site, though anyone in an event thread can see who has joined it, as on any Discord thread.",
-        "When the first member RSVPs \"Yes\" or \"Maybe\" to an event, we start a thread for it in the GBVA Discord server. The thread's first message shows the event's title, date, location, and a link to the calendar, and no member names. Messages posted in threads are stored by Discord under Discord's own privacy policy."
+        "When the first member RSVPs \"Yes\" or \"Maybe\" to an event, we start a thread for it in the GBVA Discord server. The thread's first message shows the event's title, date, location, a link to the calendar, and how many members have RSVP'd \"Yes\" and \"Maybe\". It shows counts only, never names. When an event's title, time, or location changes, or it's cancelled, we post a short notice in its thread. Messages posted in threads are stored by Discord under Discord's own privacy policy."
       ]
     },
     {

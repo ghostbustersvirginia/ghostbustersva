@@ -67,21 +67,26 @@ Write down each value marked **📝** as you go. Step 6 lists all of them.
 
 The bot needs these permissions in the events channel:
 
-| Permission               | Why                                     |
-| ------------------------ | --------------------------------------- |
-| View Channel             | See the events channel                  |
-| Send Messages            | Required alongside thread permissions   |
-| Create Public Threads    | Create one thread per event series (R2) |
-| Send Messages in Threads | Post the starter message, add members   |
-| Manage Threads           | Unarchive threads before adding members |
+| Permission               | Why                                                                 |
+| ------------------------ | ------------------------------------------------------------------- |
+| View Channel             | See the events channel                                              |
+| Send Messages            | Required alongside thread permissions                               |
+| Create Public Threads    | Create one thread per event series (R2)                             |
+| Send Messages in Threads | Post and edit the starter message, post change notices, add members |
+| Manage Threads           | Unarchive, rename, and remove members from threads                  |
+| Read Message History     | Find the starter message of threads made before PRD 014 (R2.2)      |
 
-That's permission integer **`326417517568`**.
+That's permission integer **`326417583104`**.
+
+> **Upgrading from v1 (PRD 010):** you don't need to re-invite the bot. In the events
+> channel's **Edit Channel → Permissions**, allow **Read Message History** for the bot's
+> role. The other five permissions already cover v2.
 
 - [x] Open this URL (replace `<CLIENT_ID>`) while signed in as someone with **Manage
       Server** on the GBVA server:
 
   ```
-  https://discord.com/oauth2/authorize?client_id=<CLIENT_ID>&scope=bot&permissions=326417517568&guild_id=998292963127988284&disable_guild_select=true
+  https://discord.com/oauth2/authorize?client_id=<CLIENT_ID>&scope=bot&permissions=326417583104&guild_id=998292963127988284&disable_guild_select=true
   ```
 
 - [x] Approve. The bot appears in the member list (offline, which is expected: it never
@@ -100,7 +105,7 @@ That's permission integer **`326417517568`**.
 Channel overrides can block what the server-level role allows.
 
 - [x] Open the events channel → **Edit Channel → Permissions**.
-- [x] Check that neither `@everyone` nor any role the bot has denies the five permissions
+- [x] Check that neither `@everyone` nor any role the bot has denies the six permissions
       from step 4. If one does, add an override for the bot's role (it has the same name
       as the app) that allows them.
 - [x] Check that members who should be in event threads can **View Channel**. Discord
@@ -203,4 +208,3 @@ UA='DiscordBot (https://ghostbustersva.com, 1.0)'
 - [x] The bot is in the GBVA server, and the step 7 checks pass.
 - [x] The redirect URIs in step 2 match every environment that will run "Link Discord".
 - [x] Preview/Development either point at a test channel or have the integration off.
-    

@@ -17,13 +17,13 @@ const copy = await getPageCopy("join");
 const pageTitle = "Join Ghostbusters Virginia";
 const pageIntro = "Yes, we're hiring! Here's how to suit up and volunteer with our franchise.";
 const quoteLineOne =
-  "Are you troubled by hauntingly quiet weekends? Do you experience feelings of wanting\n"+
-  "to serve your community? Have you or your family been waiting for a chance to\n"+
+  "Are you troubled by hauntingly quiet weekends? Do you experience feelings of wanting\n" +
+  "to serve your community? Have you or your family been waiting for a chance to\n" +
   "successfully field-test your ghostbusting equipment?";
 const quoteLineTwo =
   "If the answer is yes, then don't wait another minute — we’re ready to hire you!";
 
-const requiredGearHeading = `Appropriate Event Attire Examples`
+const requiredGearHeading = `Appropriate Event Attire Examples`;
 
 const requiredGear = [
   "Traditional Ghostbusters uniforms and equipment",
@@ -128,22 +128,23 @@ const backgroundText = `Because members regularly interact with the public, comm
               To apply for membership with Ghostbusters, Virginia, please start by reviewing our
               <a href="https://bit.ly/gbva-charter-link" target="_blank">Charter</a> and
               <a href="https://bit.ly/gbva-code-of-conduct" target="_blank">Code of Conduct</a>.
-              These documents describe our mission as a charity organization and what we expect from our members.
+              These documents describe our mission as a charity organization and what we expect from
+              our members.
             </p>
             <p class="prose-text">
-              By joining Ghostbusters, Virginia, you agree to uphold these standards and contribute to a
-              positive, inclusive environment for members and the communities we serve.
+              By joining Ghostbusters, Virginia, you agree to uphold these standards and contribute
+              to a positive, inclusive environment for members and the communities we serve.
             </p>
             <p class="prose-text">
-              Once you've reviewed these documents, complete our membership application at the link below
-              to begin the process.
+              Once you've reviewed these documents, complete our membership application at the link
+              below to begin the process.
             </p>
             <div class="join-cta-wrapper">
               <Button
                 variant="secondary-alt"
                 href="https://docs.google.com/forms/d/e/1FAIpQLSdCixegeyuGucf8A98afdM7AbB3ONHdPQD61PpYztIpRWv67Q/viewform?pli=1"
-                external
-              >Join Today</Button>
+                external>Join Today</Button
+              >
             </div>
           </div>
           <LightboxImageTrigger
@@ -187,30 +188,19 @@ const backgroundText = `Because members regularly interact with the public, comm
           </LightboxImageTrigger>
           <div class="gear-card-column">
             <CardListPanel title={requiredGearHeading} listClass="card-list-panel__list--gear">
-              {
-                requiredGear.map((item) => (
-                  <li>
-                    {item}
-                  </li>
-                ))
-              }
+              {requiredGear.map((item) => <li>{item}</li>)}
             </CardListPanel>
 
             <CardListPanel title="Requirements" listClass="card-list-panel__list--gear">
-              {
-                costumeRequirements.map((item) => (
-                  <li>
-                    {item}
-                  </li>
-                ))
-              }
+              {costumeRequirements.map((item) => <li>{item}</li>)}
             </CardListPanel>
           </div>
         </div>
         <p class="prose-text">{costumeAdvice}</p>
         <p class="prose-text costume-note">
           To ensure a positive experience for the public and our charity partners, all costumes,
-          props, and attire worn while representing Ghostbusters, Virginia must meet the requirements listed above.
+          props, and attire worn while representing Ghostbusters, Virginia must meet the
+          requirements listed above.
         </p>
         <p class="prose-text reservation-note">
           Ghostbusters, Virginia reserves the right to restrict or prohibit any costume, prop, or
