@@ -84,7 +84,7 @@ Request emails go to `officers@ghostbustersva.com` (or `OFFICERS_EMAIL`), from t
 
 ## 5. Vercel
 
-- [ ] Set `MEMBERSHIP_SHEET_ID` in Vercel: the test copy for Preview (staging) while
+- [x] Set `MEMBERSHIP_SHEET_ID` in Vercel: the test copy for Preview (staging) while
       testing, and the real sheet for Production when PRD 013 ships.
 
 ## Results to note in PRD 013
