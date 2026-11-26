@@ -19,4 +19,3 @@ export default function FormLabel({ htmlFor, children, required }: FormLabelProp
     </label>
   );
 }
-
