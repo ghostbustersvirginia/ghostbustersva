@@ -8,7 +8,6 @@ export const siteConfig = {
   description: "",
   copyright: `© ${new Date().getFullYear()} Ghostbusters Virginia. All rights reserved.`,
 
-
   /** Footer logo images — paths relative to /images */
   footerLogos: [
     {

@@ -40,7 +40,9 @@ export default function EventLocation({ event, home = null, distance = null }: P
               href={directionsUrl(mapQuery, home)}
               target="_blank"
               rel="noopener noreferrer"
-            ><FaDirections size={18} /></a>
+            >
+              <FaDirections size={18} />
+            </a>
             <p>
               {placeText}
               {distance && <span className="mc-distance"> · {distance}</span>}

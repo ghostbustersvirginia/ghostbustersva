@@ -100,8 +100,7 @@ const supportDonateImagePath =
   getSafeImageAssetPath(donateCopy.donationImage) ||
   "/images/gallery/No-Ghosts-But-Big-Smiles-For-the-Sick-Kids.jpg";
 const supportDonateImageAlt = String(
-  donateCopy.donationImageAlt ||
-    "Ghostbusters Virginia members visiting kids in the hospital",
+  donateCopy.donationImageAlt || "Ghostbusters Virginia members visiting kids in the hospital",
 );
 const protonPetsImagePath = "/images/ProtonPets2026.jpg";
 const protonPetsImageAlt = "Proton Pets — pet pantry and shelter support initiative";
@@ -116,7 +115,7 @@ const safeHeroPrimaryCtaHref = isSafeExternalUrl(settings.paypalUrl)
 const safeHeroSecondaryCtaHref = isSafeExternalUrl(settings.donateUrl)
   ? settings.donateUrl
   : defaultLymphomaDonateUrl;
-  // : defaultMakeAWishDonateUrl;
+// : defaultMakeAWishDonateUrl;
 const safeEventsCtaHref = `${getSafeHref(eventsCtaHref) || "/events"}#past-events`;
 const safeNoUpcomingEventsContactHref = getSafeHref(noUpcomingEventsContactHref) || "/contact";
 const safeJoinCtaHref = getSafeHref(joinCtaHref) || "/join";
