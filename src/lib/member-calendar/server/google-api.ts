@@ -82,6 +82,8 @@ export interface GoogleEvent {
   start?: GoogleEventDateTime;
   end?: GoogleEventDateTime;
   recurringEventId?: string;
+  /** RRULE lines; only on a series master. */
+  recurrence?: string[];
   organizer?: { email?: string; self?: boolean };
   attendees?: GoogleAttendee[];
   attendeesOmitted?: boolean;
@@ -130,16 +132,23 @@ export async function listCalendarEvents(
   return events;
 }
 
+/**
+ * One event, or null if it doesn't exist. A cancelled event is null too,
+ * unless `includeCancelled` is set (the Discord summary shows it as
+ * cancelled, PRD 014, R1.6).
+ */
 export async function getCalendarEvent(
   calendarId: string,
   eventId: string,
+  options: { includeCancelled?: boolean } = {},
 ): Promise<GoogleEvent | null> {
   const { data } = await googleFetch<GoogleEvent>(
     eventsUrl(calendarId, `/${encodeURIComponent(eventId)}`),
     [SCOPES.calendar],
     { allow404: true },
   );
-  if (!data || data.status === "cancelled") return null;
+  if (!data) return null;
+  if (data.status === "cancelled" && !options.includeCancelled) return null;
   return data;
 }
 
