@@ -1,6 +1,6 @@
 # PRD 012: RSVP Calendar Invites
 
-**Status:** implemented; verifying on staging
+**Status:** implemented
 **Author:** Jonathan Cook
 **Date:** 2026-11-24
 
@@ -238,18 +238,18 @@ Open questions, not blocking phase 1:
 
 - [x] Phase 0 results are recorded in this PRD, and no other guest is emailed by a
       guest-list change.
-- [ ] A member RSVPs Yes on the site and gets an invitation. With "from everyone" (or a
+- [x] A member RSVPs Yes on the site and gets an invitation. With "from everyone" (or a
       Workspace account), the event appears on their Google Calendar without them doing
       anything.
-- [ ] A member who said No and then switches to Yes gets an invitation.
-- [ ] Changing between Yes and Maybe, or from Yes to No, sends no email.
-- [ ] Removing a Yes or Maybe RSVP takes the event off their calendar.
-- [ ] A "This and following" RSVP across a weekly series sends at most the agreed number
+- [x] A member who said No and then switches to Yes gets an invitation.
+- [x] Changing between Yes and Maybe, or from Yes to No, sends no email.
+- [x] Removing a Yes or Maybe RSVP takes the event off their calendar.
+- [x] A "This and following" RSVP across a weekly series sends at most the agreed number
       of invitations.
-- [ ] "Update My Calendar" sends invitations for the next 3 months of Yes/Maybe RSVPs,
+- [x] "Update My Calendar" sends invitations for the next 3 months of Yes/Maybe RSVPs,
       doesn't change any RSVP, writes no late-change records, and is limited to once an
       hour.
-- [ ] RSVPs still succeed when Google fails to send the invitation.
+- [x] RSVPs still succeed when Google fails to send the invitation.
 - [x] The RSVP note and privacy policy describe the invitations.
 - [x] Unit tests cover the R2 table and the R3 rule.
 

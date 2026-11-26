@@ -1,6 +1,6 @@
 # PRD 013: Request Member Calendar Access
 
-**Status:** draft
+**Status:** implemented
 **Author:** Jonathan Cook
 **Date:** 2026-11-25
 
@@ -160,12 +160,12 @@ Notes:
 
 ## Phases
 
-0. **Setup:** R1. Share the sheet, add the Sheets scope, set the env vars, and make the
-   test sheet.
-1. **Server:** R2, R3 and R5, with unit tests: column lookup, duplicate detection,
-   first-empty-row, ID format, and cookie checks.
-2. **UI:** R4.
-3. **Copy:** R6.
+0. **Setup:** ✅ Done (PR #57). R1. Share the sheet, add the Sheets scope, set the env
+   vars, and make the test sheet.
+1. **Server:** ✅ Done (PR #57). R2, R3 and R5, with unit tests: column lookup,
+   duplicate detection, first-empty-row, ID format, and cookie checks.
+2. **UI:** ✅ Done (PR #57). R4.
+3. **Copy:** ✅ Done (PR #57). R6.
 
 ## Acceptance Criteria
 
@@ -178,7 +178,7 @@ Notes:
       and sends no email.
 - [x] The endpoint ignores any email or name sent in the request body.
 - [x] A name starting with `=` is stored as text.
-- [ ] After an officer approves and AppSheet adds them, the applicant signs in and gets
+- [x] After an officer approves and AppSheet adds them, the applicant signs in and gets
       the calendar.
 - [x] The spreadsheet ID and link aren't in the repo.
 - [x] The privacy policy describes the request.
