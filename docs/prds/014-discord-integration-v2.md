@@ -289,12 +289,12 @@ RSVP or the webhook's 204.
 - [x] A v1 thread gets its summary on the first refresh, without a second starter
       message.
 - [ ] A series thread shows the next three instances, each with its own counts.
-- [ ] Moving a one-off event posts one change notice and updates the summary. Cancelling
+- [x] Moving a one-off event posts one change notice and updates the summary. Cancelling
       it posts one cancellation notice.
-- [ ] Removing the only RSVP to a one-off event removes a linked member from the thread.
+- [x] Removing the only RSVP to a one-off event removes a linked member from the thread.
       A change to No doesn't.
 - [x] A Yes in Google Calendar by a linked member adds them to the thread.
-- [ ] No message pings anyone.
+- [x] No message pings anyone.
 - [ ] A Discord outage doesn't fail or slow an RSVP or the webhook.
 - [ ] Unit tests cover the renderer (one-off, series, ended, cancelled, the length cap),
       the lock and dirty-flag merging, the hash skip, finding the message for v1
