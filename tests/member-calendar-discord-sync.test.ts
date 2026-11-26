@@ -15,6 +15,12 @@ const fakeRedis = vi.hoisted(() => ({
     Object.entries(values).forEach(([f, v]) => hashes.get(key)!.set(f, v));
     return Object.keys(values).length;
   },
+  hsetnx: async (key: string, field: string, value: string) => {
+    if (!hashes.has(key)) hashes.set(key, new Map());
+    if (hashes.get(key)!.has(field)) return 0;
+    hashes.get(key)!.set(field, value);
+    return 1;
+  },
   hdel: async (key: string, ...fields: string[]) => {
     fields.forEach((f) => hashes.get(key)?.delete(f));
     return fields.length;
@@ -70,6 +76,7 @@ import {
   scheduleDiscordSync,
   type DiscordSyncJob,
 } from "../src/lib/member-calendar/server/discord-sync";
+import { watchEvents } from "../src/lib/member-calendar/server/discord-watch";
 
 const CAL = "cal@group.calendar.google.com";
 const NOW = Date.parse("2026-12-01T12:00:00-05:00");
@@ -329,6 +336,20 @@ describe("eventChangeJobs (R3.1, R5)", () => {
     expect(await eventChangeJobs([], NOW)).toEqual([{ kind: "refresh", seriesKey: "evt9" }]);
     expect(hashes.get("discord-sync-signatures")?.size ?? 0).toBe(0);
     expect(await eventChangeJobs([], NOW)).toEqual([]);
+  });
+
+  it("refreshes an event deleted before any sync saw its thread (R5.6)", async () => {
+    // The first RSVP made the thread, and its refresh recorded the event.
+    await eventChangeJobs([other], NOW);
+    thread("evt9");
+    await watchEvents("evt9", [other], NOW);
+    expect(await eventChangeJobs([], NOW)).toEqual([{ kind: "refresh", seriesKey: "evt9" }]);
+  });
+
+  it("doesn't record events past the sync's window", async () => {
+    const far = { ...other, start: { dateTime: "2027-06-01T19:00:00-04:00" } };
+    await watchEvents("evt9", [far], NOW);
+    expect(hashes.get("discord-sync-signatures")?.size ?? 0).toBe(0);
   });
 
   it("forgets an event that has ended, without a refresh", async () => {

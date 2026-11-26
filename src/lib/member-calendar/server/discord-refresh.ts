@@ -25,6 +25,7 @@ import {
   writeStarterMessage,
   type ThreadRecord,
 } from "./discord-threads";
+import { watchEvents } from "./discord-watch";
 import { memberEnv } from "./env";
 import { getCalendarEvent, listEventInstances, type GoogleEvent } from "./google-api";
 import { eventStartMs, rsvpCounts } from "./logic";
@@ -137,6 +138,11 @@ export async function announceChanges(
 
 /* --- One refresh -------------------------------------------------------- */
 
+/** The listed events a summary covers: the event itself, or a series' upcoming dates. */
+function watchedEvents(input: SummaryInput): GoogleEvent[] {
+  return input.kind === "one-off" ? [input.event] : input.upcoming.map((row) => row.event);
+}
+
 async function waitForSpacing(key: string): Promise<void> {
   const redis = getRedis();
   if (!redis) return;
@@ -166,6 +172,8 @@ export async function refreshThreadNow(key: string): Promise<RefreshResult> {
     }
     // Before the hash check: a series' time of day isn't in its summary text.
     record = await announceChanges(key, record, input);
+    // So the sync notices if the event is deleted before it next runs (R5.6).
+    if (!input.cancelled) await watchEvents(key, watchedEvents(input));
     const { content, hash } = renderSummary(input);
     if (record.messageId && record.contentHash === hash) return "unchanged";
 
