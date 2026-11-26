@@ -21,6 +21,7 @@ import { waitUntil } from "@vercel/functions";
 import { requestThreadRefresh } from "./discord-refresh";
 import { joinSeriesThread, leaveSeriesThread } from "./discord-rsvp";
 import { getThreadRecords, seriesKey } from "./discord-threads";
+import { listedSignature, parseWatchEntry, SIGNATURES_KEY, type WatchEntry } from "./discord-watch";
 import { memberEnv } from "./env";
 import { getCalendarEvent, type GoogleEvent } from "./google-api";
 import { eventEndMs, normalizeEmail, rsvpAvailability, statusOf } from "./logic";
@@ -28,7 +29,6 @@ import { REMOVED, type SnapshotStatus } from "./records";
 import { getRedis } from "./store";
 
 const QUEUE_KEY = "discord-sync-jobs";
-const SIGNATURES_KEY = "discord-sync-signatures";
 const QUEUE_TTL_SECONDS = 7 * 24 * 60 * 60;
 /** Series handled per sync run (D7). */
 export const SERIES_PER_RUN = 20;
@@ -73,30 +73,6 @@ export function jobsForEvent(input: {
 
 /* --- Event changes (R3.1, R5) ---------------------------------------------- */
 
-/** What a member would notice changing on one listed event. */
-function listedSignature(event: GoogleEvent): string {
-  return JSON.stringify([
-    event.summary ?? "",
-    event.location ?? "",
-    event.start?.dateTime ?? event.start?.date ?? "",
-    event.end?.dateTime ?? event.end?.date ?? "",
-  ]);
-}
-
-function parseStored(value: unknown): { s: string; k: string } | null {
-  let data = value;
-  if (typeof value === "string") {
-    try {
-      data = JSON.parse(value);
-    } catch {
-      return null;
-    }
-  }
-  if (!data || typeof data !== "object") return null;
-  const { s, k } = data as Record<string, unknown>;
-  return typeof s === "string" && typeof k === "string" ? { s, k } : null;
-}
-
 /**
  * Refresh jobs for upcoming events with a thread whose title, time or place
  * changed since the last sync, or that dropped out of the listing (cancelled,
@@ -112,7 +88,7 @@ export async function eventChangeJobs(
   try {
     const upcoming = events.filter((event) => eventEndMs(event) > nowMs);
     const threads = await getThreadRecords(upcoming.map(seriesKey));
-    const watched = new Map<string, { s: string; k: string }>();
+    const watched = new Map<string, WatchEntry>();
     for (const event of upcoming) {
       const key = seriesKey(event);
       if (threads.has(key)) watched.set(event.id, { s: listedSignature(event), k: key });
@@ -123,7 +99,7 @@ export async function eventChangeJobs(
     const refresh = new Set<string>();
     const drop: string[] = [];
     for (const [eventId, value] of Object.entries(stored)) {
-      const before = parseStored(value);
+      const before = parseWatchEntry(value);
       const now = watched.get(eventId);
       if (now) {
         if (before && before.s !== now.s) refresh.add(now.k);
@@ -136,7 +112,7 @@ export async function eventChangeJobs(
 
     const writes: Record<string, string> = {};
     for (const [eventId, value] of watched) {
-      if (parseStored(stored[eventId])?.s !== value.s) writes[eventId] = JSON.stringify(value);
+      if (parseWatchEntry(stored[eventId])?.s !== value.s) writes[eventId] = JSON.stringify(value);
     }
     if (Object.keys(writes).length > 0) await redis.hset(SIGNATURES_KEY, writes);
     if (drop.length > 0) await redis.hdel(SIGNATURES_KEY, ...(drop as [string, ...string[]]));

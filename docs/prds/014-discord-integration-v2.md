@@ -222,7 +222,10 @@ RSVP or the webhook's 204.
    whose series has a thread. When one changes, or an event drops out of the listing
    (cancelled, deleted or moved out of range), the series is queued for a refresh (R6.3),
    and the refresh works out what happened from Google. Attendee changes don't count
-   here, and an event seen for the first time is only recorded.
+   here, and an event seen for the first time is only recorded. Each summary refresh
+   also records its events (the one-off, or a series' upcoming dates within the sync's
+   120-day window) if they aren't in the hash yet, so an event deleted before the next
+   sync still gets its cancellation notice.
 
 ### R6. Google-side RSVPs (v1 D11)
 
@@ -277,20 +280,20 @@ RSVP or the webhook's 204.
 
 ## Acceptance Criteria
 
-- [ ] A Yes on the site updates the thread's counts within a few seconds.
-- [ ] A Yes/Maybe/No/remove made in Google Calendar updates the counts after the next
+- [x] A Yes on the site updates the thread's counts within a few seconds.
+- [x] A Yes/Maybe/No/remove made in Google Calendar updates the counts after the next
       sync.
-- [ ] Ten RSVPs in quick succession cause no more than two edits, and the final message
+- [x] Ten RSVPs in quick succession cause no more than two edits, and the final message
       shows the final counts.
-- [ ] A sync with no RSVP changes makes no Discord calls.
-- [ ] A v1 thread gets its summary on the first refresh, without a second starter
+- [x] A sync with no RSVP changes makes no Discord calls.
+- [x] A v1 thread gets its summary on the first refresh, without a second starter
       message.
 - [ ] A series thread shows the next three instances, each with its own counts.
 - [ ] Moving a one-off event posts one change notice and updates the summary. Cancelling
       it posts one cancellation notice.
 - [ ] Removing the only RSVP to a one-off event removes a linked member from the thread.
       A change to No doesn't.
-- [ ] A Yes in Google Calendar by a linked member adds them to the thread.
+- [x] A Yes in Google Calendar by a linked member adds them to the thread.
 - [ ] No message pings anyone.
 - [ ] A Discord outage doesn't fail or slow an RSVP or the webhook.
 - [ ] Unit tests cover the renderer (one-off, series, ended, cancelled, the length cap),

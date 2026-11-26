@@ -7,6 +7,7 @@
  * Discord threads for RSVPs made in Google (PRD 014, R6).
  */
 import { jobsForEvent, scheduleDiscordSync, type DiscordSyncJob } from "./discord-sync";
+import { SYNC_FUTURE_DAYS, SYNC_PAST_DAYS } from "./discord-watch";
 import { memberEnv } from "./env";
 import {
   listCalendarEvents,
@@ -27,9 +28,6 @@ import {
 } from "./store";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
-/** Past events stay in the window so post-event changes are still caught. */
-const SYNC_PAST_DAYS = 30;
-const SYNC_FUTURE_DAYS = 120;
 const CHANNEL_TTL_SECONDS = 7 * 24 * 60 * 60;
 
 export async function syncRecentEvents(): Promise<{ events: number; lateChanges: number }> {

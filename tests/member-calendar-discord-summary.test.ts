@@ -12,6 +12,12 @@ const fakeRedis = vi.hoisted(() => ({
     return "OK";
   },
   del: async (key: string) => (db.delete(key) ? 1 : 0),
+  // Hash fields stored as "hash:field".
+  hsetnx: async (key: string, field: string, value: string) => {
+    if (db.has(`${key}:${field}`)) return 0;
+    db.set(`${key}:${field}`, value);
+    return 1;
+  },
 }));
 vi.mock("../src/lib/member-calendar/server/store", () => ({ getRedis: () => fakeRedis }));
 
@@ -312,6 +318,18 @@ describe("refreshThreadNow", () => {
     );
     expect((await getThreadRecord("evt1"))?.contentHash).toMatch(/^[0-9a-f]{64}$/);
     expect(db.has("discord-refresh-last:evt1")).toBe(true);
+  });
+
+  it("records the event for the sync, so a deletion before the next sync is noticed (R5.6)", async () => {
+    seed();
+    db.set("discord-sync-signatures:other", "kept");
+    await refreshThreadNow("evt1");
+    expect(JSON.parse(db.get("discord-sync-signatures:evt1")!)).toMatchObject({ k: "evt1" });
+    // An entry the sync already has isn't overwritten.
+    db.set("discord-sync-signatures:evt1", "old");
+    db.delete("discord-refresh-last:evt1");
+    await refreshThreadNow("evt1");
+    expect(db.get("discord-sync-signatures:evt1")).toBe("old");
   });
 
   it("skips the edit when nothing changed (R3.4)", async () => {
