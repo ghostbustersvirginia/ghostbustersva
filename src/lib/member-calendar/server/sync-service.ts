@@ -3,8 +3,10 @@
  *
  * Triggered by the events.watch push webhook and the daily cron. It compares
  * a bounded window of events with the last-known status snapshots, records
- * late Yes → other changes, and updates the snapshots.
+ * late Yes → other changes, and updates the snapshots. The same diffs drive
+ * Discord threads for RSVPs made in Google (PRD 014, R6).
  */
+import { jobsForEvent, scheduleDiscordSync, type DiscordSyncJob } from "./discord-sync";
 import { memberEnv } from "./env";
 import {
   listCalendarEvents,
@@ -48,6 +50,7 @@ export async function syncRecentEvents(): Promise<{ events: number; lateChanges:
 
     const lateChanges: LateChangeRecord[] = [];
     const updates: Parameters<typeof writeSnapshots>[0] = [];
+    const discordJobs: DiscordSyncJob[] = [];
     for (const event of events) {
       const diff = diffEventSnapshot({
         event,
@@ -60,10 +63,21 @@ export async function syncRecentEvents(): Promise<{ events: number; lateChanges:
       });
       lateChanges.push(...diff.lateChanges);
       updates.push(...diff.updates);
+      discordJobs.push(
+        ...jobsForEvent({
+          event,
+          calendarId,
+          previous: snapshots.get(event.id) ?? new Map(),
+          updates: diff.updates,
+          nowMs: Date.now(),
+        }),
+      );
     }
 
     await writeSnapshots(updates);
     await appendLateChanges(lateChanges);
+    // After the snapshot write, and after the response (R6.3).
+    scheduleDiscordSync(discordJobs, events);
     return { events: events.length, lateChanges: lateChanges.length };
   }, 15_000);
 }

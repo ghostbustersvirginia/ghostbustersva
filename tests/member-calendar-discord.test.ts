@@ -14,8 +14,11 @@ import {
   DiscordApiError,
   DiscordErrorCode,
   DiscordRateLimitError,
+  editMessage,
+  getMessages,
   isDiscordError,
   postMessage,
+  removeThreadMember,
   threadName,
   unarchiveThread,
 } from "../src/lib/member-calendar/server/discord";
@@ -65,6 +68,35 @@ describe("discordFetch via endpoint helpers", () => {
     fetchMock.mockResolvedValue(json(200, { id: "m1", channel_id: "t1" }));
     await postMessage("t1", "hello @everyone");
     expect(JSON.parse(fetchMock.mock.calls[0][1].body).allowed_mentions).toEqual({ parse: [] });
+  });
+
+  it("edits a message with PATCH and mentions disabled (PRD 014)", async () => {
+    fetchMock.mockResolvedValue(json(200, { id: "m1", channel_id: "t1" }));
+    await editMessage("t1", "m1", "**Updated**");
+    const [url, init] = fetchMock.mock.calls[0];
+    expect(url).toBe("https://discord.com/api/v10/channels/t1/messages/m1");
+    expect(init.method).toBe("PATCH");
+    expect(JSON.parse(init.body)).toEqual({
+      content: "**Updated**",
+      allowed_mentions: { parse: [] },
+    });
+  });
+
+  it("lists messages after an ID, with the limit kept to 1–100 (PRD 014)", async () => {
+    fetchMock.mockResolvedValue(json(200, [{ id: "m1", channel_id: "t1", author: { id: "b" } }]));
+    expect(await getMessages("t1", { after: "t1", limit: 500 })).toHaveLength(1);
+    expect(fetchMock.mock.calls[0][0]).toBe(
+      "https://discord.com/api/v10/channels/t1/messages?after=t1&limit=100",
+    );
+    expect(fetchMock.mock.calls[0][1].method).toBeUndefined();
+  });
+
+  it("removes a thread member with DELETE (PRD 014)", async () => {
+    fetchMock.mockResolvedValue(new Response(null, { status: 204 }));
+    await removeThreadMember("t1", "u1");
+    const [url, init] = fetchMock.mock.calls[0];
+    expect(url).toBe("https://discord.com/api/v10/channels/t1/thread-members/u1");
+    expect(init.method).toBe("DELETE");
   });
 
   it("treats 204 as success", async () => {

@@ -5,7 +5,13 @@
  * of one series are harmless. Every failure is logged with the series key and
  * Discord error code and then skipped (R5.2, R5.3); nothing here throws.
  */
-import { addThreadMember, DiscordErrorCode, isDiscordError, unarchiveThread } from "./discord";
+import {
+  addThreadMember,
+  DiscordErrorCode,
+  isDiscordError,
+  removeThreadMember,
+  unarchiveThread,
+} from "./discord";
 import { getDiscordLink, getMemberSeries } from "./discord-store";
 import { forgetThreadRecord, getThreadRecords, type ThreadRecord } from "./discord-threads";
 
@@ -78,4 +84,44 @@ export async function backfillMemberThreads(email: string, discordId: string): P
     if ((await addMemberToThread(key, thread, discordId)) === "added") added++;
   }
   return added;
+}
+
+export type RemoveResult = "removed" | "thread-gone" | "failed";
+
+/**
+ * Removes a Discord user from the series' thread (PRD 014, R4.1, R4.3). An
+ * archived thread is reopened and the removal tried once more. Someone who
+ * already left the thread or the server counts as removed. Nothing here throws.
+ */
+export async function removeMemberFromThread(
+  seriesKey: string,
+  thread: ThreadRecord,
+  discordId: string,
+): Promise<RemoveResult> {
+  try {
+    try {
+      await removeThreadMember(thread.threadId, discordId);
+    } catch (error) {
+      if (!isDiscordError(error, DiscordErrorCode.ThreadArchived)) throw error;
+      await unarchiveThread(thread.threadId);
+      await removeThreadMember(thread.threadId, discordId);
+    }
+    return "removed";
+  } catch (error) {
+    if (
+      isDiscordError(error, DiscordErrorCode.UnknownMember) ||
+      isDiscordError(error, DiscordErrorCode.UnknownUser)
+    ) {
+      return "removed";
+    }
+    if (isDiscordError(error, DiscordErrorCode.UnknownChannel)) {
+      console.error(`[discord] thread for ${seriesKey} was deleted; dropping its record`);
+      await forgetThreadRecord(seriesKey, thread.threadId);
+      return "thread-gone";
+    }
+    console.error(
+      `[discord] removing member from thread for ${seriesKey} failed: ${describe(error)}`,
+    );
+    return "failed";
+  }
 }

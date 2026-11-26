@@ -18,6 +18,7 @@ const MAX_RETRY_WAIT_MS = 10_000;
 export const DiscordErrorCode = {
   UnknownChannel: 10003,
   UnknownMember: 10007,
+  UnknownMessage: 10008,
   UnknownUser: 10013,
   MissingAccess: 50001,
   MissingPermissions: 50013,
@@ -144,6 +145,7 @@ export interface DiscordChannel {
 export interface DiscordMessage {
   id: string;
   channel_id: string;
+  author?: { id: string; bot?: boolean };
 }
 
 /** Thread names are limited to 100 characters (R2.3). */
@@ -192,6 +194,41 @@ export async function postMessage(channelId: string, content: string): Promise<D
   return message;
 }
 
+/** Replaces a message's text. Only the bot's own messages can be edited (PRD 014, R3.5). */
+export async function editMessage(
+  channelId: string,
+  messageId: string,
+  content: string,
+): Promise<DiscordMessage> {
+  const message = await discordFetch<DiscordMessage>(
+    `/channels/${encodeURIComponent(channelId)}/messages/${encodeURIComponent(messageId)}`,
+    {
+      method: "PATCH",
+      body: JSON.stringify({ content, allowed_mentions: { parse: [] } }),
+    },
+  );
+  if (!message) throw new DiscordApiError(500, 0, "Empty edit-message response");
+  return message;
+}
+
+/**
+ * Up to `limit` (1–100) messages after `after`. Needs Read Message History
+ * (PRD 014, R2.2). Discord doesn't promise an order, so callers sort by ID.
+ */
+export async function getMessages(
+  channelId: string,
+  options: { after: string; limit: number },
+): Promise<DiscordMessage[]> {
+  const params = new URLSearchParams({
+    after: options.after,
+    limit: String(Math.min(100, Math.max(1, options.limit))),
+  });
+  const messages = await discordFetch<DiscordMessage[]>(
+    `/channels/${encodeURIComponent(channelId)}/messages?${params}`,
+  );
+  return messages ?? [];
+}
+
 export async function getChannel(channelId: string): Promise<DiscordChannel> {
   const channel = await discordFetch<DiscordChannel>(`/channels/${encodeURIComponent(channelId)}`);
   if (!channel) throw new DiscordApiError(500, 0, "Empty get-channel response");
@@ -215,4 +252,23 @@ export async function addThreadMember(threadId: string, userId: string): Promise
     `/channels/${encodeURIComponent(threadId)}/thread-members/${encodeURIComponent(userId)}`,
     { method: "PUT" },
   );
+}
+
+/** Removes a user from a thread (PRD 014, R4.1). Needs Manage Threads. */
+export async function removeThreadMember(threadId: string, userId: string): Promise<void> {
+  await discordFetch(
+    `/channels/${encodeURIComponent(threadId)}/thread-members/${encodeURIComponent(userId)}`,
+    { method: "DELETE", reason: "RSVP removed on the member calendar" },
+  );
+}
+
+/** Renames a thread to match a new event title (PRD 014, R5.5). */
+export async function renameThread(threadId: string, title: string): Promise<DiscordChannel> {
+  const thread = await discordFetch<DiscordChannel>(`/channels/${encodeURIComponent(threadId)}`, {
+    method: "PATCH",
+    body: JSON.stringify({ name: threadName(title) }),
+    reason: "The event's title changed",
+  });
+  if (!thread) throw new DiscordApiError(500, 0, "Empty modify-channel response");
+  return thread;
 }
